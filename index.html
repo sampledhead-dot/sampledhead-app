@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp V7</title>
+<title>SampledHeadApp V8</title>
 <meta name="theme-color" content="#101216">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -33,7 +33,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,label.btn:focus-wi
 #rec.live{background:#e0533d;color:#fff;animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:.65}}
 @media (prefers-reduced-motion:reduce){#rec.live,#rsrec.live,.lpbtns button.live{animation:none}}
-.lcd{flex:1 1 0;min-height:150px;display:flex;flex-direction:column;gap:6px;background:#0b0d10;border-radius:12px;padding:8px}
+.lcd{flex:1 1 0;min-height:200px;display:flex;flex-direction:column;gap:6px;background:#0b0d10;border-radius:12px;padding:8px}
 .hd{display:flex;justify-content:space-between;gap:8px;color:var(--mute);font:500 14px 'Barlow Condensed',sans-serif}
 #name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 #status{flex:none;max-width:55%;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -92,6 +92,7 @@ button:disabled{cursor:default}
 .lpbtns button{padding:10px 0;font-size:12px;white-space:nowrap;min-width:0}
 .lpbtns button.on{background:var(--ink);color:#101216}
 .lpbtns button.live{background:#e0533d;color:#fff;animation:blink 1s steps(2) infinite}
+@media (max-width:600px){.unit:not(.loop){--chrome:530px}}
 .unit.loop{--chrome:370px}
 .unit.loop .lcd,.unit.loop .ctl,.unit.loop .chips,.unit.loop .tuner{display:none}
 .unit.loop .lpbar{display:flex}
