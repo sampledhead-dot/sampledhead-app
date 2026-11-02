@@ -1,8 +1,8 @@
-/* SampledHeadApp V9: funciona sin conexión.
+/* SampledHeadApp V10: funciona sin conexión.
    - Archivos de la app: primero la red (así siempre ves la última versión) y, si no hay conexión, la copia guardada.
    - Tipografías de Google: se guardan la primera vez y después salen de la copia.
    Los kits NO pasan por aquí: están en la base de datos local del navegador (IndexedDB). */
-const VERSION = 'sampledhead-v9';
+const VERSION = 'sampledhead-v10';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
