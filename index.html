@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp V14</title>
+<title>SampledHeadApp V15</title>
 <meta name="theme-color" content="#101216">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -362,7 +362,7 @@ button:disabled{opacity:.4}
 <p>A la izquierda de los pads hay un pad táctil, como los de un Kaoss Pad, con tres botones debajo que eligen el efecto: <b>FIL</b> (filtro), <b>BIT</b> (reducción de bits) y <b>REP</b> (Beat repeat). El efecto se aplica a todo lo que suena (los pads, el bucle del Looper…) y funciona mientras mantienes el dedo sobre el pad: al soltar, el sonido vuelve a la normalidad.</p>
 <ol><li>Elige el efecto con <b>FIL</b>, <b>BIT</b> o <b>REP</b>. Solo se puede cambiar de efecto mientras no estás tocando el pad.</li><li>Mantén el dedo sobre el cuadrado y muévelo. Mientras lo mueves, el pad muestra el valor del efecto.</li><li>Suelta para volver al sonido normal. Puedes seguir tocando los pads con la otra mano.</li></ol>
 <table><thead><tr><th>Efecto</th><th>Eje horizontal (izquierda → derecha)</th><th>Eje vertical (abajo → arriba)</th></tr></thead><tbody><tr><td>FIL · Filtro</td><td>A la izquierda, paso bajo (de 120 Hz hasta abierto); en el centro, sin filtro; a la derecha, paso alto (hasta unos 7 kHz).</td><td>Resonancia: cuanto más arriba, más resonancia.</td></tr><tr><td>BIT · Reducción de bits</td><td>Reducción de la frecuencia de muestreo: a la izquierda no reduce y a la derecha repite cada muestra hasta unas 48 veces.</td><td>Profundidad de bits: de 16 bits abajo a 3 bits arriba.</td></tr><tr><td>REP · Beat repeat</td><td>Tamaño del fragmento que se repite, en cinco pasos: 1/2, 1/4, 1/8, 1/16 y 1/32 de tiempo.</td><td>Recorte (gate): abajo cada repetición suena entera y arriba solo suena una cuarta parte.</td></tr></tbody></table>
-<ul><li><b>Beat repeat</b> captura lo último que sonó, con el tamaño elegido, y lo repite sin parar mientras mantienes el dedo. Moverte en horizontal cambia el tamaño y vuelve a capturar lo más reciente.</li><li>El tiempo del Beat repeat sale del tempo detectado en el Looper (con el ajuste ÷2 / ×2 aplicado). Si no hay bucle con tempo, usa 120 BPM.</li><li>El efecto se oye por la salida, pero <b>no entra en el Resample</b> ni en las exportaciones: se aplica solo al sonido en directo.</li><li>El pad de FX solo está en la pestaña Sampler. Al pasar a Looper, el efecto se suelta.</li><li>Si tu navegador no admite AudioWorklet, el botón REP se desactiva y BIT solo reduce la profundidad de bits.</li></ul>
+<ul><li><b>Beat repeat</b> captura lo último que sonó, con el tamaño elegido, y lo repite sin parar mientras mantienes el dedo. Moverte en horizontal cambia el tamaño y vuelve a capturar lo más reciente.</li><li>El tiempo del Beat repeat se detecta solo. Si hay un pad en <b>Loop</b> sonando, la app analiza los golpes de su región y calcula su tempo (con el Tono aplicado). Si hay varios en loop, usa el último que lanzaste. Si no hay ninguno, usa el tempo detectado en el Looper (con ÷2 / ×2) y, si tampoco hay, 120 BPM. En el pad, debajo del tamaño, se lee el tempo y de dónde sale (por ejemplo «98 BPM · loop A3»).</li><li>La detección funciona mejor con loops de batería de uno a varios compases que empiezan en el primer golpe y acaban justo al final del compás. Con tempos lentos puede dar el doble de BPM (por ejemplo 170 en vez de 85): el efecto sigue sonando en tiempo, solo que cada tamaño parece uno más corto.</li><li>El efecto se oye por la salida, pero <b>no entra en el Resample</b> ni en las exportaciones: se aplica solo al sonido en directo.</li><li>El pad de FX solo está en la pestaña Sampler. Al pasar a Looper, el efecto se suelta.</li><li>Si tu navegador no admite AudioWorklet, el botón REP se desactiva y BIT solo reduce la profundidad de bits.</li></ul>
 <p class="tip">Prueba el filtro con un bucle sonando: deja un pad en Loop y mueve el dedo de izquierda a derecha para hacer un barrido. Para tartamudeos rítmicos, usa REP en el centro con un bucle del Looper.</p>
 </details>
 <details><summary>13. Resample</summary>
@@ -502,6 +502,36 @@ class Rep extends AudioWorkletProcessor{
 }
 registerProcessor('sh-crush',Crush);registerProcessor('sh-rep',Rep);
 `;
+/* tempo de un sample en loop (para el Beat repeat): se detectan los golpes del audio y se prueba con la duración de la región */
+function audioOnsets(b){
+  const d=b.getChannelData(0),sr=b.sampleRate,hop=Math.max(1,Math.round(sr*.005)),n=Math.floor(d.length/hop);
+  if(n<20)return [];
+  const db=new Float32Array(n);
+  for(let k=0;k<n;k++){let s=0;for(let j=0;j<hop;j++){const v=d[k*hop+j];s+=v*v}db[k]=10*Math.log10(s/hop+1e-9)}
+  let mx=-99;for(let k=0;k<n;k++)if(db[k]>mx)mx=db[k];
+  const fl=new Float32Array(n);
+  for(let k=3;k<n;k++){const r=db[k]-Math.min(db[k-1],db[k-2],db[k-3]);fl[k]=db[k]>mx-40?Math.max(0,r):0}
+  const out=[],gap=Math.round(.07/(hop/sr));let last=-1e9;
+  for(let k=3;k<n-1;k++){
+    if(fl[k]<6||fl[k]<fl[k-1]||fl[k]<fl[k+1])continue;
+    let pk=k;for(let j=k;j<Math.min(n-1,k+4);j++)if(fl[j]>fl[pk])pk=j;
+    if(pk!==k)continue;
+    if(k-last<gap){if(out.length&&fl[k]>fl[last]){out[out.length-1]=k*hop/sr;last=k}continue}
+    out.push(k*hop/sr);last=k;
+  }
+  return out;
+}
+function padTempo(i){
+  const p=pads[i];if(!p||!p.buf)return null;
+  const key=[p.s,p.e,p.ch,p.rev,p.pitch,p.fine,p.lofi,p.grade].join('|');
+  if(p._tk===key)return p._tv;
+  let r=null;
+  try{
+    const b=region(p),rate=playRate(p),L=b.duration/rate;
+    if(L>=.4&&L<=24){const t=detectTempo(audioOnsets(b).map(x=>x/rate),L);if(t&&t.bpm)r={bpm:t.bpm,beats:t.beats}}
+  }catch{}
+  p._tk=key;p._tv=r;return r;
+}
 const fxMix=ctx.createGain();fxMix.connect(ctx.destination);   // suma de la señal limpia y de los efectos
 const fxDry=ctx.createGain();master.connect(fxDry);fxDry.connect(fxMix);
 const fxLP=ctx.createBiquadFilter(),fxHP=ctx.createBiquadFilter(),fxW=[ctx.createGain(),ctx.createGain(),ctx.createGain()];
@@ -525,7 +555,14 @@ async function fxInit(){
   }
   fxSend();
 }
-function fxBeatLen(){const bpm=(typeof lpBpm==='function'&&lpBpm())||120;return 60/bpm}
+function fxTempo(){
+  let best=-1,bt=-1;
+  pads.forEach((p,i)=>{if(p.loop&&p.src&&(p.lt||0)>=bt){const t=padTempo(i);if(t){bt=p.lt||0;best=i}}});   // el pad en loop lanzado más recientemente
+  if(best>=0){const t=padTempo(best);return {bpm:t.bpm,src:'loop '+pl(best)}}
+  const b=typeof lpBpm==='function'&&lpBpm();
+  return b?{bpm:b,src:'looper'}:{bpm:120,src:'por defecto'};
+}
+function fxBeatLen(){return 60/fxTempo().bpm}
 function fxVals(){
   const {x,y}=fx;
   if(fx.mode===0){
@@ -536,8 +573,8 @@ function fxVals(){
     const h=Math.pow(48,x),bits=Math.round(16-y*13);
     return {h,bits,txt:bits+' bit',sub:x<.03?'sin reducción':'÷'+h.toFixed(h<10?1:0)+' muestras'};
   }
-  const k=Math.min(4,Math.floor(x*5)),d=FX_DIV[k],g=1-y*.75;
-  return {k,L:Math.round(ctx.sampleRate*fxBeatLen()*d[1]),g,txt:d[0],sub:'gate '+Math.round(g*100)+'%'};
+  const k=Math.min(4,Math.floor(x*5)),d=FX_DIV[k],g=1-y*.75,tp=fxTempo();
+  return {k,L:Math.round(ctx.sampleRate*(60/tp.bpm)*d[1]),g,txt:d[0],sub:'gate '+Math.round(g*100)+'%',sub2:Math.round(tp.bpm*10)/10+' BPM · '+tp.src};
 }
 const fxHz=f=>f>=1000?(f/1000).toFixed(f>=10000?0:1)+' kHz':Math.round(f)+' Hz';
 const fxSet=(p,v,t,tc)=>{if(p.setTargetAtTime)p.setTargetAtTime(v,t,tc);else p.value=v};
@@ -572,8 +609,8 @@ function fxDraw(){
     const gr=g.createRadialGradient(px,py,0,px,py,34*dpr);gr.addColorStop(0,c);gr.addColorStop(1,'rgba(0,0,0,0)');
     g.fillStyle=gr;g.globalAlpha=.55;g.beginPath();g.arc(px,py,34*dpr,0,7);g.fill();g.globalAlpha=1;
     g.fillStyle='#fff';g.beginPath();g.arc(px,py,6*dpr,0,7);g.fill();
-    g.textAlign='center';g.fillStyle='#fff';g.font='700 '+15*dpr+'px Barlow Condensed,sans-serif';g.fillText(v.txt,w/2,h-22*dpr);
-    g.font='600 '+11*dpr+'px Barlow,sans-serif';g.fillStyle='rgba(255,255,255,.7)';g.fillText(v.sub,w/2,h-8*dpr);
+    g.textAlign='center';g.fillStyle='#fff';g.font='700 '+15*dpr+'px Barlow Condensed,sans-serif';g.fillText(v.txt,w/2,h-(v.sub2?44:22)*dpr);
+    g.font='600 '+11*dpr+'px Barlow,sans-serif';g.fillStyle='rgba(255,255,255,.7)';g.fillText(v.sub,w/2,h-(v.sub2?20:8)*dpr);if(v.sub2){g.font='600 '+10*dpr+'px Barlow,sans-serif';g.fillStyle='rgba(255,255,255,.55)';g.fillText(v.sub2,w/2,h-7*dpr)}
   }else{
     g.textAlign='center';g.fillStyle='rgba(255,255,255,.28)';g.font='600 11px Barlow,sans-serif';g.font='600 '+11*dpr+'px Barlow,sans-serif';
     g.fillText('mantén y mueve',w/2,h/2);
@@ -773,7 +810,7 @@ function play(i,when){
   stop(i,false,at);
   const s=ctx.createBufferSource(),g=ctx.createGain();
   s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol;
-  p.flt=chain(ctx,s,p,g,master);if(rsMode&&rsSel.has(i))g.connect(rsBus);s.start(at);p.src=s;p.gn=g;
+  p.flt=chain(ctx,s,p,g,master);if(rsMode&&rsSel.has(i))g.connect(rsBus);s.start(at);p.src=s;p.gn=g;p.lt=at||ctx.currentTime;
   s.onended=()=>{if(p.src===s){p.src=null;p.flt=null;padEl(i).classList.remove('on')}};
   const dt=at-ctx.currentTime;
   if(dt>.01)setTimeout(()=>{if(p.src===s)padEl(i).classList.add('on')},dt*1000);else padEl(i).classList.add('on');
@@ -1724,7 +1761,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='V14';
+const APP_VERSION='V15';
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
   let p=persisted,usage=null;
