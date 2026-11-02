@@ -1,12 +1,12 @@
-/* SampledHeadApp V13: funciona sin conexión.
+/* SampledHeadApp V14: funciona sin conexión.
    - Archivos de la app: primero la red (así siempre ves la última versión) y, si no hay conexión, la copia guardada.
    - Tipografías de Google: se guardan la primera vez y después salen de la copia.
    Los kits NO pasan por aquí: están en la base de datos local del navegador (IndexedDB). */
-const VERSION = 'sampledhead-v13';
+const VERSION = 'sampledhead-v14';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -22,7 +22,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin === location.origin) {
     e.respondWith(
-      fetch(req).then(res => {
+      fetch(req.url, { cache: 'reload' }).then(res => {   // salta la caché HTTP (GitHub Pages guarda 10 min)
         if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
         return res;
       }).catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || (req.mode === 'navigate' ? caches.match('index.html') : Response.error())))

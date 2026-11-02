@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp V13</title>
+<title>SampledHeadApp V14</title>
 <meta name="theme-color" content="#101216">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -94,13 +94,13 @@ button:disabled{cursor:default}
 .lpbtns button.on{background:var(--ink);color:#101216}
 .lpbtns button.live{background:#e0533d;color:#fff;animation:blink 1s steps(2) infinite}
 @media (max-width:600px){.unit:not(.loop){--chrome:530px}}
-.fxcol{flex:none;width:104px;align-self:stretch;display:flex;flex-direction:column;gap:6px;min-height:150px}
+.fxcol{flex:1 1 84px;min-width:84px;max-width:150px;align-self:stretch;display:flex;flex-direction:column;gap:6px;min-height:150px}
 .fxpad{position:relative;flex:1;min-height:110px;border-radius:12px;background:#0b0d10;touch-action:none;overflow:hidden;cursor:crosshair;user-select:none;-webkit-user-select:none}
 .fxpad canvas{position:absolute;inset:0;width:100%;height:100%;min-height:0;flex:none}
 .fxbtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 .fxbtns button{padding:9px 0;font-size:11px;letter-spacing:.02em}
 .fxbtns button:disabled{opacity:.35}
-.unit:not(.loop) .padcol{width:min(calc(100% - 114px),calc(100vh - var(--chrome)));width:min(calc(100% - 114px),calc(100dvh - var(--chrome)))}
+.unit:not(.loop) .padcol{width:min(calc(100% - 94px),calc(100vh - var(--chrome)));width:min(calc(100% - 94px),calc(100dvh - var(--chrome)))}   /* solo se reducen los pads si no queda hueco para el pad de FX */
 .unit.loop .fxcol{display:none}
 .unit.loop{--chrome:370px}
 .unit.loop .lcd,.unit.loop .ctl,.unit.loop .chips,.unit.loop .tuner{display:none}
@@ -397,7 +397,7 @@ button:disabled{opacity:.4}
 </details>
 <details><summary>17. Instalar la app y proteger tus kits</summary>
 <p>SampledHead se puede instalar como una app en tu móvil u ordenador. Así se abre a pantalla completa, con su propio icono, y también funciona sin conexión (salvo cargar audio desde un enlace).</p>
-<ul><li><b>Android y Chrome</b>: en <b>Más → Aplicación</b> pulsa <b>Instalar app</b> cuando aparezca, o usa el menú del navegador (Instalar app).</li><li><b>iPhone y iPad</b> (Safari): pulsa Compartir y elige <b>Añadir a pantalla de inicio</b>.</li><li>Si hay una versión nueva, la app la carga sola la próxima vez que la abras con conexión.</li></ul>
+<ul><li><b>Android y Chrome</b>: en <b>Más → Aplicación</b> pulsa <b>Instalar app</b> cuando aparezca, o usa el menú del navegador (Instalar app).</li><li><b>iPhone y iPad</b> (Safari): pulsa Compartir y elige <b>Añadir a pantalla de inicio</b>.</li><li>Si hay una versión nueva, la app la carga sola la próxima vez que la abras con conexión. Si no ves los cambios, cierra la app del todo y ábrela de nuevo. La versión que estás usando aparece en <b>Más → Aplicación</b>.</li></ul>
 <p><b>Dónde se guardan tus kits</b></p>
 <ul><li>Los kits se guardan en tu propio navegador, en este dispositivo. No se suben a ningún servidor y nadie más los ve.</li><li>No pasan solos de un dispositivo a otro, ni de un navegador a otro. Para moverlos usa <b>Exportar kit (.zip)</b> e <b>Importar kit</b>.</li><li>Si borras los datos del sitio en el navegador, se pierden. Algunos navegadores, como Safari, también pueden borrar los datos de webs que no se usan durante semanas.</li><li>Al guardar un kit, la app pide al navegador que proteja el almacenamiento. En <b>Más → Aplicación</b> puedes ver si está protegido y cuánto espacio usan tus kits. Instalar la app ayuda a que el navegador lo conceda.</li><li>Los kits dependen de la dirección web donde abres la app: si la abres desde otra dirección, o como archivo en tu ordenador, verás una lista de kits distinta.</li></ul>
 <p class="tip">Haz una copia de los kits importantes con <b>Exportar kit (.zip)</b> y guárdala fuera del navegador. Es la única copia que no depende del navegador.</p>
@@ -1724,6 +1724,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
+const APP_VERSION='V14';
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
   let p=persisted,usage=null;
@@ -1732,7 +1733,7 @@ async function pwaInfo(){
     if(navigator.storage&&navigator.storage.estimate){const e=await navigator.storage.estimate();usage=e.usage}
   }catch{}
   const mb=usage==null?'':' · usado: '+(usage/1048576<10?(usage/1048576).toFixed(1):Math.round(usage/1048576))+' MB';
-  const lines=[];
+  const lines=['Versión '+APP_VERSION+'.'];
   if(isStandalone())lines.push('App instalada.');
   else if(isIOS())lines.push('Para instalarla en iPhone o iPad: Compartir → Añadir a pantalla de inicio.');
   else if(!pwaPrompt)lines.push('Si tu navegador lo permite, instálala desde su menú (Instalar app / Añadir a pantalla de inicio).');
@@ -1743,6 +1744,8 @@ async function pwaInfo(){
 }
 if(typeof navigator!=='undefined'&&'serviceWorker' in navigator&&typeof location!=='undefined'&&/^https?:$/.test(location.protocol)){
   addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+  const hadSW=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW)status('Hay una versión nueva: cierra la app y ábrela de nuevo')});
 }
 
 const tuneLayout=()=>{const e=$('#tuner'),a=e.getBoundingClientRect(),g=grid.getBoundingClientRect();e.classList.toggle('row',a.top>=g.bottom-2)};   // debajo de los pads: formato compacto en una fila
