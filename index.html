@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp V12</title>
+<title>SampledHeadApp V13</title>
 <meta name="theme-color" content="#101216">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -94,6 +94,14 @@ button:disabled{cursor:default}
 .lpbtns button.on{background:var(--ink);color:#101216}
 .lpbtns button.live{background:#e0533d;color:#fff;animation:blink 1s steps(2) infinite}
 @media (max-width:600px){.unit:not(.loop){--chrome:530px}}
+.fxcol{flex:none;width:104px;align-self:stretch;display:flex;flex-direction:column;gap:6px;min-height:150px}
+.fxpad{position:relative;flex:1;min-height:110px;border-radius:12px;background:#0b0d10;touch-action:none;overflow:hidden;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.fxpad canvas{position:absolute;inset:0;width:100%;height:100%;min-height:0;flex:none}
+.fxbtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.fxbtns button{padding:9px 0;font-size:11px;letter-spacing:.02em}
+.fxbtns button:disabled{opacity:.35}
+.unit:not(.loop) .padcol{width:min(calc(100% - 114px),calc(100vh - var(--chrome)));width:min(calc(100% - 114px),calc(100dvh - var(--chrome)))}
+.unit.loop .fxcol{display:none}
 .unit.loop{--chrome:370px}
 .unit.loop .lcd,.unit.loop .ctl,.unit.loop .chips,.unit.loop .tuner{display:none}
 .unit.loop .lpbar{display:flex}
@@ -231,6 +239,12 @@ button:disabled{opacity:.4}
       </div>
       <div class="grid" id="grid"></div>
     </div>
+    <div class="fxcol" id="fxcol">
+      <div class="fxpad" id="fxpad" role="application" aria-label="Pad de efectos del máster. Mantén pulsado y mueve el dedo."><canvas id="fxcv"></canvas></div>
+      <div class="fxbtns" role="group" aria-label="Efecto del máster">
+        <button id="fxf" class="on" aria-pressed="true" title="Filtro: izquierda paso bajo, derecha paso alto, arriba resonancia">FIL</button><button id="fxb" aria-pressed="false" title="Reducción de bits y de frecuencia de muestreo">BIT</button><button id="fxr" aria-pressed="false" title="Beat repeat: repite el último fragmento">REP</button>
+      </div>
+    </div>
     <aside class="tuner off" id="tuner" role="group" aria-label="Afinador: nota del sonido del pad seleccionado">
       <div class="tl">Afinador</div>
       <div class="tn" id="tnote" role="status">—</div>
@@ -289,7 +303,7 @@ button:disabled{opacity:.4}
 <p class="tip">Abre la app desde su dirección web, o el archivo <b>index.html</b> directamente en Chrome o Firefox, no desde la vista previa de Claude. Si no, el micrófono, el selector de archivos y las descargas pueden estar bloqueados.</p>
 </details>
 <details><summary>2. La pantalla de un vistazo</summary>
-<table><thead><tr><th>Zona</th><th>Qué hace</th></tr></thead><tbody><tr><td>Pestañas</td><td>Bajo la barra superior: <b>Sampler</b> (la pantalla principal) y <b>Looper</b> (los 16 pads de un banco y un looper sencillo).</td></tr><tr><td>Barra superior</td><td>Nombre de la app y <b>?</b> (esta guía), <b>Grabar</b> (micrófono), <b>Importar</b> (archivo de audio) y <b>Más</b> (enlace, kits, exportaciones y ajustes).</td></tr><tr><td>Pantalla de onda</td><td>Muestra el audio del pad seleccionado, o el audio cargado si el pad está vacío. Arriba aparecen el nombre del pad y los mensajes de estado. Aquí marcas la región.</td></tr><tr><td>Barra de zoom</td><td><b>−</b>, <b>+</b>, <b>Todo</b> y <b>Región</b>. En audios estéreo aparecen también <b>L</b> y <b>R</b>.</td></tr><tr><td>Vol y Tono</td><td>Volumen (0 a 150 %) y tono (−36 a +36 semitonos) del pad seleccionado. Doble clic (o doble toque) en un fader lo devuelve al valor inicial: 100 % y 0.</td></tr><tr><td>Botones de edición</td><td><b>Reverse</b>, <b>Loop</b>, <b>One shot / Gate</b>, <b>Grupo 1</b>, <b>Grupo 2</b>, <b>WAV</b>, <b>Vaciar</b>, <b>FX</b>, <b>16 Levels</b> y <b>Duplicar</b>.</td></tr><tr><td>Bancos y pads</td><td>Botones <b>A B C D</b> y los 16 pads del banco actual.</td></tr><tr><td>Afinador y Resample</td><td>Junto a los pads (o debajo, en pantallas estrechas). El afinador indica la nota del pad seleccionado y su botón <b>Afinar</b> la corrige. Debajo está el botón <b>Resample</b>, con sus botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b>, siempre visibles. Abajo del todo están los botones pequeños <b>↶</b> (deshacer) y <b>↷</b> (rehacer).</td></tr></tbody></table>
+<table><thead><tr><th>Zona</th><th>Qué hace</th></tr></thead><tbody><tr><td>Pestañas</td><td>Bajo la barra superior: <b>Sampler</b> (la pantalla principal) y <b>Looper</b> (los 16 pads de un banco y un looper sencillo).</td></tr><tr><td>Barra superior</td><td>Nombre de la app y <b>?</b> (esta guía), <b>Grabar</b> (micrófono), <b>Importar</b> (archivo de audio) y <b>Más</b> (enlace, kits, exportaciones y ajustes).</td></tr><tr><td>Pantalla de onda</td><td>Muestra el audio del pad seleccionado, o el audio cargado si el pad está vacío. Arriba aparecen el nombre del pad y los mensajes de estado. Aquí marcas la región.</td></tr><tr><td>Barra de zoom</td><td><b>−</b>, <b>+</b>, <b>Todo</b> y <b>Región</b>. En audios estéreo aparecen también <b>L</b> y <b>R</b>.</td></tr><tr><td>Vol y Tono</td><td>Volumen (0 a 150 %) y tono (−36 a +36 semitonos) del pad seleccionado. Doble clic (o doble toque) en un fader lo devuelve al valor inicial: 100 % y 0.</td></tr><tr><td>Botones de edición</td><td><b>Reverse</b>, <b>Loop</b>, <b>One shot / Gate</b>, <b>Grupo 1</b>, <b>Grupo 2</b>, <b>WAV</b>, <b>Vaciar</b>, <b>FX</b>, <b>16 Levels</b> y <b>Duplicar</b>.</td></tr><tr><td>Bancos y pads</td><td>Botones <b>A B C D</b> y los 16 pads del banco actual.</td></tr><tr><td>FX del máster</td><td>El cuadrado a la izquierda de los pads, con tres botones debajo: <b>FIL</b>, <b>BIT</b> y <b>REP</b>. Aplica un efecto a todo lo que suena mientras lo mantienes pulsado.</td></tr><tr><td>Afinador y Resample</td><td>Junto a los pads (o debajo, en pantallas estrechas). El afinador indica la nota del pad seleccionado y su botón <b>Afinar</b> la corrige. Debajo está el botón <b>Resample</b>, con sus botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b>, siempre visibles. Abajo del todo están los botones pequeños <b>↶</b> (deshacer) y <b>↷</b> (rehacer).</td></tr></tbody></table>
 </details>
 <details><summary>3. Cargar sonidos</summary>
 <ul><li><b>Importar</b>: elige un archivo de audio (WAV, MP3 y los demás formatos que lea tu navegador).</li><li><b>Grabar</b>: usa el micrófono. El navegador pedirá permiso la primera vez. Pulsa de nuevo (<b>Detener</b>) para terminar.</li><li><b>Más → Cargar desde enlace directo</b>: pega la dirección de un archivo .mp3 o .wav. Solo funciona si el servidor de esa web permite que otra página lo lea.</li><li>En ordenador también puedes <b>arrastrar un archivo sobre un pad</b>.</li></ul>
@@ -344,21 +358,28 @@ button:disabled{opacity:.4}
 <p><b>Aplicar al grupo</b> copia el lo-fi (con su calidad), el corte y la resonancia del pad seleccionado a todos los pads de su mismo grupo, de cualquier banco. El botón muestra el grupo y cuántos pads lo forman, y está desactivado si el pad no tiene grupo (ver Grupos). No pide confirmación, y se puede deshacer. <b>Aplicar a todos los pads</b> hace lo mismo con los 64 pads del kit y pide confirmación antes de sobrescribir. Después puedes seguir ajustando cada pad por separado.</p>
 <p class="tip">Es una emulación aproximada. Se conocen la resolución y la frecuencia de muestreo de cada máquina, pero no su circuito interno, así que los filtros de entrada y salida (salvo el del SP-1200) son una simplificación. Los efectos se incluyen al exportar a WAV, Koala y Ableton, y en el resample.</p>
 </details>
-<details><summary>12. Resample</summary>
+<details><summary>12. FX del máster (pad XY)</summary>
+<p>A la izquierda de los pads hay un pad táctil, como los de un Kaoss Pad, con tres botones debajo que eligen el efecto: <b>FIL</b> (filtro), <b>BIT</b> (reducción de bits) y <b>REP</b> (Beat repeat). El efecto se aplica a todo lo que suena (los pads, el bucle del Looper…) y funciona mientras mantienes el dedo sobre el pad: al soltar, el sonido vuelve a la normalidad.</p>
+<ol><li>Elige el efecto con <b>FIL</b>, <b>BIT</b> o <b>REP</b>. Solo se puede cambiar de efecto mientras no estás tocando el pad.</li><li>Mantén el dedo sobre el cuadrado y muévelo. Mientras lo mueves, el pad muestra el valor del efecto.</li><li>Suelta para volver al sonido normal. Puedes seguir tocando los pads con la otra mano.</li></ol>
+<table><thead><tr><th>Efecto</th><th>Eje horizontal (izquierda → derecha)</th><th>Eje vertical (abajo → arriba)</th></tr></thead><tbody><tr><td>FIL · Filtro</td><td>A la izquierda, paso bajo (de 120 Hz hasta abierto); en el centro, sin filtro; a la derecha, paso alto (hasta unos 7 kHz).</td><td>Resonancia: cuanto más arriba, más resonancia.</td></tr><tr><td>BIT · Reducción de bits</td><td>Reducción de la frecuencia de muestreo: a la izquierda no reduce y a la derecha repite cada muestra hasta unas 48 veces.</td><td>Profundidad de bits: de 16 bits abajo a 3 bits arriba.</td></tr><tr><td>REP · Beat repeat</td><td>Tamaño del fragmento que se repite, en cinco pasos: 1/2, 1/4, 1/8, 1/16 y 1/32 de tiempo.</td><td>Recorte (gate): abajo cada repetición suena entera y arriba solo suena una cuarta parte.</td></tr></tbody></table>
+<ul><li><b>Beat repeat</b> captura lo último que sonó, con el tamaño elegido, y lo repite sin parar mientras mantienes el dedo. Moverte en horizontal cambia el tamaño y vuelve a capturar lo más reciente.</li><li>El tiempo del Beat repeat sale del tempo detectado en el Looper (con el ajuste ÷2 / ×2 aplicado). Si no hay bucle con tempo, usa 120 BPM.</li><li>El efecto se oye por la salida, pero <b>no entra en el Resample</b> ni en las exportaciones: se aplica solo al sonido en directo.</li><li>El pad de FX solo está en la pestaña Sampler. Al pasar a Looper, el efecto se suelta.</li><li>Si tu navegador no admite AudioWorklet, el botón REP se desactiva y BIT solo reduce la profundidad de bits.</li></ul>
+<p class="tip">Prueba el filtro con un bucle sonando: deja un pad en Loop y mueve el dedo de izquierda a derecha para hacer un barrido. Para tartamudeos rítmicos, usa REP en el centro con un bucle del Looper.</p>
+</details>
+<details><summary>13. Resample</summary>
 <p>Graba en un pad lo que suena mientras tocas, pero solo de los pads que elijas antes. El botón <b>Resample</b> está debajo del afinador.</p>
 <ol><li>Pulsa <b>Resample</b>. Los botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b> están siempre a la vista, en gris mientras no se usan, y al pulsar Resample se activan. Los pads se marcan con un borde discontinuo rojo.</li><li>Toca los pads que quieres grabar. Cada toque elige o desmarca el pad, sin que suene. Los elegidos se ven en rojo con la marca REC. <b>Todos</b> elige todos los pads con sample y <b>Ninguno</b> borra la elección. Puedes cambiar de banco para elegir más pads.</li><li>Pulsa <b>Rec</b>. Empieza la grabación y los pads vuelven a sonar al tocarlos.</li><li>Toca tu secuencia. Solo se graba lo que suena en los pads elegidos.</li><li>Pulsa <b>Stop</b>. El resultado se guarda en el pad seleccionado si está vacío, o en el siguiente pad vacío.</li></ol>
 <p>Después de grabar sigues en modo resample con la misma elección, así puedes hacer otra toma. Pulsa <b>Stop</b> otra vez (o <b>Resample</b>) para salir.</p>
 <p class="tip">Usa un pad como referencia: ponlo en Loop, tócalo y déjalo sonando sin elegirlo. Se oye mientras grabas, pero no entra en el sample. Puedes arrancarlo antes de pulsar Resample o durante la grabación.</p>
 <ul><li>Los pads elegidos que ya estaban sonando al pulsar Rec también se graban desde ese momento.</li><li>Durante la grabación la elección no se puede cambiar. Para cambiarla, para y vuelve a elegir.</li><li>Graba en mono lo que oyes de los pads elegidos, con volumen, tono y efectos ya aplicados. No graba el micrófono.</li><li>Recorta el silencio del principio y del final, así que el sample empieza en el primer golpe.</li><li>La grabación dura como máximo 3 minutos y se detiene sola.</li><li>Mientras el resample está activo, Duplicar no está disponible.</li><li>El pad nuevo queda con los ajustes de fábrica, para no aplicar los efectos dos veces.</li></ul>
 </details>
-<details><summary>13. 16 Levels</summary>
+<details><summary>14. 16 Levels</summary>
 <p>Como el 16 Levels de la MPC, pero solo con el tono. Copia el pad seleccionado en los 16 pads del siguiente banco libre, y cada pad suena a una nota distinta de la escala que elijas. Así puedes tocar el sample como un teclado.</p>
 <ol><li>Selecciona un pad con sample. Si quieres que la escala empiece más grave o más aguda, cambia antes su <b>Tono</b>.</li><li>Pulsa <b>16 Levels</b> y elige una escala.</li><li>Pulsa <b>Crear en el banco X</b>. La app cambia a ese banco, con el pad 1 seleccionado.</li></ol>
 <table><thead><tr><th>Escala</th><th>Intervalos (semitonos)</th></tr></thead><tbody><tr><td>Pent. mayor</td><td>0 2 4 7 9</td></tr><tr><td>Pent. menor</td><td>0 3 5 7 10</td></tr><tr><td>Blues</td><td>0 3 5 6 7 10</td></tr><tr><td>Cromática</td><td>0 1 2 3 4 5 6 7 8 9 10 11</td></tr><tr><td>Japonesa (Hirajoshi)</td><td>0 2 3 7 8</td></tr><tr><td>Árabe (doble armónica)</td><td>0 1 4 5 7 8 11</td></tr></tbody></table>
 <ul><li>El pad 1 suena al tono actual del pad de origen y los demás suben por la escala. Al terminar la escala, sigue en la octava siguiente. Las escalas de 5 notas llegan a más de 3 octavas.</li><li>Hace falta un banco entero vacío. Se busca a partir del banco siguiente al actual. Si no hay ninguno libre, el botón avisa y no hace nada.</li><li>Los pads se llaman como el original con el cambio de tono, por ejemplo «kick +7». Comparten el mismo audio, así que apenas ocupan memoria.</li><li>Se copian también la región, el volumen, Reverse, Loop, One shot / Gate y los efectos. Cada pad se puede editar después por separado.</li></ul>
 <p class="tip">El tono es solo el del pad (con lo-fi activo, se hace saltando muestras). Si exportas a Koala o Ableton, cada pad lleva ya su tono aplicado.</p>
 </details>
-<details><summary>14. Looper (segunda pestaña)</summary>
+<details><summary>15. Looper (segunda pestaña)</summary>
 <p>La pestaña <b>Looper</b>, junto a Sampler, muestra solo los 16 pads del banco actual y un looper con cinco botones: <b>Rec</b>, <b>Play</b>, <b>Stop</b>, <b>Deshacer</b> y <b>Loop</b>. Encima de los pads está el detector de tempo y debajo los botones de exportar. Los botones <b>A B C D</b> cambian de banco. Los pads suenan con todo lo que tienen puesto en la pestaña Sampler: tono, afinado, efectos, Reverse, Loop, One shot / Gate y grupos.</p>
 <ol><li>Pulsa <b>Rec</b>. Queda armado (el botón se pone rojo) y todavía no graba.</li><li>Toca un pad con sample. La grabación empieza justo en ese primer toque.</li><li>Toca los pads que quieras. Cada toque se graba con su momento exacto.</li><li>Pulsa <b>Loop</b> para marcar el final del bucle. Su duración queda fija y el bucle empieza solo desde el principio.</li><li>El bucle sigue sonando y <b>Rec</b> sigue activo (overdub): lo que toques se suma encima y empieza a sonar en la siguiente vuelta.</li></ol>
 <table><thead><tr><th>Botón</th><th>Qué hace</th></tr></thead><tbody><tr><td>Rec</td><td>Sin bucle: arma la grabación (otra pulsación la desarma). Con el bucle sonando: activa o desactiva el overdub. Con el bucle parado: lo reproduce con el overdub activo.</td></tr><tr><td>Play</td><td>Reproduce el bucle desde el principio, sin overdub. Durante la primera grabación, la cierra y reproduce.</td></tr><tr><td>Stop</td><td>Para el bucle y silencia sus sonidos. Durante la primera grabación, la cierra y la deja parada. Con Rec armado, lo desarma.</td></tr><tr><td>Deshacer</td><td>Elimina la última capa grabada y el bucle sigue sonando con la versión anterior. Si solo queda la primera capa, vacía el looper. Durante la primera grabación, la cancela.</td></tr><tr><td>Loop</td><td>Durante la primera grabación, marca el final del bucle. Con el bucle sonando o parado, lo reinicia desde el principio.</td></tr></tbody></table>
@@ -369,23 +390,23 @@ button:disabled{opacity:.4}
 <ul><li><b>Exportar a pad</b>: renderiza el bucle completo, con todas sus capas, y lo guarda en un pad libre (el seleccionado si está vacío, o el siguiente vacío). El pad se llama «Loop 120 BPM» y queda con los ajustes de fábrica, para no aplicar los efectos dos veces.</li><li><b>Exportar a WAV</b>: descarga el bucle como WAV mono de 16 bits, con el nombre loop_120bpm.wav.</li><li>El audio dura exactamente lo que dura el bucle, sin recortar silencios, así que encaja al repetirlo. Las colas de los sonidos (reverb, release de Gate) se solapan con el inicio, como al sonar en bucle.</li><li>Se respetan los grupos, los pads en Loop y los efectos. Si el resultado supera 0 dB, se baja el volumen para que no sature.</li><li>Los dos botones están desactivados hasta que hay un bucle grabado.</li></ul>
 <p class="tip">Para componer con varias capas: graba el bucle, expórtalo a un pad y úsalo en el Sampler como cualquier sample, o descárgalo en WAV para llevarlo a tu DAW. Resample sigue sirviendo para grabar el bucle mezclado con otros pads.</p>
 </details>
-<details><summary>15. Kits: guardar, cargar y copias</summary>
+<details><summary>16. Kits: guardar, cargar y copias</summary>
 <p>En <b>Más → Kits</b> gestionas los kits. Un kit incluye los 64 pads con su audio, regiones, canal, ajustes y efectos.</p>
 <ul><li><b>Guardar</b>: pide un nombre y guarda el kit en el navegador de tu dispositivo.</li><li><b>Cargar</b>: carga el kit elegido en la lista. Sustituye el contenido actual de los pads.</li><li><b>Borrar</b>: elimina el kit elegido.</li><li><b>Exportar kit (.zip)</b>: descarga una carpeta comprimida con <b>kit.json</b>, los audios fuente completos (fuente_1.wav…) y un WAV mono por pad (A01_nombre.wav…).</li><li><b>Importar kit</b>: abre un .zip creado con esta app y recupera el kit con todo editable. También acepta un .zip con WAV sueltos, que se reparten por orden alfabético desde el pad A1.</li></ul>
 <p class="tip">Los kits guardados quedan ligados al navegador y al archivo con el que abres la app. Si borras los datos del navegador, se pierden. Haz copias con <b>Exportar kit (.zip)</b>.</p>
 </details>
-<details><summary>16. Instalar la app y proteger tus kits</summary>
+<details><summary>17. Instalar la app y proteger tus kits</summary>
 <p>SampledHead se puede instalar como una app en tu móvil u ordenador. Así se abre a pantalla completa, con su propio icono, y también funciona sin conexión (salvo cargar audio desde un enlace).</p>
 <ul><li><b>Android y Chrome</b>: en <b>Más → Aplicación</b> pulsa <b>Instalar app</b> cuando aparezca, o usa el menú del navegador (Instalar app).</li><li><b>iPhone y iPad</b> (Safari): pulsa Compartir y elige <b>Añadir a pantalla de inicio</b>.</li><li>Si hay una versión nueva, la app la carga sola la próxima vez que la abras con conexión.</li></ul>
 <p><b>Dónde se guardan tus kits</b></p>
 <ul><li>Los kits se guardan en tu propio navegador, en este dispositivo. No se suben a ningún servidor y nadie más los ve.</li><li>No pasan solos de un dispositivo a otro, ni de un navegador a otro. Para moverlos usa <b>Exportar kit (.zip)</b> e <b>Importar kit</b>.</li><li>Si borras los datos del sitio en el navegador, se pierden. Algunos navegadores, como Safari, también pueden borrar los datos de webs que no se usan durante semanas.</li><li>Al guardar un kit, la app pide al navegador que proteja el almacenamiento. En <b>Más → Aplicación</b> puedes ver si está protegido y cuánto espacio usan tus kits. Instalar la app ayuda a que el navegador lo conceda.</li><li>Los kits dependen de la dirección web donde abres la app: si la abres desde otra dirección, o como archivo en tu ordenador, verás una lista de kits distinta.</li></ul>
 <p class="tip">Haz una copia de los kits importantes con <b>Exportar kit (.zip)</b> y guárdala fuera del navegador. Es la única copia que no depende del navegador.</p>
 </details>
-<details><summary>17. Exportar sonidos y kits</summary>
+<details><summary>18. Exportar sonidos y kits</summary>
 <ul><li><b>WAV</b> (botón): descarga la región del pad seleccionado como WAV mono de 16 bits (nombre_region.wav), con volumen, tono, Reverse y efectos aplicados.</li><li><b>Más → Exportar a Koala</b>: genera un archivo .koala con un WAV mono por pad, cada uno con su región y sus ajustes ya aplicados. Loop y el modo One shot / Gate no se exportan. Si el navegador añade .zip al nombre, quítaselo.</li><li><b>Más → Exportar a Ableton</b>: genera un .zip con un Drum Rack (.adg) por banco y los WAV en <b>Samples/Imported</b>. Descomprímelo y arrastra el .adg a Live sin separarlo de la carpeta Samples.</li><li><b>Más → Exportar a MPC Sample</b>: genera un .zip con un proyecto .xpj y su carpeta «nombre_[ProjectData]» con un WAV mono por pad. Descomprímelo y copia el .xpj y la carpeta, juntos y en la misma ubicación, a la memoria del equipo o a la tarjeta SD, y ábrelo como cualquier proyecto. Los pads A1…D16 pasan a los pads 1–64 del programa (bancos A–D). Los pads de Grupo 1 y Grupo 2 quedan en los grupos de silenciado 1 y 2 de la MPC. El proyecto sale con la secuencia vacía. Es una función experimental: no se ha probado todavía en un equipo real.</li><li><b>Más → Exportar a SP-404A</b>: genera un .zip con la carpeta ROLAND/IMPORT, con un WAV mono de 16 bits a 44,1 kHz por pad, numerados por orden (001, 002…), y un archivo LEEME.txt con los pasos y el reparto. Copia la carpeta a la tarjeta SD, mantén SHIFT y pulsa el pad 3 (IMPORT), elige banco A y pad 1 y pulsa REC. El equipo reparte los archivos por orden desde ese pad, de 12 en 12 por banco, así que los pads vacíos del kit no dejan hueco. Los samples de menos de 0,12 s se alargan con silencio, porque el equipo puede rechazar los muy cortos.</li><li><b>Más → Exportar a SP-404MK2</b>: genera un .zip con una carpeta IMPORT que contiene una carpeta con el nombre del kit y, dentro, una por banco (A, B, C, D) con un WAV mono de 16 bits a 48 kHz por pad. Cada archivo lleva el número de su pad (01–16). Copia la carpeta a IMPORT en la tarjeta SD y, en el equipo, usa SHIFT + pad 14 → IMPORT → IMPORT from SD-CARD → SAMPLE, elige el pad de destino y el sample. Con SHIFT + VALUE puedes marcar varios. Los pasos están en el LEEME.txt del zip.</li></ul>
 <p class="tip">En todas las exportaciones el volumen, el tono, Reverse y los efectos van aplicados al audio, así que no quedan editables en Koala, en Live, en la MPC ni en los SP-404. Loop y el modo One shot / Gate tampoco se exportan a la MPC ni a los SP-404: en el SP-404 se ajustan después en el equipo, pad a pad. Los pads de los bancos B, C y D del archivo Koala usan números de pad a partir del 16, una suposición que conviene comprobar con un kit de varios bancos.</p>
 </details>
-<details><summary>18. Problemas frecuentes</summary>
+<details><summary>19. Problemas frecuentes</summary>
 <table><thead><tr><th>Problema</th><th>Qué hacer</th></tr></thead><tbody><tr><td>El micrófono o Importar no funcionan</td><td>Abre la app desde su dirección web (https), o el archivo index.html directamente en Chrome o Firefox, no desde la vista previa de Claude. Acepta el permiso del micrófono cuando el navegador lo pida.</td></tr><tr><td>No se oye nada</td><td>Toca primero la pantalla (los navegadores exigen un gesto antes de reproducir) y comprueba el volumen y el modo silencio del móvil.</td></tr><tr><td>Arrastrar sobre la onda no hace nada</td><td>Comprueba que hay un audio cargado en pantalla. Con un pad ya relleno, arrastrar mueve los marcadores en lugar de crear una región nueva.</td></tr><tr><td>16 Levels no hace nada</td><td>Selecciona un pad que tenga sample y deja un banco completamente vacío. El botón indica cuál de las dos cosas falta.</td></tr><tr><td>Resample no graba nada o graba silencio</td><td>Elige los pads antes de pulsar Rec. Solo se graba lo que suenan los pads elegidos, no los demás. Rec está desactivado hasta que elijas al menos uno.</td></tr><tr><td>Un enlace no carga</td><td>El enlace no es directo o el servidor no lo permite. Descarga el audio e impórtalo.</td></tr><tr><td>Los kits han desaparecido</td><td>Se guardan en el navegador y se pierden si borras sus datos o abres la app desde otro sitio. Usa Exportar kit (.zip) como copia de seguridad.</td></tr><tr><td>La descarga no aparece</td><td>Comprueba el permiso de descargas del navegador y la carpeta Descargas. Con muchos pads, la exportación puede tardar unos segundos.</td></tr></tbody></table>
 </details>
   <button id="guideclose">Cerrar</button>
@@ -428,8 +449,162 @@ button:disabled{opacity:.4}
 <script>
 const $=s=>document.querySelector(s);
 const ctx=new (window.AudioContext||window.webkitAudioContext)();
-const master=ctx.createGain();master.connect(ctx.destination);
+const master=ctx.createGain();   // todo lo que suena pasa por aquí y luego por los FX del máster
 const rsBus=ctx.createGain();      // suma solo los pads elegidos para el resample (no va a la salida)
+/* ---------- FX del máster: pad XY con Filtro, Bit y Beat repeat (como los FX táctiles del Koala) ---------- */
+const FX_WORKLET=`
+class Crush extends AudioWorkletProcessor{
+  constructor(){super();this.h=1;this.q=32768;this.c=[0,0];this.v=[0,0];this.port.onmessage=e=>{this.h=e.data.h;this.q=e.data.q}}
+  process(i,o){
+    const a=i[0],b=o[0];
+    for(let ch=0;ch<b.length;ch++){
+      const x=a[ch]||a[0],y=b[ch];if(!x){y.fill(0);continue}
+      let c=this.c[ch]||0,v=this.v[ch]||0;
+      for(let n=0;n<y.length;n++){if(c<=0){v=Math.round(x[n]*this.q)/this.q;c+=this.h}c-=1;y[n]=v}
+      this.c[ch]=c;this.v[ch]=v;
+    }
+    return true;
+  }
+}
+class Rep extends AudioWorkletProcessor{
+  constructor(){
+    super();this.N=Math.floor(sampleRate*4);this.buf=[new Float32Array(this.N),new Float32Array(this.N)];
+    this.slice=[new Float32Array(this.N),new Float32Array(this.N)];this.w=0;this.on=false;this.L=0;this.p=0;this.g=1;
+    this.port.onmessage=e=>{
+      const d=e.data;if(d.off){this.on=false;return}
+      this.g=d.g;const L=Math.max(64,Math.min(d.L|0,this.N-1));
+      if(!this.on||L!==this.L){
+        this.L=L;
+        for(let c=0;c<2;c++)for(let k=0;k<L;k++)this.slice[c][k]=this.buf[c][(this.w-L+k+this.N)%this.N];
+        this.p=0;
+      }
+      this.on=true;
+    };
+  }
+  process(i,o){
+    const a=i[0],b=o[0],n=b[0].length;
+    for(let k=0;k<n;k++){
+      let env=0;
+      if(this.on){
+        const L=this.L,p=this.p,on=Math.max(64,L*this.g);
+        env=p<on?Math.min(1,p/48,(on-p)/48):0;
+      }
+      for(let c=0;c<b.length;c++){
+        const x=((a[c]||a[0])||[])[k]||0;
+        this.buf[c][this.w]=x;
+        b[c][k]=this.on?this.slice[c][this.p]*env:0;
+      }
+      this.w=(this.w+1)%this.N;
+      if(this.on){this.p++;if(this.p>=this.L)this.p=0}
+    }
+    return true;
+  }
+}
+registerProcessor('sh-crush',Crush);registerProcessor('sh-rep',Rep);
+`;
+const fxMix=ctx.createGain();fxMix.connect(ctx.destination);   // suma de la señal limpia y de los efectos
+const fxDry=ctx.createGain();master.connect(fxDry);fxDry.connect(fxMix);
+const fxLP=ctx.createBiquadFilter(),fxHP=ctx.createBiquadFilter(),fxW=[ctx.createGain(),ctx.createGain(),ctx.createGain()];
+fxLP.type='lowpass';fxHP.type='highpass';fxLP.frequency.value=20000;fxHP.frequency.value=20;
+fxW.forEach(g=>{g.gain.value=0;g.connect(fxMix)});
+master.connect(fxLP);fxLP.connect(fxHP);fxHP.connect(fxW[0]);
+let fxCrush=null,fxRep=null,fxShaper=null;
+const fx={mode:0,down:false,x:.5,y:.5,id:null,ok:{crush:false,rep:false}};
+const FX_NAMES=['Filtro','Bit','Repeat'],FX_COL=['#31d0ff','#ff8a1f','#ff4f9a'];
+const FX_DIV=[['1/2',2],['1/4',1],['1/8',.5],['1/16',.25],['1/32',.125]];
+async function fxInit(){
+  try{
+    if(!ctx.audioWorklet)throw 0;
+    await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([FX_WORKLET],{type:'text/javascript'})));
+    const mk=n=>new AudioWorkletNode(ctx,n,{numberOfInputs:1,numberOfOutputs:1,outputChannelCounts:[2],channelCount:2,channelCountMode:'explicit'});
+    fxCrush=mk('sh-crush');master.connect(fxCrush);fxCrush.connect(fxW[1]);fx.ok.crush=true;
+    fxRep=mk('sh-rep');master.connect(fxRep);fxRep.connect(fxW[2]);fx.ok.rep=true;
+  }catch(e){
+    fxShaper=ctx.createWaveShaper();fxShaper.oversample='none';master.connect(fxShaper);fxShaper.connect(fxW[1]);fx.ok.crush=true;   // sin AudioWorklet solo se reduce la profundidad de bits
+    $('#fxr').disabled=true;$('#fxr').title='Beat repeat no disponible en este navegador';
+  }
+  fxSend();
+}
+function fxBeatLen(){const bpm=(typeof lpBpm==='function'&&lpBpm())||120;return 60/bpm}
+function fxVals(){
+  const {x,y}=fx;
+  if(fx.mode===0){
+    const lp=x<.5?120*Math.pow(20000/120,x*2):20000,hp=x>.5?20*Math.pow(7000/20,(x-.5)*2):20;
+    return {lp,hp,q:.7+y*y*13,txt:(x<.5?'LP '+fxHz(lp):x>.5?'HP '+fxHz(hp):'abierto'),sub:'Q '+(.7+y*y*13).toFixed(1)};
+  }
+  if(fx.mode===1){
+    const h=Math.pow(48,x),bits=Math.round(16-y*13);
+    return {h,bits,txt:bits+' bit',sub:x<.03?'sin reducción':'÷'+h.toFixed(h<10?1:0)+' muestras'};
+  }
+  const k=Math.min(4,Math.floor(x*5)),d=FX_DIV[k],g=1-y*.75;
+  return {k,L:Math.round(ctx.sampleRate*fxBeatLen()*d[1]),g,txt:d[0],sub:'gate '+Math.round(g*100)+'%'};
+}
+const fxHz=f=>f>=1000?(f/1000).toFixed(f>=10000?0:1)+' kHz':Math.round(f)+' Hz';
+const fxSet=(p,v,t,tc)=>{if(p.setTargetAtTime)p.setTargetAtTime(v,t,tc);else p.value=v};
+function fxSend(){
+  const v=fxVals(),t=ctx.currentTime,m=fx.mode;
+  fxSet(fxLP.frequency,m===0&&fx.down?v.lp:20000,t,.012);fxSet(fxHP.frequency,m===0&&fx.down?v.hp:20,t,.012);
+  fxSet(fxLP.Q,m===0&&fx.down?v.q:.7,t,.012);fxSet(fxHP.Q,m===0&&fx.down?v.q*.6:.7,t,.012);
+  if(m===1&&fx.down){
+    if(fxCrush)fxCrush.port.postMessage({h:v.h,q:Math.pow(2,v.bits-1)});
+    else if(fxShaper){const n=Math.pow(2,v.bits-1),c=new Float32Array(8193);for(let i=0;i<c.length;i++){const x=i/4096-1;c[i]=Math.round(x*n)/n}fxShaper.curve=c}
+  }
+  if(fxRep){if(m===2&&fx.down)fxRep.port.postMessage({L:v.L,g:v.g});else fxRep.port.postMessage({off:1})}
+  fxSet(fxDry.gain,fx.down?0:1,t,.01);
+  fxW.forEach((g,i)=>fxSet(g.gain,fx.down&&i===m?1:0,t,.01));
+  fxDraw();
+}
+function fxDraw(){
+  const cv=$('#fxcv');if(!cv||!cv.clientWidth)return;
+  const dpr=window.devicePixelRatio||1,w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr);
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}
+  const g=cv.getContext('2d'),c=FX_COL[fx.mode];g.clearRect(0,0,w,h);
+  g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=1*dpr;
+  const div=fx.mode===2?5:4;
+  for(let i=1;i<div;i++){const x=Math.round(w*i/div)+.5;g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}
+  for(let i=1;i<4;i++){const y=Math.round(h*i/4)+.5;g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}
+  g.font='700 '+11*dpr+'px Barlow Condensed,sans-serif';g.textAlign='left';g.fillStyle='rgba(255,255,255,.55)';
+  g.fillText(FX_NAMES[fx.mode].toUpperCase(),7*dpr,15*dpr);
+  const v=fxVals();
+  if(fx.down){
+    const px=fx.x*w,py=(1-fx.y)*h;
+    g.strokeStyle=c;g.globalAlpha=.55;g.lineWidth=1.5*dpr;g.beginPath();g.moveTo(px,0);g.lineTo(px,h);g.moveTo(0,py);g.lineTo(w,py);g.stroke();g.globalAlpha=1;
+    const gr=g.createRadialGradient(px,py,0,px,py,34*dpr);gr.addColorStop(0,c);gr.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=gr;g.globalAlpha=.55;g.beginPath();g.arc(px,py,34*dpr,0,7);g.fill();g.globalAlpha=1;
+    g.fillStyle='#fff';g.beginPath();g.arc(px,py,6*dpr,0,7);g.fill();
+    g.textAlign='center';g.fillStyle='#fff';g.font='700 '+15*dpr+'px Barlow Condensed,sans-serif';g.fillText(v.txt,w/2,h-22*dpr);
+    g.font='600 '+11*dpr+'px Barlow,sans-serif';g.fillStyle='rgba(255,255,255,.7)';g.fillText(v.sub,w/2,h-8*dpr);
+  }else{
+    g.textAlign='center';g.fillStyle='rgba(255,255,255,.28)';g.font='600 11px Barlow,sans-serif';g.font='600 '+11*dpr+'px Barlow,sans-serif';
+    g.fillText('mantén y mueve',w/2,h/2);
+  }
+}
+function fxPos(e){
+  const r=$('#fxpad').getBoundingClientRect();
+  fx.x=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));fx.y=Math.min(1,Math.max(0,1-(e.clientY-r.top)/r.height));
+}
+function fxRelease(){if(fx.down){fx.down=false;fx.id=null;fxSend()}}
+function fxMode(m){
+  if(fx.down)return;
+  fx.mode=m;['#fxf','#fxb','#fxr'].forEach((s,i)=>{$(s).classList.toggle('on',i===m);$(s).setAttribute('aria-pressed',String(i===m))});fxDraw();
+}
+(function fxWire(){
+  const pad=$('#fxpad');if(!pad)return;
+  pad.addEventListener('pointerdown',e=>{
+    if(fx.down)return;e.preventDefault();
+    try{pad.setPointerCapture(e.pointerId)}catch{}
+    if(ctx.state==='suspended')ctx.resume();
+    fx.down=true;fx.id=e.pointerId;fxPos(e);fxSend();
+  });
+  pad.addEventListener('pointermove',e=>{if(fx.down&&e.pointerId===fx.id){fxPos(e);fxSend()}});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>pad.addEventListener(n,e=>{if(e.pointerId===fx.id)fxRelease()}));
+  pad.addEventListener('contextmenu',e=>e.preventDefault());
+  [['#fxf',0],['#fxb',1],['#fxr',2]].forEach(([s,m])=>$(s).onclick=()=>fxMode(m));
+  addEventListener('resize',fxDraw);
+  if(typeof document.addEventListener==='function')document.addEventListener('visibilitychange',()=>{if(document.hidden)fxRelease()});
+  try{fxInit().catch(()=>{})}catch{}
+  fxDraw();
+})();
 const KEYS='zxcvasdfqwer1234';   // fila inferior = pads 1-4, como en la MPC
 const BANKS='ABCD',pl=i=>BANKS[i>>4]+((i&15)+1),plz=i=>BANKS[i>>4]+String((i&15)+1).padStart(2,'0');
 const hue=i=>((i&15)*47)%360,col=(i,a=1)=>`hsla(${hue(i)},75%,62%,${a})`;
@@ -1835,10 +2010,11 @@ function showTab(loop){
     if(rsMode){status('Termina el resample antes de cambiar de pestaña');return}
     if(dupFrom!==null)dupMode(false);
   }
+  if(loop&&typeof fxRelease==='function')fxRelease();
   $('.unit').classList.toggle('loop',loop);
   $('#tabS').classList.toggle('on',!loop);$('#tabL').classList.toggle('on',loop);
   $('#tabS').setAttribute('aria-selected',String(!loop));$('#tabL').setAttribute('aria-selected',String(loop));
-  if(!loop){draw();tuneLayout()}
+  if(!loop){draw();tuneLayout();fxDraw()}
   else lpUI();
 }
 $('#tabS').onclick=()=>showTab(false);
