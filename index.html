@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.24</title>
+<title>SampledHeadApp 1.25</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -112,11 +112,36 @@ button:disabled{cursor:default}
 .fxpad canvas{position:absolute;inset:0;width:100%;height:100%;min-height:0;flex:none}
 #fxpanel{display:none}
 .unit.fxt #fxpanel{display:flex;flex-direction:column;gap:10px;flex:1 1 auto;min-height:0}
-.unit.fxt .padzone,.unit.fxt .lcd,.unit.fxt .ctl,.unit.fxt .chips,.unit.fxt .lpbar,.unit.fxt .lpexp{display:none}
+.unit.fxt .padzone,.unit.fxt .lcd,.unit.fxt .ctl,.unit.fxt .chips,.unit.fxt .lpbar,.unit.fxt .lpexp,.unit.mix .padzone,.unit.mix .lcd,.unit.mix .ctl,.unit.mix .chips,.unit.mix .lpbar,.unit.mix .lpexp{display:none}
+#mixpanel{display:none}
+.unit.mix #mixpanel{display:flex;flex-direction:column;gap:10px}
+.mxrow{display:flex;gap:6px;justify-content:space-between}
+.mxch{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1 1 0;min-width:0}
+.mxch b{font:600 11px Barlow,sans-serif;font-variant-numeric:tabular-nums;min-height:15px;white-space:nowrap}
+.mxch>span{color:var(--mute);font-size:11px;white-space:nowrap}
+.mxch>button{padding:5px 0;width:100%;font-size:12px}
+.mxch>button.on{background:#e0533d;color:#fff}
+.mxch.mut .mxtr{opacity:.45}
+.mxtr{position:relative;width:46px;background:#101216;border-radius:8px;touch-action:none;cursor:ns-resize}
+.mxtr::before{content:'';position:absolute;left:50%;top:6px;bottom:6px;width:4px;margin-left:-2px;border-radius:2px;background:#2b313b}
+.mxtr u{position:absolute;left:3px;bottom:3px;width:5px;height:0;border-radius:2px;background:#5fd48a;max-height:calc(100% - 6px);text-decoration:none}
+.mxtr u.hot{background:#e0533d}
+.mxtr i{position:absolute;left:50%;width:30px;height:14px;margin-left:-15px;border-radius:4px;background:var(--ink);box-shadow:0 1px 4px #000a}
+.mxtr s{position:absolute;left:0;right:0;height:1px;background:#ffffff40}
+.mxch.master .mxtr u{background:#e8edf4}
+#mxeq .mxtr{width:34px}
+#mxeq .mxtr i{width:26px;margin-left:-13px;height:12px}
+#mxeq .mxch b{font-size:10px}
+canvas#mxeqc{display:block;width:100%;height:110px;flex:none;min-height:0;border-radius:8px;background:#101216}
+.mxgr{height:8px;border-radius:4px;background:#262b34;overflow:hidden}
+.mxgr i{display:block;height:100%;width:0;background:#ffb020}
+#mxcs{display:grid;gap:6px}
+#mxcs .sl span{width:62px}
+#mxcs .sl b{width:64px}
 .fxbox{flex:1 1 0;min-height:130px;display:flex;flex-direction:column;gap:4px}
 .fxt{font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;color:var(--ink)}
 .fxt span{font:500 12px Barlow,sans-serif;letter-spacing:0;color:var(--mute);margin-left:6px}
-.tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
+.tabs{grid-template-columns:repeat(6,minmax(0,1fr))}
 .unit.loop{--chrome:370px}
 .unit.loop .lcd,.unit.loop .ctl,.unit.loop .chips,.unit.loop .tuner{display:none}
 .unit.loop .lpbar{display:flex}
@@ -282,6 +307,7 @@ button:disabled{opacity:.4}
     <button id="tabL" role="tab" aria-selected="false">Looper</button>
     <button id="tabB" role="tab" aria-selected="false">Bajo</button>
     <button id="tabK" role="tab" aria-selected="false">Teclas</button>
+    <button id="tabM" role="tab" aria-selected="false">Mixer</button>
     <button id="tabF" role="tab" aria-selected="false">FX</button>
   </div>
 
@@ -401,6 +427,24 @@ button:disabled{opacity:.4}
       <div class="bgrp c3"><button id="bwav">WAV</button><button id="bkoala">Koala</button><button id="badg">Ableton</button><button id="bmpc">MPC</button><button id="bsp404a">SP-404A</button><button id="bsp404mk2">SP-404MK2</button></div>
     </div>
   </div>
+  <div id="mixpanel">
+    <div class="bsec"><div class="bt">Mixer · volumen de cada parte</div>
+      <div class="mxrow" id="mxch"></div>
+      <div class="note">Arrastra el fader hacia arriba o abajo; doble toque lo devuelve a 0 dB. El mixer afecta a lo que suena en directo (incluido el Looper), no a los kits exportados.</div>
+    </div>
+    <div class="bsec"><div class="bt">Ecualizador de 8 bandas · master</div>
+      <canvas id="mxeqc" aria-label="Respuesta del ecualizador"></canvas>
+      <div class="mxrow" id="mxeq"></div>
+      <div class="bgrp c3" id="mxeqp"></div>
+      <div class="bgrp c2"><button id="mxeqon" aria-label="Activar o desactivar el ecualizador">Ecualizador activado</button><button id="mxreset">Restablecer mixer</button></div>
+    </div>
+    <div class="bsec"><div class="bt">Compresor · master</div>
+      <div class="mxgr" aria-hidden="true"><i id="mxgr"></i></div><div class="note" style="text-align:center">Reducción de ganancia: <span id="mxgrt">desactivado</span></div>
+      <div class="bgrp c4" id="mxcp"></div>
+      <div id="mxcs"></div>
+      <div class="bgrp c2"><button id="mxcon" aria-label="Activar o desactivar el compresor">Compresor activado</button></div>
+    </div>
+  </div>
   <div id="keyspanel">
     <div class="bsec"><div class="bt">Sonido</div>
       <div class="bpre" id="kpre"></div>
@@ -475,7 +519,7 @@ button:disabled{opacity:.4}
 <p class="tip">Abre la app desde su dirección web, o el archivo <b>index.html</b> directamente en Chrome o Firefox, no desde la vista previa de Claude. Si no, el micrófono, el selector de archivos y las descargas pueden estar bloqueados.</p>
 </details>
 <details><summary>2. La pantalla de un vistazo</summary>
-<table><thead><tr><th>Zona</th><th>Qué hace</th></tr></thead><tbody><tr><td>Pestañas</td><td>Bajo la barra superior: <b>Sampler</b> (la pantalla principal), <b>Looper</b> (los 16 pads de un banco y un looper sencillo), <b>Bajo</b> (un sintetizador de bajo con 16 pads), <b>Teclas</b> (un piano eléctrico con pads de acordes) y <b>FX</b> (tres pads de efectos para todo lo que suena).</td></tr><tr><td>Barra superior</td><td>Nombre de la app y <b>?</b> (esta guía), <b>Grabar</b> (micrófono), <b>Importar</b> (archivo de audio) y <b>Más</b> (enlace, kits, exportaciones y ajustes).</td></tr><tr><td>Pantalla de onda</td><td>Muestra el audio del pad seleccionado, o el audio cargado si el pad está vacío. Arriba aparecen el nombre del pad y los mensajes de estado. Aquí marcas la región. Cuando suena el pad seleccionado, una línea de color recorre la región para ver por dónde va la reproducción (también en Loop, Reverse y con cambios de tono).</td></tr><tr><td>Barra de zoom</td><td><b>−</b>, <b>+</b>, <b>Todo</b> y <b>Región</b>. En audios estéreo aparecen también <b>L</b> y <b>R</b>.</td></tr><tr><td>Vol y Tono</td><td>Volumen (0 a 150 %) y tono (−36 a +36 semitonos) del pad seleccionado. Doble clic (o doble toque) en un fader lo devuelve al valor inicial: 100 % y 0.</td></tr><tr><td>Botones de edición</td><td><b>Reverse</b>, <b>Loop</b>, <b>One shot / Gate</b>, <b>Grupo 1</b>, <b>Grupo 2</b>, <b>WAV</b>, <b>Vaciar</b>, <b>FX</b>, <b>16 Levels</b> y <b>Duplicar</b>.</td></tr><tr><td>Auto chop</td><td>Una fila de tres botones debajo de los candados: <b>✂ Chop</b>, <b>Dividir</b> y <b>Asignar</b>. Divide la región del pad en partes iguales y las reparte por los pads del banco.</td></tr><tr><td>Candados de la región</td><td>Debajo de la onda, <b>Ini</b> y <b>Fin</b>: bloquean el marcador de inicio o el de final de la región del pad para que no se muevan sin querer al tocar o arrastrar la onda.</td></tr><tr><td>Bancos y pads</td><td>Botones <b>A B C D</b> y los 16 pads del banco actual.</td></tr><tr><td>Pestaña FX</td><td>Tres pads táctiles, uno para cada efecto del máster: <b>Filtro</b>, <b>BIT</b> y <b>Beat repeat</b>. Aplican el efecto a todo lo que suena (Sampler, Looper, Bajo y Teclas) mientras mantienes el dedo.</td></tr><tr><td>Afinador y Resample</td><td>Junto a los pads (o debajo, en pantallas estrechas). El afinador indica la nota del pad seleccionado y su botón <b>Afinar</b> la corrige. Debajo está el botón <b>Resample</b>, con sus botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b>, siempre visibles. Abajo del todo están los botones pequeños <b>↶</b> (deshacer) y <b>↷</b> (rehacer).</td></tr></tbody></table>
+<table><thead><tr><th>Zona</th><th>Qué hace</th></tr></thead><tbody><tr><td>Pestañas</td><td>Bajo la barra superior: <b>Sampler</b> (la pantalla principal), <b>Looper</b> (los 16 pads de un banco y un looper sencillo), <b>Bajo</b> (un sintetizador de bajo con 16 pads), <b>Teclas</b> (un piano eléctrico con pads de acordes), <b>Mixer</b> (volúmenes, ecualizador y compresor) y <b>FX</b> (tres pads de efectos para todo lo que suena).</td></tr><tr><td>Barra superior</td><td>Nombre de la app y <b>?</b> (esta guía), <b>Grabar</b> (micrófono), <b>Importar</b> (archivo de audio) y <b>Más</b> (enlace, kits, exportaciones y ajustes).</td></tr><tr><td>Pantalla de onda</td><td>Muestra el audio del pad seleccionado, o el audio cargado si el pad está vacío. Arriba aparecen el nombre del pad y los mensajes de estado. Aquí marcas la región. Cuando suena el pad seleccionado, una línea de color recorre la región para ver por dónde va la reproducción (también en Loop, Reverse y con cambios de tono).</td></tr><tr><td>Barra de zoom</td><td><b>−</b>, <b>+</b>, <b>Todo</b> y <b>Región</b>. En audios estéreo aparecen también <b>L</b> y <b>R</b>.</td></tr><tr><td>Vol y Tono</td><td>Volumen (0 a 150 %) y tono (−36 a +36 semitonos) del pad seleccionado. Doble clic (o doble toque) en un fader lo devuelve al valor inicial: 100 % y 0.</td></tr><tr><td>Botones de edición</td><td><b>Reverse</b>, <b>Loop</b>, <b>One shot / Gate</b>, <b>Grupo 1</b>, <b>Grupo 2</b>, <b>WAV</b>, <b>Vaciar</b>, <b>FX</b>, <b>16 Levels</b> y <b>Duplicar</b>.</td></tr><tr><td>Auto chop</td><td>Una fila de tres botones debajo de los candados: <b>✂ Chop</b>, <b>Dividir</b> y <b>Asignar</b>. Divide la región del pad en partes iguales y las reparte por los pads del banco.</td></tr><tr><td>Candados de la región</td><td>Debajo de la onda, <b>Ini</b> y <b>Fin</b>: bloquean el marcador de inicio o el de final de la región del pad para que no se muevan sin querer al tocar o arrastrar la onda.</td></tr><tr><td>Bancos y pads</td><td>Botones <b>A B C D</b> y los 16 pads del banco actual.</td></tr><tr><td>Pestaña FX</td><td>Tres pads táctiles, uno para cada efecto del máster: <b>Filtro</b>, <b>BIT</b> y <b>Beat repeat</b>. Aplican el efecto a todo lo que suena (Sampler, Looper, Bajo y Teclas) mientras mantienes el dedo.</td></tr><tr><td>Afinador y Resample</td><td>Junto a los pads (o debajo, en pantallas estrechas). El afinador indica la nota del pad seleccionado y su botón <b>Afinar</b> la corrige. Debajo está el botón <b>Resample</b>, con sus botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b>, siempre visibles. Abajo del todo están los botones pequeños <b>↶</b> (deshacer) y <b>↷</b> (rehacer).</td></tr></tbody></table>
 </details>
 <details><summary>3. Cargar sonidos</summary>
 <ul><li><b>Importar</b>: elige un archivo de audio (WAV, MP3 y los demás formatos que lea tu navegador).</li><li><b>Grabar</b>: usa el micrófono. El navegador pedirá permiso la primera vez. Pulsa de nuevo (<b>Detener</b>) para terminar.</li><li><b>Más → Cargar desde enlace directo</b>: pega la dirección de un archivo .mp3 o .wav. Solo funciona si el servidor de esa web permite que otra página lo lea.</li><li>En ordenador también puedes <b>arrastrar un archivo sobre un pad</b>.</li></ul>
@@ -590,28 +634,32 @@ button:disabled{opacity:.4}
 <p><b>Kits y exportación</b></p>
 <ul><li><b>Guardar, Cargar y Borrar</b> guardan el sonido, la escala, el acorde y el resto de ajustes en el kit de teclas, aparte de los kits del sampler y del bajo. Al abrir la app se vuelve a cargar el último kit de teclas usado.</li><li>Elige la duración de cada acorde y pulsa <b>WAV</b>, <b>Koala</b>, <b>Ableton</b>, <b>MPC</b>, <b>SP-404A</b> o <b>SP-404MK2</b>. Se exportan los 16 acordes, uno por pad, con el mismo sistema que el bajo.</li><li>Las exportaciones del sampler (<b>Más</b>) no incluyen las teclas y las de las teclas no incluyen los samples.</li></ul>
 </details>
-<details><summary>19. Kits: guardar, cargar y copias</summary>
+<details><summary>19. Mixer (pestaña Mixer)</summary>
+<p>La pestaña <b>Mixer</b> controla el sonido final de toda la app: los volúmenes de cada parte, un ecualizador de 8 bandas y un compresor. Actúa sobre lo que oyes en directo (también el Looper) y va después de los FX del máster: el orden es FX del máster → ecualizador → compresor → volumen master.</p>
+<ul><li><b>Faders</b>: <b>Sampler</b>, <b>Bajo</b>, <b>Teclas</b> y <b>Master</b>. Arrastra hacia arriba o abajo (de −∞ a +6 dB); un doble toque lo devuelve a 0 dB. A su lado hay un medidor de nivel que se pone rojo cerca del máximo. <b>Mute</b> silencia ese canal.</li><li><b>Ecualizador de 8 bandas</b>: 80, 160, 320, 640 Hz, 1,25, 2,5, 5 y 10 kHz, de −12 a +12 dB cada una. Las bandas de los extremos son filtros de plataforma (shelf). La curva verde muestra el resultado. Hay presets: Plano, Graves +, Brillo, Cálido, Scoop y Sin graves. El botón <b>Ecualizador activado</b> lo puentea para comparar.</li><li><b>Compresor</b>: umbral, ratio, ataque, relajación, knee y ganancia de compensación. Presets: Suave, Glue, Fuerte y Limitador. La barra naranja indica cuántos dB está bajando el nivel. Si tocas un mando, el compresor se activa; el botón <b>Compresor activado</b> lo apaga y enciende.</li><li><b>Restablecer mixer</b> devuelve todo a su valor inicial.</li><li>Los ajustes del mixer se guardan en el navegador y se recuperan al abrir la app, pero no se guardan con los kits.</li><li>El mixer no cambia los kits exportados (WAV, Koala, Ableton, MPC, SP-404), ni los bucles que exportas del Looper, ni el Resample: solo lo que suena por los altavoces.</li><li>Con el compresor muy fuerte o mucha ganancia, el sonido puede saturar. Vigila el medidor Master.</li></ul>
+</details>
+<details><summary>20. Kits: guardar, cargar y copias</summary>
 <p>En <b>Más → Kits</b> gestionas los kits. Un kit incluye los 64 pads con su audio, regiones, canal, ajustes y efectos.</p>
 <ul><li><b>Guardar</b>: pide un nombre y guarda el kit en el navegador de tu dispositivo.</li><li><b>Cargar</b>: carga el kit elegido en la lista. Sustituye el contenido actual de los pads.</li><li><b>Borrar</b>: elimina el kit elegido.</li><li><b>Al abrir la app</b> se carga solo el último kit que guardaste o cargaste, en vez de empezar en blanco. Lo mismo pasa con el último kit de bajo. Ojo: solo se recuerda lo que está guardado; los cambios sin guardar se pierden al cerrar. Si borras ese kit, la app vuelve a empezar en blanco.</li><li><b>Exportar kit (.zip)</b>: descarga una carpeta comprimida con <b>kit.json</b>, los audios fuente completos (fuente_1.wav…) y un WAV mono por pad (A01_nombre.wav…).</li><li><b>Importar kit</b>: abre un .zip creado con esta app y recupera el kit con todo editable. También acepta un .zip con WAV sueltos, que se reparten por orden alfabético desde el pad A1.</li></ul>
 <p class="tip">Los kits guardados quedan ligados al navegador y al archivo con el que abres la app. Si borras los datos del navegador, se pierden. Haz copias con <b>Exportar kit (.zip)</b>.</p>
 </details>
-<details><summary>20. Instalar la app y proteger tus kits</summary>
+<details><summary>21. Instalar la app y proteger tus kits</summary>
 <p>SampledHead se puede instalar como una app en tu móvil u ordenador. Así se abre a pantalla completa, con su propio icono, y también funciona sin conexión (salvo cargar audio desde un enlace).</p>
 <ul><li><b>Android y Chrome</b>: en <b>Más → Aplicación</b> pulsa <b>Instalar app</b> cuando aparezca, o usa el menú del navegador (Instalar app).</li><li><b>iPhone y iPad</b> (Safari): pulsa Compartir y elige <b>Añadir a pantalla de inicio</b>.</li><li>Si hay una versión nueva, la app la carga sola la próxima vez que la abras con conexión. Si no ves los cambios, cierra la app del todo y ábrela de nuevo. La versión que estás usando aparece en <b>Más → Aplicación</b>.</li></ul>
 <p><b>Dónde se guardan tus kits</b></p>
 <ul><li>Los kits se guardan en tu propio navegador, en este dispositivo. No se suben a ningún servidor y nadie más los ve.</li><li>No pasan solos de un dispositivo a otro, ni de un navegador a otro. Para moverlos usa <b>Exportar kit (.zip)</b> e <b>Importar kit</b>.</li><li>Si borras los datos del sitio en el navegador, se pierden. Algunos navegadores, como Safari, también pueden borrar los datos de webs que no se usan durante semanas.</li><li>Al guardar un kit, la app pide al navegador que proteja el almacenamiento. En <b>Más → Aplicación</b> puedes ver si está protegido y cuánto espacio usan tus kits. Instalar la app ayuda a que el navegador lo conceda.</li><li>Los kits dependen de la dirección web donde abres la app: si la abres desde otra dirección, o como archivo en tu ordenador, verás una lista de kits distinta.</li></ul>
 <p class="tip">Haz una copia de los kits importantes con <b>Exportar kit (.zip)</b> y guárdala fuera del navegador. Es la única copia que no depende del navegador.</p>
 </details>
-<details><summary>21. Exportar sonidos y kits</summary>
+<details><summary>22. Exportar sonidos y kits</summary>
 <ul><li><b>WAV</b> (botón): descarga la región del pad seleccionado como WAV mono de 16 bits (nombre_region.wav), con volumen, tono, Reverse y efectos aplicados.</li><li><b>Más → Exportar a Koala</b>: genera un archivo .koala con un WAV mono por pad, cada uno con su región y sus ajustes ya aplicados. Loop y el modo One shot / Gate no se exportan. Si el navegador añade .zip al nombre, quítaselo.</li><li><b>Más → Exportar a Ableton</b>: genera un .zip con un Drum Rack (.adg) por banco y los WAV en <b>Samples/Imported</b>. Descomprímelo y arrastra el .adg a Live sin separarlo de la carpeta Samples.</li><li><b>Más → Exportar a MPC Sample</b>: genera un .zip con un proyecto .xpj y su carpeta «nombre_[ProjectData]» con un WAV mono por pad. Descomprímelo y copia el .xpj y la carpeta, juntos y en la misma ubicación, a la memoria del equipo o a la tarjeta SD, y ábrelo como cualquier proyecto. Los pads A1…D16 pasan a los pads 1–64 del programa (bancos A–D). Los pads de Grupo 1 y Grupo 2 quedan en los grupos de silenciado 1 y 2 de la MPC. El proyecto sale con la secuencia vacía. Es una función experimental: no se ha probado todavía en un equipo real.</li><li><b>Más → Exportar a SP-404A</b>: genera un .zip con la carpeta ROLAND/IMPORT, con un WAV mono de 16 bits a 44,1 kHz por pad, numerados por orden (001, 002…), y un archivo LEEME.txt con los pasos y el reparto. Copia la carpeta a la tarjeta SD, mantén SHIFT y pulsa el pad 3 (IMPORT), elige banco A y pad 1 y pulsa REC. El equipo reparte los archivos por orden desde ese pad, de 12 en 12 por banco, así que los pads vacíos del kit no dejan hueco. Los samples de menos de 0,12 s se alargan con silencio, porque el equipo puede rechazar los muy cortos.</li><li><b>Más → Exportar a SP-404MK2</b>: genera un .zip con una carpeta IMPORT que contiene una carpeta con el nombre del kit y, dentro, una por banco (A, B, C, D) con un WAV mono de 16 bits a 48 kHz por pad. Cada archivo lleva el número de su pad (01–16). Copia la carpeta a IMPORT en la tarjeta SD y, en el equipo, usa SHIFT + pad 14 → IMPORT → IMPORT from SD-CARD → SAMPLE, elige el pad de destino y el sample. Con SHIFT + VALUE puedes marcar varios. Los pasos están en el LEEME.txt del zip.</li></ul>
 <p>El Looper también exporta el bucle con el bajo incluido. Desde la pestaña <b>Bajo</b> hay seis botones de exportación más (ver la sección del Bajo).</p>
 <p class="tip">En todas las exportaciones el volumen, el tono, Reverse y los efectos van aplicados al audio, así que no quedan editables en Koala, en Live, en la MPC ni en los SP-404. Loop y el modo One shot / Gate tampoco se exportan a la MPC ni a los SP-404: en el SP-404 se ajustan después en el equipo, pad a pad. Los pads de los bancos B, C y D del archivo Koala usan números de pad a partir del 16, una suposición que conviene comprobar con un kit de varios bancos.</p>
 </details>
-<details><summary>22. Problemas frecuentes</summary>
+<details><summary>23. Problemas frecuentes</summary>
 <table><thead><tr><th>Problema</th><th>Qué hacer</th></tr></thead><tbody><tr><td>El micrófono o Importar no funcionan</td><td>Abre la app desde su dirección web (https), o el archivo index.html directamente en Chrome o Firefox, no desde la vista previa de Claude. Acepta el permiso del micrófono cuando el navegador lo pida.</td></tr><tr><td>No se oye nada</td><td>Toca primero la pantalla (los navegadores exigen un gesto antes de reproducir) y comprueba el volumen y el modo silencio del móvil.</td></tr><tr><td>Arrastrar sobre la onda no hace nada</td><td>Comprueba que hay un audio cargado en pantalla. Con un pad ya relleno, arrastrar mueve los marcadores en lugar de crear una región nueva.</td></tr><tr><td>16 Levels no hace nada</td><td>Selecciona un pad que tenga sample y deja un banco completamente vacío. El botón indica cuál de las dos cosas falta.</td></tr><tr><td>Resample no graba nada o graba silencio</td><td>Elige los pads antes de pulsar Rec. Solo se graba lo que suenan los pads elegidos, no los demás. Rec está desactivado hasta que elijas al menos uno.</td></tr><tr><td>Un enlace no carga</td><td>El enlace no es directo o el servidor no lo permite. Descarga el audio e impórtalo.</td></tr><tr><td>Los kits han desaparecido</td><td>Se guardan en el navegador y se pierden si borras sus datos o abres la app desde otro sitio. Usa Exportar kit (.zip) como copia de seguridad.</td></tr><tr><td>Veo la versión antigua</td><td>Cierra la app del todo y ábrela de nuevo. Si sigue igual, espera unos minutos (GitHub tarda en actualizar) o borra los datos del sitio, pero antes exporta tus kits.</td></tr><tr><td>La descarga no aparece</td><td>Comprueba el permiso de descargas del navegador y la carpeta Descargas. Con muchos pads, la exportación puede tardar unos segundos.</td></tr></tbody></table>
 </details>
-<details><summary>23. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.24</b></p>
+<details><summary>24. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.25</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
   <button id="guideclose">Cerrar</button>
@@ -656,6 +704,7 @@ const $=s=>document.querySelector(s);
 const ctx=new (window.AudioContext||window.webkitAudioContext)();
 const master=ctx.createGain();   // todo lo que suena pasa por aquí y luego por los FX del máster
 const rsBus=ctx.createGain();      // suma solo los pads elegidos para el resample (no va a la salida)
+const sampBus=ctx.createGain();sampBus.connect(master);   // todos los pads del sampler (volumen del mixer)
 /* ---------- FX del máster: pad XY con Filtro, Bit y Beat repeat (como los FX táctiles del Koala) ---------- */
 const FX_WORKLET=`
 class Crush extends AudioWorkletProcessor{
@@ -746,7 +795,12 @@ function padTempo(i){
   p._tk=key;p._tv=r;return r;
 }
 /* efectos en serie y simultáneos: master → FILTRO → BIT → REPEAT → salida; cada etapa tiene su camino limpio y su camino con efecto (se alternan con ganancias) */
-const fxMix=ctx.createGain();fxMix.connect(ctx.destination);
+const fxMix=ctx.createGain();
+/* salida: mezcla de FX → ecualizador de 8 bandas → compresor → ganancia → master (volumen) → altavoces */
+const mixEq=EQ_FREQS().map((f,i)=>{const q=ctx.createBiquadFilter();q.type=i===0?'lowshelf':i===7?'highshelf':'peaking';q.frequency.value=f;q.Q.value=1.1;q.gain.value=0;return q});
+const mixComp=ctx.createDynamicsCompressor?ctx.createDynamicsCompressor():ctx.createGain(),mixMk=ctx.createGain(),mixMaster=ctx.createGain();
+{let prev=fxMix;for(const n of mixEq){prev.connect(n);prev=n}prev.connect(mixComp);mixComp.connect(mixMk);mixMk.connect(mixMaster);mixMaster.connect(ctx.destination)}
+function EQ_FREQS(){return [80,160,320,640,1250,2500,5000,10000]}
 const fxLP=ctx.createBiquadFilter(),fxHP=ctx.createBiquadFilter();
 fxLP.type='lowpass';fxHP.type='highpass';fxLP.frequency.value=20000;fxHP.frequency.value=20;
 const fxIn=[ctx.createGain(),ctx.createGain(),ctx.createGain()],fxOut=[ctx.createGain(),ctx.createGain(),ctx.createGain()],
@@ -1057,7 +1111,7 @@ function play(i,when){
   stop(i,false,at);
   const s=ctx.createBufferSource(),g=ctx.createGain();
   s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol;
-  p.flt=chain(ctx,s,p,g,master,true);if(rsMode&&rsSel.has(i))g.connect(rsBus);s.start(at);p.src=s;p.gn=g;p.lt=at||ctx.currentTime;
+  p.flt=chain(ctx,s,p,g,sampBus,true);if(rsMode&&rsSel.has(i))g.connect(rsBus);s.start(at);p.src=s;p.gn=g;p.lt=at||ctx.currentTime;
   s.onended=()=>{if(p.src===s){p.src=null;p.flt=null;padEl(i).classList.remove('on')}};
   const dt=at-ctx.currentTime;
   if(dt>.01)setTimeout(()=>{if(p.src===s)padEl(i).classList.add('on')},dt*1000);else padEl(i).classList.add('on');
@@ -2115,7 +2169,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.24';
+const APP_VERSION='1.25';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -2849,6 +2903,116 @@ function phUpdate(){
 }
 if(typeof requestAnimationFrame==='function')(function phFrame(){phUpdate();requestAnimationFrame(phFrame)})();
 
+/* ---------- MIXER: volumen de Sampler / Bajo / Teclas, ecualizador de 8 bandas y compresor del máster ---------- */
+const MXKEY='sampledhead.mixer';
+const EQ_F=[80,160,320,640,1250,2500,5000,10000];
+const MXD=()=>({vol:[0,0,0],mute:[false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0}});
+const MX=MXD();
+try{const sv=JSON.parse(localStorage.getItem(MXKEY)||'null');if(sv&&sv.vol){const d=MXD();Object.assign(MX,d,sv,{comp:{...d.comp,...(sv.comp||{})}})}}catch{}
+let mxSaveT=0;
+const mxSave=()=>{clearTimeout(mxSaveT);mxSaveT=setTimeout(()=>{try{localStorage.setItem(MXKEY,JSON.stringify(MX))}catch{}},300)};
+const dbG=db=>db<=-59.9?0:Math.pow(10,db/20);
+const mxSet=(p,v)=>{if(!p)return;try{if(p.setTargetAtTime)p.setTargetAtTime(v,ctx.currentTime,.015);else p.value=v}catch{p.value=v}};
+const MX_BUS=[sampBus,bassBus,keysBus];
+function mxApply(){
+  MX_BUS.forEach((b,i)=>mxSet(b.gain,MX.mute[i]?0:dbG(MX.vol[i])));
+  mxSet(mixMaster.gain,dbG(MX.master));
+  mixEq.forEach((f,i)=>mxSet(f.gain,MX.eqOn?MX.eq[i]:0));
+  const c=MX.comp;
+  if(MX.compOn){mxSet(mixComp.threshold,c.th);mxSet(mixComp.ratio,c.ratio);mxSet(mixComp.attack,c.att/1000);mxSet(mixComp.release,c.rel/1000);mxSet(mixComp.knee,c.knee);mxSet(mixMk.gain,dbG(c.gain))}
+  else{mxSet(mixComp.threshold,0);mxSet(mixComp.ratio,1);mxSet(mixComp.knee,0);mxSet(mixMk.gain,1)}
+}
+/* faders verticales */
+const mxRedraw=[];
+function mkVFader(parent,o){   // o: {get,set,toP,fromP,fmt,label,h,zero}
+  const box=document.createElement('div');box.className='mxch';
+  const val=document.createElement('b'),lab=document.createElement('span'),tr=document.createElement('div'),th=document.createElement('i'),mt=document.createElement('u');
+  tr.className='mxtr';tr.style.height=(o.h||200)+'px';tr.append(mt,th);
+  if(o.zero!=null){const z=document.createElement('s');z.style.bottom=(o.zero*100)+'%';tr.append(z)}
+  lab.textContent=o.label;box.append(val,tr,lab);parent.appendChild(box);
+  const upd=()=>{const p=o.toP(o.get());th.style.bottom='calc('+(p*100)+'% - 7px)';val.textContent=o.fmt(o.get())};
+  let id=null;
+  const move=e=>{const r=tr.getBoundingClientRect(),p=Math.min(1,Math.max(0,1-(e.clientY-r.top)/r.height));o.set(o.fromP(p));upd()};
+  tr.addEventListener('pointerdown',e=>{e.preventDefault();id=e.pointerId;try{tr.setPointerCapture(id)}catch{}move(e)});
+  tr.addEventListener('pointermove',e=>{if(e.pointerId===id)move(e)});
+  const end=e=>{if(e.pointerId===id)id=null};tr.addEventListener('pointerup',end);tr.addEventListener('pointercancel',end);
+  tr.addEventListener('dblclick',()=>{o.set(o.def);upd()});
+  mxRedraw.push(upd);upd();
+  return {box,meter:mt,upd};
+}
+const mxDbFmt=v=>(v<=-59.9?'−∞':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1))+' dB';
+const mxVolToP=db=>db<=-59.9?0:Math.max(.02,(db+60)/66),mxVolFromP=p=>p<.02?-60:-60+p*66;
+const mxMeters=[];
+const MXN=['Sampler','Bajo','Teclas'];
+function mxCurve(){
+  const cv=$('#mxeqc');if(!cv||!cv.getBoundingClientRect)return;
+  const f=bFit(cv);if(!f)return;
+  const {g,W,H,d}=f,N=160,fr=new Float32Array(N),mag=new Float32Array(N),ph=new Float32Array(N),tot=new Float32Array(N).fill(1);
+  for(let i=0;i<N;i++)fr[i]=20*Math.pow(1000,i/(N-1));
+  if(mixEq[0].getFrequencyResponse)mixEq.forEach(q=>{q.getFrequencyResponse(fr,mag,ph);for(let i=0;i<N;i++)tot[i]*=mag[i]});
+  const Y=db=>H/2-db/15*(H/2);
+  g.strokeStyle='#232832';g.lineWidth=d;
+  for(const db of [-12,-6,0,6,12]){g.beginPath();g.moveTo(0,Y(db));g.lineTo(W,Y(db));g.stroke()}
+  for(const hz of [100,1000,10000]){const x=Math.log(hz/20)/Math.log(1000)*W;g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}
+  g.beginPath();for(let i=0;i<N;i++){const x=i/(N-1)*W,y=Y(20*Math.log10(Math.max(1e-4,tot[i])));i?g.lineTo(x,y):g.moveTo(x,y)}
+  g.strokeStyle=MX.eqOn?'#5fd48a':'#5b6573';g.lineWidth=2.5*d;g.stroke();
+  g.lineTo(W,H/2);g.lineTo(0,H/2);g.fillStyle=MX.eqOn?'rgba(95,212,138,.14)':'rgba(120,130,145,.1)';g.fill();
+}
+const MXEQP=[['Plano',[0,0,0,0,0,0,0,0]],['Graves +',[6,4,1,0,0,0,1,2]],['Brillo',[-2,-1,0,0,1,3,5,6]],['Cálido',[3,2,1,0,0,-2,-4,-6]],['Scoop',[5,3,0,-4,-4,0,3,5]],['Sin graves',[-12,-8,-2,0,0,0,0,0]]];
+const MXCP=[['Suave',{th:-14,ratio:2,att:25,rel:250,knee:20,gain:2}],['Glue',{th:-18,ratio:3,att:30,rel:150,knee:12,gain:4}],['Fuerte',{th:-26,ratio:6,att:8,rel:120,knee:8,gain:9}],['Limitador',{th:-6,ratio:20,att:1,rel:80,knee:0,gain:3}]];
+(function(){
+  const chs=$('#mxch');
+  [0,1,2].forEach(i=>{
+    const f=mkVFader(chs,{label:MXN[i],h:200,def:0,get:()=>MX.vol[i],set:v=>{MX.vol[i]=v;mxApply();mxSave()},toP:mxVolToP,fromP:mxVolFromP,fmt:mxDbFmt,zero:mxVolToP(0)});
+    const m=document.createElement('button');m.textContent='Mute';m.setAttribute('aria-label','Silenciar '+MXN[i]);
+    m.onclick=()=>{MX.mute[i]=!MX.mute[i];mxApply();mxSave();mxUI()};f.box.appendChild(m);f.mute=m;mxMeters.push(f);
+  });
+  const fm=mkVFader(chs,{label:'Master',h:200,def:0,get:()=>MX.master,set:v=>{MX.master=v;mxApply();mxSave()},toP:mxVolToP,fromP:mxVolFromP,fmt:mxDbFmt,zero:mxVolToP(0)});
+  fm.box.classList.add('master');mxMeters.push(fm);
+  const eq=$('#mxeq');
+  EQ_F.forEach((hz,i)=>mkVFader(eq,{label:hz>=1000?(hz/1000)+'k':String(hz),h:110,def:0,get:()=>MX.eq[i],set:v=>{MX.eq[i]=Math.round(v*2)/2;mxApply();mxSave();mxCurve()},toP:v=>(v+12)/24,fromP:p=>-12+p*24,fmt:v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1),zero:.5}));
+  $('#mxeqon').onclick=()=>{MX.eqOn=!MX.eqOn;mxApply();mxSave();mxUI();mxCurve()};
+  const pe=$('#mxeqp');MXEQP.forEach(([n,v])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{MX.eq=v.slice();MX.eqOn=true;mxApply();mxSave();mxRedraw.forEach(f=>f());mxUI();mxCurve()};pe.appendChild(b)});
+  $('#mxcon').onclick=()=>{MX.compOn=!MX.compOn;mxApply();mxSave();mxUI()};
+  const pc=$('#mxcp');MXCP.forEach(([n,v])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{Object.assign(MX.comp,v);MX.compOn=true;mxApply();mxSave();mxUI()};pc.appendChild(b)});
+  const CS=[['th','Umbral',-60,0,1,v=>v+' dB'],['ratio','Ratio',1,20,.5,v=>v+':1'],['att','Ataque',0,100,1,v=>v+' ms'],['rel','Relaj.',10,1000,10,v=>v+' ms'],['knee','Knee',0,40,1,v=>v+' dB'],['gain','Ganancia',0,24,.5,v=>'+'+v+' dB']];
+  const cc=$('#mxcs');
+  CS.forEach(([k,l,mn,mx,st,fm2])=>{
+    const lb=document.createElement('label');lb.className='sl';lb.innerHTML=`<span>${l}</span><input type="range" min="${mn}" max="${mx}" step="${st}" aria-label="${l}"><b></b>`;
+    const inp=lb.querySelector('input'),bb=lb.querySelector('b');
+    inp.oninput=()=>{MX.comp[k]=+inp.value;bb.textContent=fm2(+inp.value);if(!MX.compOn)MX.compOn=true;mxApply();mxSave();mxUI()};
+    lb._sync=()=>{inp.value=MX.comp[k];bb.textContent=fm2(MX.comp[k])};
+    cc.appendChild(lb);
+  });
+  $('#mxreset').onclick=()=>{if(!confirm('¿Restablecer todo el mixer (volúmenes, ecualizador y compresor)?'))return;const d=MXD();Object.keys(MX).forEach(k=>delete MX[k]);Object.assign(MX,d);mxApply();mxSave();mxRedraw.forEach(f=>f());mxUI();mxCurve();status('Mixer restablecido')};
+})();
+function mxUI(){
+  mxMeters.slice(0,3).forEach((f,i)=>{f.mute.classList.toggle('on',MX.mute[i]);f.box.classList.toggle('mut',MX.mute[i])});
+  $('#mxeqon').classList.toggle('on',MX.eqOn);$('#mxcon').classList.toggle('on',MX.compOn);
+  [...($('#mxcs').children||[])].forEach(l=>l._sync&&l._sync());
+}
+/* medidores: pico de cada bus mientras la pestaña está abierta */
+const mxAn=MX_BUS.map(b=>{const a=ctx.createAnalyser?ctx.createAnalyser():null;if(a){a.fftSize=1024;b.connect(a)}return a});
+const mxAnM=ctx.createAnalyser?ctx.createAnalyser():null;if(mxAnM){mxAnM.fftSize=1024;mixMaster.connect(mxAnM)}
+const mxBuf=new Float32Array(1024),mxHold=[0,0,0,0];
+function mxPeak(a){if(!a)return 0;a.getFloatTimeDomainData(mxBuf);let m=0;for(let i=0;i<1024;i++){const v=Math.abs(mxBuf[i]);if(v>m)m=v}return m}
+function mxMeterFrame(){
+  if(!$('.unit').classList.contains('mix'))return;
+  [...mxAn,mxAnM].forEach((a,i)=>{
+    const db=Math.max(-60,20*Math.log10(Math.max(1e-6,mxPeak(a)))),p=(db+60)/60;
+    mxHold[i]=Math.max(p,mxHold[i]-.025);
+    mxMeters[i].meter.style.height=(mxHold[i]*100)+'%';
+    mxMeters[i].meter.classList.toggle('hot',db>-1);
+  });
+  const gr=Math.min(0,mixComp.reduction&&typeof mixComp.reduction==='object'?mixComp.reduction.value:(mixComp.reduction||0));
+  $('#mxgr').style.width=Math.min(100,-gr/24*100)+'%';$('#mxgrt').textContent=MX.compOn?(gr<-.1?gr.toFixed(1)+' dB':'0 dB'):'desactivado';
+}
+let mxTick=false;
+if(typeof requestAnimationFrame==='function')(function mxFrame(){mxTick=!mxTick;if(mxTick)mxMeterFrame();requestAnimationFrame(mxFrame)})();
+function mixDraw(){mxRedraw.forEach(f=>f());mxUI();mxCurve()}
+if(window.ResizeObserver&&$('#mxeqc'))new ResizeObserver(()=>mxCurve()).observe($('#mxeqc'));
+mxApply();
+
 /* ---------- pestañas y looper ---------- */
 /* Estados: idle (vacío) · armed (Rec armado, espera el primer pad) · rec1 (grabando la primera pasada)
             · playing (bucle sonando; overdub si lp.over) · stopped (bucle grabado, parado).
@@ -3175,11 +3339,11 @@ function showTab(mode){
   bRelAll();kRelAll();
   if(mode!==1){bassView=false;keysView=false}
   const u=$('.unit');
-  u.classList.toggle('loop',mode===1);u.classList.toggle('bass',mode===2);u.classList.toggle('fxt',mode===3);u.classList.toggle('keys',mode===4);u.classList.toggle('lbass',mode===1&&bassView);u.classList.toggle('lkeys',mode===1&&keysView);
-  [['#tabS',0],['#tabL',1],['#tabB',2],['#tabF',3],['#tabK',4]].forEach(([id,m])=>{$(id).classList.toggle('on',mode===m);$(id).setAttribute('aria-selected',String(mode===m))});
+  u.classList.toggle('loop',mode===1);u.classList.toggle('bass',mode===2);u.classList.toggle('fxt',mode===3);u.classList.toggle('keys',mode===4);u.classList.toggle('mix',mode===5);u.classList.toggle('lbass',mode===1&&bassView);u.classList.toggle('lkeys',mode===1&&keysView);
+  [['#tabS',0],['#tabL',1],['#tabB',2],['#tabF',3],['#tabK',4],['#tabM',5]].forEach(([id,m])=>{$(id).classList.toggle('on',mode===m);$(id).setAttribute('aria-selected',String(mode===m))});
   bankMarks();
   fxRelease();fx.tab=mode===3;fxNodes(fx.tab);
-  if(mode===0){draw();tuneLayout()}else if(mode===1)lpUI();else if(mode===2)bassDraw();else if(mode===4)kDraw();
+  if(mode===0){draw();tuneLayout()}else if(mode===1)lpUI();else if(mode===2)bassDraw();else if(mode===4)kDraw();else if(mode===5)mixDraw();
   fxDraw();
 }
 $('#tabS').onclick=()=>showTab(0);
@@ -3187,6 +3351,7 @@ $('#tabL').onclick=()=>showTab(1);
 $('#tabB').onclick=()=>showTab(2);
 $('#tabF').onclick=()=>showTab(3);
 $('#tabK').onclick=()=>showTab(4);
+$('#tabM').onclick=()=>showTab(5);
 (function lpFrame(){   // barra de progreso del bucle (solo se anima si la pestaña Looper está a la vista)
   if(typeof requestAnimationFrame==='function'){
     const f=()=>{if(lp.st==='playing'||lp.st==='rec1'){const u=$('.unit');if(u&&u.classList.contains('loop'))lpUI(true)}requestAnimationFrame(f)};
