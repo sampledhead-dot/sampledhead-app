@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.21</title>
+<title>SampledHeadApp 1.22</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -113,13 +113,16 @@ button:disabled{cursor:default}
 .undo button{padding:3px 14px;font-size:15px;line-height:1.2;min-width:0}
 /* V20: pads anchos que aprovechan el alto libre; afinador siempre debajo; FX en columnas verticales */
 .padzone{flex-direction:column;flex-wrap:nowrap}
-.unit:not(.bass) .padzone{flex:1 1 0;min-height:300px}
-.unit:not(.bass) .padcol{width:100%;min-width:0;flex:1 1 auto;min-height:0}
+.unit:not(.bass) .padzone{flex:1 1 0;min-height:min-content}
+.unit:not(.bass) .padcol{width:100%;min-width:0;flex:1 1 auto;min-height:min-content}
 .unit:not(.bass) .grid{aspect-ratio:auto;flex:1 1 0;min-height:260px}
 .unit:not(.bass) .lcd{flex:0 0 auto}
 .unit:not(.bass) #wave{flex:none;height:104px}
 .tuner{flex:none;min-width:0;width:100%}
 .unit.fxt #fxpanel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:minmax(0,1fr) auto;gap:8px}
+#fxpad0{--c:49,208,255}#fxpad1{--c:255,138,31}#fxpad2{--c:255,79,154}
+.fxpad{background:linear-gradient(180deg,rgba(var(--c),.34),rgba(var(--c),.16));box-shadow:inset 0 0 0 1.5px rgba(var(--c),.6)}
+.fxbox:nth-child(1) .fxt{color:#31d0ff}.fxbox:nth-child(2) .fxt{color:#ff8a1f}.fxbox:nth-child(3) .fxt{color:#ff4f9a}
 .unit.fxt .fxbox{min-height:0}
 .unit.fxt .fxpad{min-height:260px}
 .unit.fxt .fxt{text-align:center;min-height:64px}
@@ -535,7 +538,7 @@ button:disabled{opacity:.4}
 <table><thead><tr><th>Problema</th><th>Qué hacer</th></tr></thead><tbody><tr><td>El micrófono o Importar no funcionan</td><td>Abre la app desde su dirección web (https), o el archivo index.html directamente en Chrome o Firefox, no desde la vista previa de Claude. Acepta el permiso del micrófono cuando el navegador lo pida.</td></tr><tr><td>No se oye nada</td><td>Toca primero la pantalla (los navegadores exigen un gesto antes de reproducir) y comprueba el volumen y el modo silencio del móvil.</td></tr><tr><td>Arrastrar sobre la onda no hace nada</td><td>Comprueba que hay un audio cargado en pantalla. Con un pad ya relleno, arrastrar mueve los marcadores en lugar de crear una región nueva.</td></tr><tr><td>16 Levels no hace nada</td><td>Selecciona un pad que tenga sample y deja un banco completamente vacío. El botón indica cuál de las dos cosas falta.</td></tr><tr><td>Resample no graba nada o graba silencio</td><td>Elige los pads antes de pulsar Rec. Solo se graba lo que suenan los pads elegidos, no los demás. Rec está desactivado hasta que elijas al menos uno.</td></tr><tr><td>Un enlace no carga</td><td>El enlace no es directo o el servidor no lo permite. Descarga el audio e impórtalo.</td></tr><tr><td>Los kits han desaparecido</td><td>Se guardan en el navegador y se pierden si borras sus datos o abres la app desde otro sitio. Usa Exportar kit (.zip) como copia de seguridad.</td></tr><tr><td>Veo la versión antigua</td><td>Cierra la app del todo y ábrela de nuevo. Si sigue igual, espera unos minutos (GitHub tarda en actualizar) o borra los datos del sitio, pero antes exporta tus kits.</td></tr><tr><td>La descarga no aparece</td><td>Comprueba el permiso de descargas del navegador y la carpeta Descargas. Con muchos pads, la exportación puede tardar unos segundos.</td></tr></tbody></table>
 </details>
 <details><summary>22. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.21</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.22</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
   <button id="guideclose">Cerrar</button>
@@ -2036,7 +2039,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.21';
+const APP_VERSION='1.22';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
