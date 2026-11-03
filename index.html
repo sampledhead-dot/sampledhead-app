@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.23</title>
+<title>SampledHeadApp 1.24</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -33,7 +33,7 @@ button:not(.pad):hover,label.btn:hover{background:#323946}
 button:focus-visible,input:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid #fff;outline-offset:2px}
 #rec.live{background:#e0533d;color:#fff;animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:.65}}
-@media (prefers-reduced-motion:reduce){#rec.live,#rsrec.live,.lpbtns button.live{animation:none}}
+@media (prefers-reduced-motion:reduce){#rec.live,#rsrec.live,.lpbtns button.live,.lptracks button.rec{animation:none}}
 .lcd{flex:1 1 0;display:flex;flex-direction:column;gap:4px;background:#0b0d10;border-radius:12px;padding:6px 8px}
 .hd{display:flex;justify-content:space-between;gap:8px;color:var(--mute);font:500 14px 'Barlow Condensed',sans-serif}
 #name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
@@ -89,6 +89,18 @@ button:disabled{cursor:default}
 .lptempo button{padding:4px 10px;font-size:13px;min-width:0}
 .lpexp{display:none;gap:8px}
 .lpexp button{padding:10px 0}
+.lptracks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.5fr) minmax(0,1.5fr);gap:5px}
+.lptracks button{padding:9px 0;font-size:13px;font-weight:700;min-width:0;position:relative}
+.lptracks button[data-t]::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;border-radius:50%;background:transparent}
+.lptracks button[data-t].has::after{background:var(--tc)}
+.lptracks button[data-t].sel{background:var(--ink);color:#101216}
+.lptracks button[data-t].mut{opacity:.45;text-decoration:line-through}
+.lptracks button[data-t].rec{background:#e0533d;color:#fff;animation:blink 1s steps(2) infinite}
+.lptracks button#lpmute.on{background:var(--ink);color:#101216}
+.lptracks button:disabled{opacity:.4}
+.lpscope{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.lpscope button{padding:7px 0;font-size:12px;min-width:0}
+.lpscope button.on{background:var(--ink);color:#101216}
 .lpprog{height:6px;border-radius:3px;background:#262b34;overflow:hidden}
 .lpprog i{display:block;height:100%;width:0;background:#5fd48a}
 .lpbtns{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
@@ -201,6 +213,8 @@ button:disabled{opacity:.4}
 .chop button{flex:1 1 0;padding:5px 4px;min-width:0;font-size:12px;white-space:nowrap}
 .chop button.on{background:var(--ink);color:#101216}
 #wave{min-height:56px}
+.lcd{position:relative}
+#ph{position:absolute;left:0;top:0;width:2px;margin-left:-1px;border-radius:1px;pointer-events:none;display:none;background:#fff;box-shadow:0 0 6px 1px var(--phc,#fff);will-change:transform}
 #bgrid,#kgrid{display:none}
 .unit.bass #grid,.unit.lbass #grid,.unit.keys #grid,.unit.lkeys #grid{display:none}
 .unit.bass #bgrid,.unit.lbass #bgrid{display:grid}
@@ -311,6 +325,10 @@ button:disabled{opacity:.4}
       <button id="lphalf" aria-label="Dividir el tempo entre 2" title="Dividir el tempo entre 2" disabled>÷2</button><button id="lpdbl" aria-label="Multiplicar el tempo por 2" title="Multiplicar el tempo por 2" disabled>×2</button>
     </div>
     <div class="lpprog" aria-hidden="true"><i id="lpprog"></i></div>
+    <div class="lptracks" id="lptracks" role="group" aria-label="Pistas del looper">
+      <button data-t="0" aria-label="Pista 1">1</button><button data-t="1" aria-label="Pista 2">2</button><button data-t="2" aria-label="Pista 3">3</button><button data-t="3" aria-label="Pista 4">4</button>
+      <button id="lpmute" aria-label="Silenciar la pista seleccionada">Mute</button><button id="lpclr" aria-label="Borrar la pista seleccionada">Borrar</button>
+    </div>
     <div class="lpbtns">
       <button id="lprec" aria-label="Rec: armar la grabación; después, activar o desactivar el overdub">● Rec</button>
       <button id="lpplay" aria-label="Play: reproducir el bucle desde el principio">▶ Play</button>
@@ -419,6 +437,7 @@ button:disabled{opacity:.4}
     </div>
   </div>
   <div class="lpexp" id="lpexp">
+    <div class="lpscope" id="lpscope" role="group" aria-label="Qué exportar"><button data-v="0">Pista</button><button data-v="1">Mezcla</button><button data-v="2">Cada pista</button></div>
     <button id="lptopad" aria-label="Exportar el bucle a un pad libre" disabled>Exportar a pad</button>
     <button id="lptowav" aria-label="Exportar el bucle a un archivo WAV" disabled>Exportar a WAV</button>
   </div>
@@ -456,7 +475,7 @@ button:disabled{opacity:.4}
 <p class="tip">Abre la app desde su dirección web, o el archivo <b>index.html</b> directamente en Chrome o Firefox, no desde la vista previa de Claude. Si no, el micrófono, el selector de archivos y las descargas pueden estar bloqueados.</p>
 </details>
 <details><summary>2. La pantalla de un vistazo</summary>
-<table><thead><tr><th>Zona</th><th>Qué hace</th></tr></thead><tbody><tr><td>Pestañas</td><td>Bajo la barra superior: <b>Sampler</b> (la pantalla principal), <b>Looper</b> (los 16 pads de un banco y un looper sencillo), <b>Bajo</b> (un sintetizador de bajo con 16 pads), <b>Teclas</b> (un piano eléctrico con pads de acordes) y <b>FX</b> (tres pads de efectos para todo lo que suena).</td></tr><tr><td>Barra superior</td><td>Nombre de la app y <b>?</b> (esta guía), <b>Grabar</b> (micrófono), <b>Importar</b> (archivo de audio) y <b>Más</b> (enlace, kits, exportaciones y ajustes).</td></tr><tr><td>Pantalla de onda</td><td>Muestra el audio del pad seleccionado, o el audio cargado si el pad está vacío. Arriba aparecen el nombre del pad y los mensajes de estado. Aquí marcas la región.</td></tr><tr><td>Barra de zoom</td><td><b>−</b>, <b>+</b>, <b>Todo</b> y <b>Región</b>. En audios estéreo aparecen también <b>L</b> y <b>R</b>.</td></tr><tr><td>Vol y Tono</td><td>Volumen (0 a 150 %) y tono (−36 a +36 semitonos) del pad seleccionado. Doble clic (o doble toque) en un fader lo devuelve al valor inicial: 100 % y 0.</td></tr><tr><td>Botones de edición</td><td><b>Reverse</b>, <b>Loop</b>, <b>One shot / Gate</b>, <b>Grupo 1</b>, <b>Grupo 2</b>, <b>WAV</b>, <b>Vaciar</b>, <b>FX</b>, <b>16 Levels</b> y <b>Duplicar</b>.</td></tr><tr><td>Auto chop</td><td>Una fila de tres botones debajo de los candados: <b>✂ Chop</b>, <b>Dividir</b> y <b>Asignar</b>. Divide la región del pad en partes iguales y las reparte por los pads del banco.</td></tr><tr><td>Candados de la región</td><td>Debajo de la onda, <b>Ini</b> y <b>Fin</b>: bloquean el marcador de inicio o el de final de la región del pad para que no se muevan sin querer al tocar o arrastrar la onda.</td></tr><tr><td>Bancos y pads</td><td>Botones <b>A B C D</b> y los 16 pads del banco actual.</td></tr><tr><td>Pestaña FX</td><td>Tres pads táctiles, uno para cada efecto del máster: <b>Filtro</b>, <b>BIT</b> y <b>Beat repeat</b>. Aplican el efecto a todo lo que suena (Sampler, Looper, Bajo y Teclas) mientras mantienes el dedo.</td></tr><tr><td>Afinador y Resample</td><td>Junto a los pads (o debajo, en pantallas estrechas). El afinador indica la nota del pad seleccionado y su botón <b>Afinar</b> la corrige. Debajo está el botón <b>Resample</b>, con sus botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b>, siempre visibles. Abajo del todo están los botones pequeños <b>↶</b> (deshacer) y <b>↷</b> (rehacer).</td></tr></tbody></table>
+<table><thead><tr><th>Zona</th><th>Qué hace</th></tr></thead><tbody><tr><td>Pestañas</td><td>Bajo la barra superior: <b>Sampler</b> (la pantalla principal), <b>Looper</b> (los 16 pads de un banco y un looper sencillo), <b>Bajo</b> (un sintetizador de bajo con 16 pads), <b>Teclas</b> (un piano eléctrico con pads de acordes) y <b>FX</b> (tres pads de efectos para todo lo que suena).</td></tr><tr><td>Barra superior</td><td>Nombre de la app y <b>?</b> (esta guía), <b>Grabar</b> (micrófono), <b>Importar</b> (archivo de audio) y <b>Más</b> (enlace, kits, exportaciones y ajustes).</td></tr><tr><td>Pantalla de onda</td><td>Muestra el audio del pad seleccionado, o el audio cargado si el pad está vacío. Arriba aparecen el nombre del pad y los mensajes de estado. Aquí marcas la región. Cuando suena el pad seleccionado, una línea de color recorre la región para ver por dónde va la reproducción (también en Loop, Reverse y con cambios de tono).</td></tr><tr><td>Barra de zoom</td><td><b>−</b>, <b>+</b>, <b>Todo</b> y <b>Región</b>. En audios estéreo aparecen también <b>L</b> y <b>R</b>.</td></tr><tr><td>Vol y Tono</td><td>Volumen (0 a 150 %) y tono (−36 a +36 semitonos) del pad seleccionado. Doble clic (o doble toque) en un fader lo devuelve al valor inicial: 100 % y 0.</td></tr><tr><td>Botones de edición</td><td><b>Reverse</b>, <b>Loop</b>, <b>One shot / Gate</b>, <b>Grupo 1</b>, <b>Grupo 2</b>, <b>WAV</b>, <b>Vaciar</b>, <b>FX</b>, <b>16 Levels</b> y <b>Duplicar</b>.</td></tr><tr><td>Auto chop</td><td>Una fila de tres botones debajo de los candados: <b>✂ Chop</b>, <b>Dividir</b> y <b>Asignar</b>. Divide la región del pad en partes iguales y las reparte por los pads del banco.</td></tr><tr><td>Candados de la región</td><td>Debajo de la onda, <b>Ini</b> y <b>Fin</b>: bloquean el marcador de inicio o el de final de la región del pad para que no se muevan sin querer al tocar o arrastrar la onda.</td></tr><tr><td>Bancos y pads</td><td>Botones <b>A B C D</b> y los 16 pads del banco actual.</td></tr><tr><td>Pestaña FX</td><td>Tres pads táctiles, uno para cada efecto del máster: <b>Filtro</b>, <b>BIT</b> y <b>Beat repeat</b>. Aplican el efecto a todo lo que suena (Sampler, Looper, Bajo y Teclas) mientras mantienes el dedo.</td></tr><tr><td>Afinador y Resample</td><td>Junto a los pads (o debajo, en pantallas estrechas). El afinador indica la nota del pad seleccionado y su botón <b>Afinar</b> la corrige. Debajo está el botón <b>Resample</b>, con sus botones <b>Rec</b>, <b>Stop</b>, <b>Todos</b> y <b>Ninguno</b>, siempre visibles. Abajo del todo están los botones pequeños <b>↶</b> (deshacer) y <b>↷</b> (rehacer).</td></tr></tbody></table>
 </details>
 <details><summary>3. Cargar sonidos</summary>
 <ul><li><b>Importar</b>: elige un archivo de audio (WAV, MP3 y los demás formatos que lea tu navegador).</li><li><b>Grabar</b>: usa el micrófono. El navegador pedirá permiso la primera vez. Pulsa de nuevo (<b>Detener</b>) para terminar.</li><li><b>Más → Cargar desde enlace directo</b>: pega la dirección de un archivo .mp3 o .wav. Solo funciona si el servidor de esa web permite que otra página lo lea.</li><li>En ordenador también puedes <b>arrastrar un archivo sobre un pad</b>.</li></ul>
@@ -538,17 +557,19 @@ button:disabled{opacity:.4}
 <ul><li>El pad 1 suena al tono actual del pad de origen y los demás suben por la escala. Al terminar la escala, sigue en la octava siguiente. Las escalas de 5 notas llegan a más de 3 octavas.</li><li>Hace falta un banco entero vacío. Se busca a partir del banco siguiente al actual. Si no hay ninguno libre, el botón avisa y no hace nada.</li><li>Los pads se llaman como el original con el cambio de tono, por ejemplo «kick +7». Comparten el mismo audio, así que apenas ocupan memoria.</li><li>Se copian también la región, el volumen, Reverse, Loop, One shot / Gate y los efectos. Cada pad se puede editar después por separado.</li></ul>
 <p class="tip">El tono es solo el del pad (con lo-fi activo, se hace saltando muestras). Si exportas a Koala o Ableton, cada pad lleva ya su tono aplicado.</p>
 </details>
-<details><summary>16. Looper (segunda pestaña)</summary>
-<p>La pestaña <b>Looper</b>, junto a Sampler, muestra solo los 16 pads del banco actual y un looper con cinco botones: <b>Rec</b>, <b>Play</b>, <b>Stop</b>, <b>Deshacer</b> y <b>Loop</b>. Encima de los pads está el detector de tempo y debajo los botones de exportar. Los botones <b>A B C D</b> cambian de banco. Los pads suenan con todo lo que tienen puesto en la pestaña Sampler: tono, afinado, efectos, Reverse, Loop, One shot / Gate y grupos.</p>
+<details><summary>16. Looper de 4 pistas (segunda pestaña)</summary>
+<p>La pestaña <b>Looper</b>, junto a Sampler, muestra solo los 16 pads del banco actual y un looper de <b>4 pistas</b> al estilo de los loopers de Boss (RC), con cinco botones: <b>Rec</b>, <b>Play</b>, <b>Stop</b>, <b>Deshacer</b> y <b>Loop</b>. Encima de los pads está el detector de tempo y debajo los botones de exportar. Los botones <b>A B C D</b> cambian de banco. Los pads suenan con todo lo que tienen puesto en la pestaña Sampler: tono, afinado, efectos, Reverse, Loop, One shot / Gate y grupos.</p>
 <ol><li>Pulsa <b>Rec</b>. Queda armado (el botón se pone rojo) y todavía no graba.</li><li>Toca un pad con sample. La grabación empieza justo en ese primer toque.</li><li>Toca los pads que quieras. Cada toque se graba con su momento exacto.</li><li>Pulsa <b>Loop</b> para marcar el final del bucle. Su duración queda fija y el bucle empieza solo desde el principio.</li><li>El bucle sigue sonando y <b>Rec</b> sigue activo (overdub): lo que toques se suma encima y empieza a sonar en la siguiente vuelta.</li></ol>
-<table><thead><tr><th>Botón</th><th>Qué hace</th></tr></thead><tbody><tr><td>Rec</td><td>Sin bucle: arma la grabación (otra pulsación la desarma). Con el bucle sonando: activa o desactiva el overdub. Con el bucle parado: lo reproduce con el overdub activo.</td></tr><tr><td>Play</td><td>Reproduce el bucle desde el principio, sin overdub. Durante la primera grabación, la cierra y reproduce.</td></tr><tr><td>Stop</td><td>Para el bucle y silencia sus sonidos. Durante la primera grabación, la cierra y la deja parada. Con Rec armado, lo desarma.</td></tr><tr><td>Deshacer</td><td>Elimina la última capa grabada y el bucle sigue sonando con la versión anterior. Si solo queda la primera capa, vacía el looper. Durante la primera grabación, la cancela.</td></tr><tr><td>Loop</td><td>Durante la primera grabación, marca el final del bucle. Con el bucle sonando o parado, lo reinicia desde el principio.</td></tr></tbody></table>
+<p><b>Las 4 pistas</b></p>
+<ul><li>Encima de los botones hay cuatro botones de pista (<b>1 2 3 4</b>), <b>Mute</b> y <b>Borrar</b>. La pista seleccionada se ve en blanco; un punto de color indica que tiene contenido, y si está silenciada aparece tachada y atenuada.</li><li>Las cuatro pistas comparten la duración del bucle, que fija la primera grabación (la que cierras con <b>Loop</b>). Puedes hacer esa primera grabación en cualquier pista.</li><li><b>Rec</b> graba (overdub) <b>en la pista seleccionada</b>; la pista en la que grabas se pone roja. Para grabar otra pista, pulsa su número y sigue tocando: lo que toques va a esa pista. No se puede cambiar de pista durante la primera grabación.</li><li><b>Deshacer</b> quita la última capa de la pista seleccionada, sin tocar las demás. <b>Mute</b> silencia o reactiva la pista seleccionada. <b>Borrar</b> vacía solo esa pista; si borras la última pista con contenido, el looper queda vacío.</li><li>Cada pista guarda lo que toques en cualquier banco (Sampler, Bajo o Teclas), no solo un tipo de sonido.</li></ul>
+<table><thead><tr><th>Botón</th><th>Qué hace</th></tr></thead><tbody><tr><td>Rec</td><td>Sin bucle: arma la grabación (otra pulsación la desarma). Con el bucle sonando: activa o desactiva el overdub. Con el bucle parado: lo reproduce con el overdub activo.</td></tr><tr><td>Play</td><td>Reproduce el bucle desde el principio, sin overdub. Durante la primera grabación, la cierra y reproduce.</td></tr><tr><td>Stop</td><td>Para el bucle y silencia sus sonidos. Durante la primera grabación, la cierra y la deja parada. Con Rec armado, lo desarma.</td></tr><tr><td>Deshacer</td><td>Elimina la última capa grabada de la pista seleccionada y el bucle sigue sonando con el resto. Si no queda nada en ninguna pista, el looper queda vacío. Durante la primera grabación, la cancela.</td></tr><tr><td>Loop</td><td>Durante la primera grabación, marca el final del bucle. Con el bucle sonando o parado, lo reinicia desde el principio.</td></tr></tbody></table>
 <ul><li>Una <b>capa</b> es lo que grabas durante una vuelta del bucle. La primera grabación es la primera capa y cada vuelta con overdub que contenga toques es otra. Una vuelta sin toques no crea capa.</li><li>El bucle usa los ajustes actuales de cada pad: si cambias el tono, los efectos o el sample de un pad en la pestaña Sampler, el bucle suena con ese cambio.</li><li>El bucle graba los toques en cualquier banco. Si un pad está en modo Gate, también se graba cuándo lo sueltas. Para los pads con Loop, un segundo toque que los para también queda grabado.</li><li>Los pads en bucle se cortan al empezar cada vuelta y se vuelven a lanzar según lo grabado, así el bucle se repite igual siempre.</li><li>El bucle no se guarda con los kits y se pierde al cerrar o recargar la app. Para conservarlo, expórtalo a un pad o a un WAV (ver más abajo).</li><li>No se puede abrir la pestaña Looper mientras el Resample está activo.</li></ul>
 <p>Bancos del looper y FX</p>
 <ul><li>Junto a los bancos <b>A B C D</b> aparece el botón <b>Bajo</b>: muestra los 16 pads del sintetizador de bajo en lugar de los del sampler. El looper graba los pads de bajo junto con los del sampler, también si arrancas la grabación desde la pestaña Bajo.</li><li>Los pads de FX tienen su propia pestaña. Si cambias a la pestaña FX con el bucle sonando, puedes mover el filtro, el BIT o el Beat repeat sobre él.</li><li>Si cambias a la pestaña Sampler, Bajo o FX, el bucle sigue sonando y los FX del máster lo afectan.</li></ul>
 <p>Detector de tempo</p>
 <ul><li>Al cerrar el primer bucle, la app calcula a cuántos BPM lo has tocado a partir del momento exacto de tus toques y de la duración del bucle. Aparece como «120.0 BPM», con el número de tiempos del bucle y una indicación: fiable, aproximado o poco fiable.</li><li>Si el bucle tiene muy pocos toques, la app lo estima solo por la duración y lo indica como «estimado por la duración». Con un solo toque no hay tempo.</li><li>Los botones <b>÷2</b> y <b>×2</b> corrigen el resultado cuando la app ha elegido el doble o la mitad. Es habitual en tempos lentos (entre 60 y 80 BPM), que pueden salir al doble.</li><li>El tempo se recalcula al deshacer una capa o al terminar un overdub, y se borra al vaciar el looper.</li><li>La precisión depende de lo preciso que seas al cerrar el bucle con Loop: un cierre fuera de tiempo desplaza el resultado unas décimas de BPM.</li></ul>
 <p>Exportar el bucle</p>
-<ul><li><b>Exportar a pad</b>: renderiza el bucle completo, con todas sus capas, y lo guarda en un pad libre (el seleccionado si está vacío, o el siguiente vacío). El pad se llama «Loop 120 BPM» y queda con los ajustes de fábrica, para no aplicar los efectos dos veces.</li><li><b>Exportar a WAV</b>: descarga el bucle como WAV mono de 16 bits, con el nombre loop_120bpm.wav.</li><li>El audio dura exactamente lo que dura el bucle, sin recortar silencios, así que encaja al repetirlo. Las colas de los sonidos (reverb, release de Gate) se solapan con el inicio, como al sonar en bucle.</li><li>Se respetan los grupos, los pads en Loop y los efectos. Si el resultado supera 0 dB, se baja el volumen para que no sature.</li><li>Los dos botones están desactivados hasta que hay un bucle grabado.</li></ul>
+<ul><li>Encima de los botones de exportar eliges <b>qué exportar</b>: <b>Pista N</b> (solo la pista seleccionada, aunque esté silenciada), <b>Mezcla</b> (todas las pistas que no estén silenciadas) o <b>Cada pista</b> (cada pista con contenido por separado).</li><li><b>Exportar a pad</b>: renderiza el bucle con todas sus capas y lo guarda en un pad libre (el seleccionado si está vacío, o el siguiente vacío). El pad se llama «Loop 120 BPM» («Loop P2 120 BPM» si es una pista, «Loop mezcla…» si es la mezcla). Con «Cada pista», cada pista va a un pad libre distinto. Los pads quedan con los ajustes de fábrica, para no aplicar los efectos dos veces.</li><li><b>Exportar a WAV</b>: descarga un WAV mono de 16 bits (loop_pista2_120bpm.wav, loop_mezcla_120bpm.wav…). Con «Cada pista» descarga un zip con un WAV por pista.</li><li>El audio dura exactamente lo que dura el bucle, sin recortar silencios, así que encaja al repetirlo. Las colas de los sonidos (reverb, release de Gate) se solapan con el inicio, como al sonar en bucle.</li><li>Se respetan los grupos, los pads en Loop y los efectos. Si el resultado supera 0 dB, se baja el volumen para que no sature.</li><li>Los botones de exportar están desactivados hasta que hay un bucle grabado.</li></ul>
 <p class="tip">Para componer con varias capas: graba el bucle, expórtalo a un pad y úsalo en el Sampler como cualquier sample, o descárgalo en WAV para llevarlo a tu DAW. Resample sigue sirviendo para grabar el bucle mezclado con otros pads.</p>
 </details>
 <details><summary>17. Bajo (tercera pestaña)</summary>
@@ -590,7 +611,7 @@ button:disabled{opacity:.4}
 <table><thead><tr><th>Problema</th><th>Qué hacer</th></tr></thead><tbody><tr><td>El micrófono o Importar no funcionan</td><td>Abre la app desde su dirección web (https), o el archivo index.html directamente en Chrome o Firefox, no desde la vista previa de Claude. Acepta el permiso del micrófono cuando el navegador lo pida.</td></tr><tr><td>No se oye nada</td><td>Toca primero la pantalla (los navegadores exigen un gesto antes de reproducir) y comprueba el volumen y el modo silencio del móvil.</td></tr><tr><td>Arrastrar sobre la onda no hace nada</td><td>Comprueba que hay un audio cargado en pantalla. Con un pad ya relleno, arrastrar mueve los marcadores en lugar de crear una región nueva.</td></tr><tr><td>16 Levels no hace nada</td><td>Selecciona un pad que tenga sample y deja un banco completamente vacío. El botón indica cuál de las dos cosas falta.</td></tr><tr><td>Resample no graba nada o graba silencio</td><td>Elige los pads antes de pulsar Rec. Solo se graba lo que suenan los pads elegidos, no los demás. Rec está desactivado hasta que elijas al menos uno.</td></tr><tr><td>Un enlace no carga</td><td>El enlace no es directo o el servidor no lo permite. Descarga el audio e impórtalo.</td></tr><tr><td>Los kits han desaparecido</td><td>Se guardan en el navegador y se pierden si borras sus datos o abres la app desde otro sitio. Usa Exportar kit (.zip) como copia de seguridad.</td></tr><tr><td>Veo la versión antigua</td><td>Cierra la app del todo y ábrela de nuevo. Si sigue igual, espera unos minutos (GitHub tarda en actualizar) o borra los datos del sitio, pero antes exporta tus kits.</td></tr><tr><td>La descarga no aparece</td><td>Comprueba el permiso de descargas del navegador y la carpeta Descargas. Con muchos pads, la exportación puede tardar unos segundos.</td></tr></tbody></table>
 </details>
 <details><summary>23. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.23</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.24</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
   <button id="guideclose">Cerrar</button>
@@ -2094,7 +2115,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.23';
+const APP_VERSION='1.24';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -2801,12 +2822,40 @@ $('#tsp404a').onclick=()=>exportTo('sp404a','keys');
 $('#tsp404mk2').onclick=()=>exportTo('mk2','keys');
 kKitList(lastGet(LASTKY)).catch(()=>{});
 
+/* ---------- guía de reproducción: una línea que recorre la región del pad mientras suena (como en Koala) ---------- */
+const phEl=document.createElement('div');phEl.id='ph';phEl.setAttribute('aria-hidden','true');
+{const l=document.querySelector('.lcd');if(l)l.appendChild(phEl)}
+function phFrac(){      // posición actual dentro del sample (0–1 del buffer entero), o null si el pad seleccionado no suena
+  const p=pads[sel];
+  if(!p||!p.src||!p.buf||vbuf()!==p.buf)return null;
+  let reg;try{reg=region(p)}catch{return null}
+  const dur=reg&&reg.duration;if(!dur)return null;
+  let f=(ctx.currentTime-p.lt)*playRate(p)/dur;
+  if(f<0)return null;
+  if(p.loop)f%=1;else if(f>1)return null;
+  return p.rev?p.e-f*(p.e-p.s):p.s+f*(p.e-p.s);
+}
+function phUpdate(){
+  const u=document.querySelector('.unit');
+  let pos=null;
+  if(u&&!u.classList.contains('loop')&&!u.classList.contains('bass')&&!u.classList.contains('keys')&&!u.classList.contains('fxt'))pos=phFrac();
+  if(pos==null||!cv.clientWidth){if(phEl.style.display!=='none')phEl.style.display='none';return}
+  const span=vw.b-vw.a,x=(pos-vw.a)/span;
+  if(x<0||x>1){if(phEl.style.display!=='none')phEl.style.display='none';return}
+  if(phEl.style.display!=='block'){phEl.style.display='block'}
+  phEl.style.top=cv.offsetTop+'px';phEl.style.height=cv.offsetHeight+'px';
+  phEl.style.setProperty('--phc',col(sel));
+  phEl.style.transform='translateX('+(cv.offsetLeft+x*cv.clientWidth)+'px)';
+}
+if(typeof requestAnimationFrame==='function')(function phFrame(){phUpdate();requestAnimationFrame(phFrame)})();
+
 /* ---------- pestañas y looper ---------- */
 /* Estados: idle (vacío) · armed (Rec armado, espera el primer pad) · rec1 (grabando la primera pasada)
             · playing (bucle sonando; overdub si lp.over) · stopped (bucle grabado, parado).
    Cada evento guarda su instante dentro del bucle, el pad (índice global) y la capa a la que pertenece. */
 const LP_LOOK=.12,LP_TICK=30,LP_MAX=4000;
-const lp={st:'idle',ev:[],t0:0,len:0,start:0,sched:0,over:false,sess:0,tempo:null,oct:1};
+const lp={st:'idle',ev:[],t0:0,len:0,start:0,sched:0,over:false,sess:0,tempo:null,oct:1,trk:0,mute:[false,false,false,false],scope:1};
+const LP_TC=['#31d0ff','#ff8a1f','#ff4f9a','#9be564'];
 const lpTouched=new Set(),lpPadLayer={};
 let lpTimer=0;
 const lpPos=now=>lp.len?(((now-lp.start)%lp.len)+lp.len)%lp.len:0;
@@ -2819,8 +2868,8 @@ function lpRecord(k,i){
   }
   if(lp.ev.length>=LP_MAX)return;
   let e;
-  if(lp.st==='rec1')e={t:now-lp.t0,k,i,layer:0,sess:0,pass:-1};
-  else if(lp.st==='playing'&&lp.over){const c=Math.max(0,Math.floor((now-lp.start)/lp.len));e={t:lpPos(now),k,i,layer:lp.sess*100000+c+1,sess:lp.sess,pass:c}}
+  if(lp.st==='rec1')e={t:now-lp.t0,k,i,layer:0,sess:0,pass:-1,trk:lp.trk};
+  else if(lp.st==='playing'&&lp.over){const c=Math.max(0,Math.floor((now-lp.start)/lp.len));e={t:lpPos(now),k,i,layer:lp.sess*100000+c+1,sess:lp.sess,pass:c,trk:lp.trk}}
   else return;
   if(i>=80)e.v=kLastVel;
   lp.ev.push(e);if(i<64){lpTouched.add(i);lpPadLayer[i]=e.layer}
@@ -2849,6 +2898,7 @@ function lpTick(){
     if(cs>=lp.sched&&cs<hz&&keysP)keysP.releaseAll(Math.max(cs,now));
     if(cs>=lp.sched&&cs<hz)lpTouched.forEach(i=>{if(pads[i].loop&&pads[i].src)stop(i,true,Math.max(cs,now))});   // los pads en bucle se cortan al empezar cada pasada
     for(const e of lp.ev){
+      if(lp.mute[e.trk])continue;                         // pista silenciada
       if(e.sess===lp.sess&&e.pass===c)continue;           // lo grabado en esta pasada ya sonó en directo
       const a=cs+e.t;
       if(a>=lp.sched&&a<hz&&a>=now-.02)lpFire(e,Math.max(a,now));
@@ -2877,20 +2927,21 @@ function lpClose(thenPlay){      // cierra la primera pasada: fija la duración 
 }
 function lpClear(){
   lpLoopTimer(false);lpSilence();
-  lp.st='idle';lp.ev=[];lp.len=0;lp.over=false;lp.tempo=null;lp.oct=1;lpUI();
+  lp.st='idle';lp.ev=[];lp.len=0;lp.over=false;lp.tempo=null;lp.oct=1;lp.mute=[false,false,false,false];lpUI();
 }
-const lpLayers=()=>new Set(lp.ev.map(e=>e.layer)).size;
+const lpLayers=()=>new Set(lp.ev.filter(e=>e.trk===lp.trk).map(e=>e.layer)).size;
+const lpHas=t=>lp.ev.some(e=>e.trk===t);
 function lpUndo(){
   if(lp.st==='idle'||(lp.st==='armed')){status('No hay nada que deshacer');return}
   if(lp.st==='rec1'){lpClear();status('Grabación cancelada');return}
-  if(!lp.ev.length){status('No hay nada que deshacer');return}
-  const layer=Math.max(...lp.ev.map(e=>e.layer));
-  lp.ev=lp.ev.filter(e=>e.layer!==layer);
+  if(!lpHas(lp.trk)){status('La pista '+(lp.trk+1)+' está vacía');return}
+  const layer=Math.max(...lp.ev.filter(e=>e.trk===lp.trk).map(e=>e.layer));
+  lp.ev=lp.ev.filter(e=>!(e.trk===lp.trk&&e.layer===layer));
   if(bassP)bassP.releaseAll(ctx.currentTime);
   if(keysP)keysP.releaseAll(ctx.currentTime);
   lpTouched.forEach(i=>{if(lpPadLayer[i]===layer&&pads[i].src)stop(i,true)});   // calla lo que esa capa tenga sonando
   if(!lp.ev.length){lpClear();status('Looper vacío');return}
-  lpTempoUpdate();lpUI();status('Última capa eliminada · '+lpLayers()+(lpLayers()===1?' capa':' capas'));
+  lpTempoUpdate();lpUI();status('Última capa de la pista '+(lp.trk+1)+' eliminada · '+lpLayers()+(lpLayers()===1?' capa':' capas'));
 }
 /* ---------- detector de tempo ---------- */
 /* Usa los instantes de los toques (que se conocen con exactitud) y la duración del bucle:
@@ -2947,7 +2998,7 @@ function lpOct(f){
 const lpBpmTxt=()=>{const b=lpBpm();return b?(Math.round(b*10)/10).toFixed(1).replace(/\.0$/,''):''};
 
 /* ---------- exportar el bucle: render exacto sin conexión ---------- */
-async function lpRender(){
+async function lpRender(trk){
   const sr=ctx.sampleRate,L=lp.len,n=Math.max(1,Math.round(L*sr));
   const off=new OfflineAudioContext(1,2*n,sr);               // dos vueltas: la segunda incluye las colas de la primera, así el bucle encaja
   const st=new Map(),bo=mkBass(off,off.destination,{...BP}),bm=Array.from({length:16},(_,k)=>bMidi(k)),ko=mkKeys(off,off.destination,{...KP}),kn=Array.from({length:16},(_,k)=>kNotes(k));
@@ -2963,7 +3014,7 @@ async function lpRender(){
     s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol;
     chain(off,s,p,g,off.destination);s.start(a);st.set(i,{s,g});
   };
-  const evs=lp.ev.slice().sort((a,b)=>a.t-b.t||(a.k==='r')-(b.k==='r'));
+  const evs=lp.ev.filter(e=>trk==null?!lp.mute[e.trk]:e.trk===trk).sort((a,b)=>a.t-b.t||(a.k==='r')-(b.k==='r'));
   for(let c=0;c<2;c++){
     const cs=c*L;
     bo.releaseAll(cs);ko.releaseAll(cs);
@@ -2985,54 +3036,99 @@ async function lpRender(){
   return {buf:out,peak:pk};
 }
 let lpBusy=false;
+const lpTrkList=()=>lp.scope===1?[null]:lp.scope===0?[lp.trk]:[0,1,2,3].filter(lpHas);
+const lpNameOf=(t,bp,pre)=>pre+(t==null?'':' P'+(t+1))+(bp?' '+bp+' BPM':'');
 async function lpToPad(){
   if(lpBusy||!lp.len||!lp.ev.length){if(!lp.len)status('Graba un bucle primero');return}
-  const t=pads[sel].buf?nextEmpty(sel):sel;
-  if(t<0){status('No hay pads vacíos para exportar el bucle');return}
-  lpBusy=true;lpUI();status('Exportando el bucle…');
+  const list=lpTrkList().filter(t=>t==null?lp.ev.some(e=>!lp.mute[e.trk]):lpHas(t));
+  if(!list.length){status(lp.scope===0?'La pista '+(lp.trk+1)+' está vacía':'No hay nada que exportar');return}
+  lpBusy=true;lpUI();status('Exportando…');
   try{
-    const r=await lpRender(),p=pads[t],bp=lpBpmTxt();
-    stop(t);resetPad(p);
-    Object.assign(p,{buf:r.buf,name:'Loop'+(bp?' '+bp+' BPM':'')});
-    labels(t);select(t);
-    status('Bucle exportado al pad '+pl(t)+' · '+r.buf.duration.toFixed(2)+' s'+(r.peak>1?' · nivel reducido para no saturar':''));
+    let t=pads[sel].buf?nextEmpty(sel):sel,first=-1,n=0,peak=0;
+    for(const tr of list){
+      if(t<0){status('No hay pads vacíos para exportar'+(n?' (se exportaron '+n+')':''));break}
+      const r=await lpRender(tr),p=pads[t],bp=lpBpmTxt();
+      stop(t);resetPad(p);
+      Object.assign(p,{buf:r.buf,name:lpNameOf(tr,bp,'Loop')});
+      labels(t);if(first<0)first=t;n++;peak=Math.max(peak,r.peak);
+      t=n<list.length?nextEmpty(t):-1;
+      if(n<list.length&&t<0)status('No hay más pads vacíos (se exportaron '+n+')');
+    }
+    if(first>=0){select(first);status(n===1?'Exportado al pad '+pl(first)+' · '+pads[first].buf.duration.toFixed(2)+' s'+(peak>1?' · nivel reducido para no saturar':''):'Exportadas '+n+' pistas a partir del pad '+pl(first))}
   }catch{status('No se pudo exportar el bucle')}
   lpBusy=false;lpUI();
 }
 async function lpToWav(){
   if(lpBusy||!lp.len||!lp.ev.length){if(!lp.len)status('Graba un bucle primero');return}
-  lpBusy=true;lpUI();status('Exportando el bucle…');
+  const list=lpTrkList().filter(t=>t==null?lp.ev.some(e=>!lp.mute[e.trk]):lpHas(t));
+  if(!list.length){status(lp.scope===0?'La pista '+(lp.trk+1)+' está vacía':'No hay nada que exportar');return}
+  lpBusy=true;lpUI();status('Exportando…');
   try{
-    const r=await lpRender(),bp=lpBpmTxt();
-    const blob=new Blob([wav(r.buf)],{type:'audio/wav'});
-    const a=document.createElement('a'),name='loop'+(bp?'_'+bp+'bpm':'')+'.wav';
-    a.href=URL.createObjectURL(blob);a.download=name;a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-    status('Exportado: '+name+(r.peak>1?' · nivel reducido para no saturar':''));
+    const bp=lpBpmTxt(),files=[];let peak=0;
+    for(const tr of list){
+      const r=await lpRender(tr);peak=Math.max(peak,r.peak);
+      files.push({name:'loop'+(tr==null?'':'_pista'+(tr+1))+(bp?'_'+bp+'bpm':'')+'.wav',data:wav(r.buf)});
+    }
+    if(files.length===1){save(new Blob([files[0].data],{type:'audio/wav'}),files[0].name);status('Exportado: '+files[0].name+(peak>1?' · nivel reducido para no saturar':''))}
+    else{save(new Blob([zip(files)],{type:'application/zip'}),'loop_pistas'+(bp?'_'+bp+'bpm':'')+'.zip');status('Exportadas '+files.length+' pistas en un zip')}
   }catch{status('No se pudo exportar el bucle')}
   lpBusy=false;lpUI();
 }
 $('#lptopad').onclick=lpToPad;
 $('#lptowav').onclick=lpToWav;
+function lpSelTrack(t){
+  if(lp.st==='rec1'){status('Termina la primera grabación (Loop) antes de cambiar de pista');return}
+  lp.trk=t;lpUI();status('Pista '+(t+1)+(lpHas(t)?'':' (vacía)')+(lp.mute[t]?' · silenciada':''));
+}
+[...($('#lptracks').children||[])].slice(0,4).forEach((b,t)=>b.onclick=()=>lpSelTrack(t));
+$('#lpmute').onclick=()=>{
+  const t=lp.trk;lp.mute[t]=!lp.mute[t];
+  if(lp.mute[t]){if(bassP)bassP.releaseAll(ctx.currentTime);if(keysP)keysP.releaseAll(ctx.currentTime)}
+  lpUI();status('Pista '+(t+1)+(lp.mute[t]?' silenciada':' activa'));
+};
+$('#lpclr').onclick=()=>{
+  const t=lp.trk;
+  if(lp.st==='rec1'){lpUndo();return}
+  if(!lpHas(t)){status('La pista '+(t+1)+' está vacía');return}
+  lp.ev=lp.ev.filter(e=>e.trk!==t);lp.mute[t]=false;
+  if(!lp.ev.length){lpClear();status('Pista '+(t+1)+' borrada · el looper queda vacío');return}
+  lpSilence();lpTempoUpdate();lpUI();status('Pista '+(t+1)+' borrada');
+};
+[...($('#lpscope').children||[])].forEach((b,i)=>b.onclick=()=>{lp.scope=i;lpUI()});
 $('#lphalf').onclick=()=>lpOct(.5);
 $('#lpdbl').onclick=()=>lpOct(2);
 
+function lpTracksUI(){
+  const s=lp.st,recNow=s==='armed'||s==='rec1'||(s==='playing'&&lp.over);
+  [...($('#lptracks').children||[])].slice(0,4).forEach((b,t)=>{
+    b.style.setProperty('--tc',LP_TC[t]);
+    b.classList.toggle('has',lpHas(t));b.classList.toggle('sel',t===lp.trk&&!(recNow));b.classList.toggle('mut',!!lp.mute[t]);
+    b.classList.toggle('rec',recNow&&t===lp.trk);
+    b.setAttribute('aria-pressed',String(t===lp.trk));
+  });
+  $('#lpmute').classList.toggle('on',!!lp.mute[lp.trk]);$('#lpmute').disabled=!lp.len;$('#lpclr').disabled=s==='idle'||s==='armed';
+}
+function lpScopeUI(){
+  const sc=$('#lpscope').children||[];[...sc].forEach((b,i)=>b.classList.toggle('on',i===lp.scope));
+  if(sc[0])sc[0].textContent='Pista '+(lp.trk+1);
+}
 function lpUI(tickOnly){
   const now=ctx.currentTime,s=lp.st;
   let txt;
   if(s==='idle')txt='Pulsa Rec para empezar';
   else if(s==='armed')txt='Rec armado: toca un pad para empezar';
   else if(s==='rec1')txt='Grabando · '+(now-lp.t0).toFixed(1)+' s · pulsa Loop para cerrar el bucle';
-  else txt='Bucle '+lp.len.toFixed(2)+' s · '+lpLayers()+(lpLayers()===1?' capa':' capas')+(s==='playing'?(lp.over?' · overdub activo':' · overdub desactivado'):' · parado');
+  else txt='Bucle '+lp.len.toFixed(2)+' s · pista '+(lp.trk+1)+': '+lpLayers()+(lpLayers()===1?' capa':' capas')+(s==='playing'?(lp.over?' · overdub activo':' · overdub desactivado'):' · parado');
   $('#lpinfo').textContent=txt;
   const bp=lpBpmTxt(),has=!!lp.len&&(s==='playing'||s==='stopped');
   $('#lpbpm').textContent=bp&&has?bp+' BPM':'— BPM';
+  lpTracksUI();
   if(has&&lp.tempo){
     const nb=lp.len*lpBpm()/60,tt=Math.abs(nb-Math.round(nb))<.15?String(Math.round(nb)):nb.toFixed(1);
     const c=lp.tempo.n<3?'estimado por la duración':lp.tempo.conf>=.8?'fiable':lp.tempo.conf>=.55?'aproximado':'poco fiable';
     $('#lpbeats').textContent=tt+' tiempos · '+c;
   }else $('#lpbeats').textContent=s==='rec1'?'Se detecta al cerrar el bucle':has?'Sin tempo':'Se detecta al cerrar el bucle';
-  if(!tickOnly){$('#lphalf').disabled=$('#lpdbl').disabled=!(has&&lp.tempo);$('#lptopad').disabled=$('#lptowav').disabled=!has||lpBusy}
+  if(!tickOnly){$('#lphalf').disabled=$('#lpdbl').disabled=!(has&&lp.tempo);$('#lptopad').disabled=$('#lptowav').disabled=!has||lpBusy;lpScopeUI()}
   $('#lpprog').style.width=(s==='playing'?lpPos(now)/lp.len*100:s==='rec1'?100:0)+'%';
   if(tickOnly)return;
   $('#lprec').classList.toggle('live',s==='armed'||s==='rec1'||(s==='playing'&&lp.over));
