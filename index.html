@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.25</title>
+<title>SampledHeadApp 1.27</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca tus sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -289,6 +289,34 @@ button:disabled{opacity:.4}
 .boct{display:flex;align-items:center;gap:8px;justify-content:center}
 .boct b{min-width:78px;text-align:center}
 #bstat{color:var(--mute);font-size:12px;min-height:16px;text-align:center}
+.midimon{margin:0;background:var(--chip);border-radius:8px;padding:8px 10px;font:12px/1.4 ui-monospace,Menlo,monospace;min-height:70px;white-space:pre-wrap;color:var(--ink)}
+.fxbox.sel{outline:2px solid var(--ink);outline-offset:-2px;border-radius:10px}
+.strip{display:flex;gap:6px;align-items:center;min-height:26px}
+.strip button{padding:4px 10px;line-height:1.2;flex:none}
+.strip button:disabled{opacity:.35}
+.tabs{position:relative}
+canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min-height:0;flex:none;pointer-events:none;border-radius:2px;background:#0c0e12}
+.strip{display:none}.unit.bass .strip,.unit.keys .strip,.unit.mix .strip{display:flex}
+.strip button{font-size:13px}
+.unit{--acc:#31d0ff}.unit.loop{--acc:#9be564}.unit.bass{--acc:#ff8a1f}.unit.keys{--acc:#b48cff}.unit.mix{--acc:#ffd23f}.unit.fxt{--acc:#ff4f9a}
+#tabS{--tc:#31d0ff}#tabL{--tc:#9be564}#tabB{--tc:#ff8a1f}#tabK{--tc:#b48cff}#tabM{--tc:#ffd23f}#tabF{--tc:#ff4f9a}
+.tabs button{box-shadow:inset 0 -3px 0 var(--tc)}
+.tabs button.on{background:var(--tc);color:#101216}
+.pad.sel{outline-color:var(--acc)}
+.top,.strip{border-bottom:0}
+.unit.bass .lcd,.unit.keys .lcd{border-color:var(--acc)}
+:root{--chrome:510px}
+.lpmix{display:flex;gap:6px;align-items:center}
+.lpmix button{flex:none;padding:7px 9px}
+.lpmix input[type=range]{flex:1 1 auto;min-width:40px}
+.lpmix input[type=number]{flex:none;width:52px;font:inherit;color:var(--ink);background:var(--chip);border:0;border-radius:8px;padding:7px 4px;text-align:center}
+.lpmix button.on,.lptracks button.solo{background:var(--ink);color:#101216}
+.lptracks button.solo{box-shadow:inset 0 0 0 2px var(--tc)}
+.mlgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:4px 0 8px}
+#midilearn button{padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
+#midilearn button span{font-size:12px}
+#midilearn button small{font-size:10px;font-weight:500;opacity:.7;white-space:nowrap}
+#midilearn button.on{background:var(--ink);color:#101216}
 </style>
 </head>
 <body>
@@ -302,7 +330,7 @@ button:disabled{opacity:.4}
     <button id="menubtn" aria-label="Más opciones">Más</button>
   </div>
 
-  <div class="tabs" role="tablist" aria-label="Pestañas">
+  <div class="tabs" role="tablist" aria-label="Pestañas"><canvas id="meter" aria-label="Nivel de salida" role="img"></canvas>
     <button id="tabS" role="tab" aria-selected="true" class="on">Sampler</button>
     <button id="tabL" role="tab" aria-selected="false">Looper</button>
     <button id="tabB" role="tab" aria-selected="false">Bajo</button>
@@ -310,6 +338,8 @@ button:disabled{opacity:.4}
     <button id="tabM" role="tab" aria-selected="false">Mixer</button>
     <button id="tabF" role="tab" aria-selected="false">FX</button>
   </div>
+
+  <div class="strip" id="strip"><button id="gundo" aria-label="Deshacer" title="Deshacer">↶ Deshacer</button><button id="gredo" aria-label="Rehacer" title="Rehacer">↷ Rehacer</button></div>
 
   <div class="lcd">
     <div class="hd"><span id="name"></span><span id="status"></span></div>
@@ -321,7 +351,7 @@ button:disabled{opacity:.4}
       <button id="zall">Todo</button><button id="zreg">Región</button><button id="lkS" aria-label="Bloquear marca de inicio" title="Bloquear inicio">🔓 Ini</button><button id="lkE" aria-label="Bloquear marca final" title="Bloquear final">🔓 Fin</button>
     </div>
     <div class="chop" id="chop">
-      <button id="chopb" aria-pressed="false" aria-label="Auto chop: dividir la región del pad en partes iguales">✂ Chop</button>
+      <button id="chopb" aria-pressed="false" aria-label="Auto chop: dividir la región del pad en partes iguales o por golpes">✂ Chop</button>
       <button id="chopn" disabled aria-label="Dividir la región en 16, 8, 4 o 2 partes">Dividir</button>
       <button id="chopa" disabled aria-label="Asignar los fragmentos a los pads del banco">Asignar</button>
     </div>
@@ -354,6 +384,13 @@ button:disabled{opacity:.4}
     <div class="lptracks" id="lptracks" role="group" aria-label="Pistas del looper">
       <button data-t="0" aria-label="Pista 1">1</button><button data-t="1" aria-label="Pista 2">2</button><button data-t="2" aria-label="Pista 3">3</button><button data-t="3" aria-label="Pista 4">4</button>
       <button id="lpmute" aria-label="Silenciar la pista seleccionada">Mute</button><button id="lpclr" aria-label="Borrar la pista seleccionada">Borrar</button>
+    </div>
+    <div class="lpmix" id="lpmix">
+      <button id="lpsolo" aria-label="Solo: oír solo la pista seleccionada">Solo</button>
+      <input id="lpvol" type="range" min="0" max="150" value="100" aria-label="Volumen de la pista seleccionada">
+      <button id="lpmet" aria-pressed="false" aria-label="Metrónomo">Metro</button>
+      <input id="lpmbpm" type="number" inputmode="numeric" min="40" max="240" value="100" aria-label="BPM del metrónomo cuando el looper aún no tiene tempo">
+      <button id="lpcnt" aria-pressed="false" aria-label="Cuenta atrás de un compás antes de grabar">Cuenta</button>
     </div>
     <div class="lpbtns">
       <button id="lprec" aria-label="Rec: armar la grabación; después, activar o desactivar el overdub">● Rec</button>
@@ -424,13 +461,20 @@ button:disabled{opacity:.4}
       <div class="note">Duración de cada nota al exportar (igual para las 16):</div>
       <div class="bgrp c3" id="bdur"><button data-v="0.25">¼ s</button><button data-v="0.5">½ s</button><button data-v="1">1 s</button><button data-v="2">2 s</button><button data-v="b1">1 tiempo</button><button data-v="b2">2 tiempos</button></div>
       <div class="note">Los tiempos usan el tempo del Looper (120 BPM si no hay).</div>
-      <div class="bgrp c3"><button id="bwav">WAV</button><button id="bkoala">Koala</button><button id="badg">Ableton</button><button id="bmpc">MPC</button><button id="bsp404a">SP-404A</button><button id="bsp404mk2">SP-404MK2</button></div>
+      <div class="bgrp c4"><button id="bwav">WAV</button><button id="bkoala">Koala</button><button id="badg">Ableton</button><button id="bmpc">MPC</button><button id="bsp404a">SP-404A/SX</button><button id="bmove">Move</button><button id="bsp404mk2">SP-404MK2</button></div>
     </div>
   </div>
   <div id="mixpanel">
+    <div class="bsec"><div class="bt">Perillas MIDI · grupo activo</div><div class="bgrp c4" id="mxgrp"></div><div class="note" id="mxgrpn"></div></div>
     <div class="bsec"><div class="bt">Mixer · volumen de cada parte</div>
       <div class="mxrow" id="mxch"></div>
       <div class="note">Arrastra el fader hacia arriba o abajo; doble toque lo devuelve a 0 dB. El mixer afecta a lo que suena en directo (incluido el Looper), no a los kits exportados.</div>
+    </div>
+    <div class="bsec"><div class="bt">Envíos · reverb y delay</div>
+      <div id="mxsl"></div>
+      <div class="bgrp c3" id="mxrsz" aria-label="Tamaño de la reverb"></div>
+      <div class="bgrp c4" id="mxdd" aria-label="Tiempo del delay"></div>
+      <div class="note">Cada parte envía parte de su señal a una reverb y a un delay comunes. El delay sigue el tempo del loop o del looper (120 BPM si no hay). Los envíos suenan en directo; no se incluyen al exportar WAV, kits ni al resamplear.</div>
     </div>
     <div class="bsec"><div class="bt">Ecualizador de 8 bandas · master</div>
       <canvas id="mxeqc" aria-label="Respuesta del ecualizador"></canvas>
@@ -477,7 +521,7 @@ button:disabled{opacity:.4}
       <div class="note">Duración de cada acorde al exportar (igual para los 16):</div>
       <div class="bgrp c3" id="kdur"><button data-v="0.5">½ s</button><button data-v="1">1 s</button><button data-v="2">2 s</button><button data-v="3">3 s</button><button data-v="b1">1 tiempo</button><button data-v="b2">2 tiempos</button></div>
       <div class="note">Los tiempos usan el tempo del Looper (120 BPM si no hay).</div>
-      <div class="bgrp c3"><button id="twav">WAV</button><button id="tkoala">Koala</button><button id="tadg">Ableton</button><button id="tmpc">MPC</button><button id="tsp404a">SP-404A</button><button id="tsp404mk2">SP-404MK2</button></div>
+      <div class="bgrp c4"><button id="twav">WAV</button><button id="tkoala">Koala</button><button id="tadg">Ableton</button><button id="tmpc">MPC</button><button id="tsp404a">SP-404A/SX</button><button id="tmove">Move</button><button id="tsp404mk2">SP-404MK2</button></div>
     </div>
   </div>
   <div class="lpexp" id="lpexp">
@@ -499,6 +543,8 @@ button:disabled{opacity:.4}
   <div class="note" id="lofiinfo"></div>
   <label class="sl"><span>Filtro</span><input id="cut" type="range" min="0" max="1000" aria-label="Frecuencia de corte del filtro paso bajo"><b id="cutv"></b></label>
   <label class="sl"><span>Reson.</span><input id="res" type="range" min="0" max="100" aria-label="Resonancia del filtro"><b id="resv"></b></label>
+  <label class="sl"><span>Reverb</span><input id="prv" type="range" min="0" max="100" aria-label="Envío de reverb de este pad"><b id="prvv"></b></label>
+  <label class="sl"><span>Delay</span><input id="pdl" type="range" min="0" max="100" aria-label="Envío de delay de este pad"><b id="pdlv"></b></label>
   <button id="fxgrp" aria-label="Aplicar los efectos a los pads del mismo grupo">Aplicar al grupo</button>
   <button id="fxall">Aplicar a todos los pads</button>
   <button id="fxclose">Cerrar</button>
@@ -554,6 +600,7 @@ button:disabled{opacity:.4}
 <details><summary>8. Deshacer y rehacer</summary>
 <p>En la parte de abajo, junto al afinador, hay dos botones pequeños con flechas, <b>↶</b> (deshacer) y <b>↷</b> (rehacer), que recorren los últimos cambios que has hecho. En un teclado también sirven <b>Ctrl+Z</b> (deshacer) y <b>Ctrl+Mayús+Z</b> o <b>Ctrl+Y</b> (rehacer); en Mac, con <b>Cmd</b>.</p>
 <ul><li>Se deshacen los cambios de cada pad: volumen, tono, Reverse, Loop, One shot / Gate, grupo, efectos y filtro, región y canal, nombre, y también cargar, grabar, vaciar, duplicar, 16 Levels, resample, aplicar efectos a todos y cargar o importar un kit.</li><li>Un arrastre cuenta como un solo cambio: mover un fader o los marcadores de la región y soltar es un paso. Los cambios muy seguidos con el teclado también se agrupan.</li><li>Al deshacer, la barra de la pantalla dice qué se ha deshecho, por ejemplo «Deshecho: A3 tono».</li><li>Si deshaces y luego haces un cambio nuevo, lo que se podía rehacer se descarta.</li><li>Se guardan los últimos 40 cambios. Los botones se apagan cuando no hay nada que deshacer o rehacer, y mientras el resample está grabando.</li></ul>
+<p><b>Bajo, teclas y mixer.</b> Desde la 1.26 también se deshacen los cambios de los ajustes del bajo, de las teclas y del mixer (faders, ecualizador, compresor y envíos). Como esas pestañas no tienen los botones de abajo, bajo las pestañas Bajo, Teclas y Mixer aparecen <b>↶ Deshacer</b> y <b>↷ Rehacer</b>. El historial es único: deshace en orden lo último que hayas cambiado, sea del sampler, del bajo, de las teclas o del mixer.</p>
 <p class="tip">No se deshace elegir pad o banco, ni cambiar el zoom, ni guardar, borrar o exportar kits. Al deshacer, la app conserva en memoria los audios anteriores, así que con audios muy largos consume algo más de memoria. Al cerrar o recargar la página se pierde el historial.</p>
 </details>
 <details><summary>9. Grupos: cortar pads entre sí</summary>
@@ -585,6 +632,7 @@ button:disabled{opacity:.4}
 <p>El auto chop divide la región de un pad en 16, 8, 4 o 2 partes iguales y reparte cada trozo en un pad del banco. Es ideal para trocear un loop de batería o una frase y tocar sus partes por separado.</p>
 <ol><li>Selecciona un pad que tenga sample y ajusta su región con los marcadores (con los candados si quieres fijarla).</li><li>Pulsa <b>✂ Chop</b>. Se activa y el botón queda iluminado.</li><li>Pulsa <b>Dividir</b>: la región se divide en <b>16</b> partes y aparecen líneas discontinuas con el número de cada trozo. Cada nueva pulsación la divide en <b>8</b>, luego <b>4</b>, luego <b>2</b> y vuelve a 16. Puedes seguir moviendo los marcadores y las divisiones se recalculan solas.</li><li>Pulsa <b>Asignar a A</b> (la letra es el banco que estás viendo). El trozo 1 va al pad 1 del banco, el 2 al pad 2, y así hasta el último. Si hay 8 trozos usa los pads 1 a 8, con 4 los pads 1 a 4, etc.</li></ol>
 <ul><li>Si algún pad de destino ya tiene un sample, la app pregunta antes de sustituirlo. Si el propio pad de origen está entre los destinos, se sustituye por el trozo 1.</li><li>Los trozos comparten el audio del original y heredan su canal, volumen, tono, afinado, Reverse, lo-fi y filtro. Se crean como One shot, sin Loop ni grupo, y se llaman «nombre 01», «nombre 02»… Después puedes editar cada uno por separado.</li><li>Los cortes se ajustan al cruce por cero más cercano (si tienes activada esa opción en <b>Más</b>) para evitar clics.</li><li>Si seleccionas otro pad, el modo Chop se apaga solo. También puedes apagarlo pulsando <b>✂ Chop</b> otra vez.</li><li>Se puede deshacer con ↶: una sola pulsación revierte toda la asignación.</li></ul>
+<p><b>Por golpes.</b> Si sigues pulsando <b>Dividir</b> después de 2 partes, aparece <b>Golpes</b>: la app detecta los ataques (golpes de caja, bombo, notas) dentro de la región y corta justo antes de cada uno, hasta 16 fragmentos. Lo que haya antes del primer golpe se descarta. Con <b>Asignar</b> cada golpe va a un pad, igual que con las partes iguales. Si no encuentra golpes claros, avisa y vuelve a 16 partes iguales. Funciona mejor con sonidos percusivos y limpios; un pad con mucha reverb o un colchón continuo puede dar pocos cortes.</p>
 <p class="tip">Para un loop de batería de dos compases, prueba con 16 trozos (corcheas) o 8 (negras), asigna al banco y toca los trozos en otro orden, o grábalos en el Looper para crear nuevos ritmos.</p>
 </details>
 <details><summary>14. Resample</summary>
@@ -614,6 +662,8 @@ button:disabled{opacity:.4}
 <ul><li>Al cerrar el primer bucle, la app calcula a cuántos BPM lo has tocado a partir del momento exacto de tus toques y de la duración del bucle. Aparece como «120.0 BPM», con el número de tiempos del bucle y una indicación: fiable, aproximado o poco fiable.</li><li>Si el bucle tiene muy pocos toques, la app lo estima solo por la duración y lo indica como «estimado por la duración». Con un solo toque no hay tempo.</li><li>Los botones <b>÷2</b> y <b>×2</b> corrigen el resultado cuando la app ha elegido el doble o la mitad. Es habitual en tempos lentos (entre 60 y 80 BPM), que pueden salir al doble.</li><li>El tempo se recalcula al deshacer una capa o al terminar un overdub, y se borra al vaciar el looper.</li><li>La precisión depende de lo preciso que seas al cerrar el bucle con Loop: un cierre fuera de tiempo desplaza el resultado unas décimas de BPM.</li></ul>
 <p>Exportar el bucle</p>
 <ul><li>Encima de los botones de exportar eliges <b>qué exportar</b>: <b>Pista N</b> (solo la pista seleccionada, aunque esté silenciada), <b>Mezcla</b> (todas las pistas que no estén silenciadas) o <b>Cada pista</b> (cada pista con contenido por separado).</li><li><b>Exportar a pad</b>: renderiza el bucle con todas sus capas y lo guarda en un pad libre (el seleccionado si está vacío, o el siguiente vacío). El pad se llama «Loop 120 BPM» («Loop P2 120 BPM» si es una pista, «Loop mezcla…» si es la mezcla). Con «Cada pista», cada pista va a un pad libre distinto. Los pads quedan con los ajustes de fábrica, para no aplicar los efectos dos veces.</li><li><b>Exportar a WAV</b>: descarga un WAV mono de 16 bits (loop_pista2_120bpm.wav, loop_mezcla_120bpm.wav…). Con «Cada pista» descarga un zip con un WAV por pista.</li><li>El audio dura exactamente lo que dura el bucle, sin recortar silencios, así que encaja al repetirlo. Las colas de los sonidos (reverb, release de Gate) se solapan con el inicio, como al sonar en bucle.</li><li>Se respetan los grupos, los pads en Loop y los efectos. Si el resultado supera 0 dB, se baja el volumen para que no sature.</li><li>Los botones de exportar están desactivados hasta que hay un bucle grabado.</li></ul>
+<p><b>Volumen, solo y metrónomo</b></p>
+<ul><li>Bajo los botones de pista hay una fila con <b>Solo</b>, un deslizador de <b>volumen de la pista seleccionada</b> (0 a 150 %; doble toque lo vuelve a 100 %), <b>Metro</b>, el número de <b>BPM</b> y <b>Cuenta</b>.</li><li><b>Solo</b> deja oír solo las pistas en solo (se pueden poner varias). El volumen y el solo se aplican también al exportar a pad o a WAV. El volumen de una pista actúa en la reproducción del bucle: lo que tocas en directo suena a su nivel normal.</li><li><b>Metro</b> activa el metrónomo (un clic más agudo en el primer tiempo de cada compás de 4). Con el bucle ya grabado sigue su tempo; antes de eso usa los BPM del cuadro. Mientras graba la primera pasada, el pulso arranca en tu primer toque.</li><li><b>Cuenta</b>: al pulsar <b>Rec</b> suenan 4 clics de cuenta atrás (a los BPM del cuadro) y después el looper queda armado, esperando tu primer toque. Solo se usa para empezar un bucle nuevo, no para los overdubs.</li></ul>
 <p class="tip">Para componer con varias capas: graba el bucle, expórtalo a un pad y úsalo en el Sampler como cualquier sample, o descárgalo en WAV para llevarlo a tu DAW. Resample sigue sirviendo para grabar el bucle mezclado con otros pads.</p>
 </details>
 <details><summary>17. Bajo (tercera pestaña)</summary>
@@ -636,6 +686,7 @@ button:disabled{opacity:.4}
 </details>
 <details><summary>19. Mixer (pestaña Mixer)</summary>
 <p>La pestaña <b>Mixer</b> controla el sonido final de toda la app: los volúmenes de cada parte, un ecualizador de 8 bandas y un compresor. Actúa sobre lo que oyes en directo (también el Looper) y va después de los FX del máster: el orden es FX del máster → ecualizador → compresor → volumen master.</p>
+<p><b>Envíos de reverb y delay.</b> Bajo los faders hay seis deslizadores de envío: cuánta señal de <b>Sampler</b>, <b>Bajo</b> y <b>Teclas</b> va a una <b>reverb</b> y a un <b>delay</b> comunes, más el nivel de retorno de cada uno y las <b>repeticiones</b> del delay. Puedes elegir la reverb <b>corta, media o larga</b> y el tiempo del delay (1/4, 1/8, 1/8 con puntillo o 1/16), que sigue el tempo del loop del sampler o del looper (120 BPM si no hay ninguno). El retorno pasa por los FX del máster, el ecualizador y el compresor. Además, cada pad tiene su propio envío: <b>Efectos del pad → Reverb y Delay</b>, que se guarda con el kit. Los envíos suenan en directo; no se incluyen al exportar WAV o kits, ni al hacer resample.</p>
 <ul><li><b>Faders</b>: <b>Sampler</b>, <b>Bajo</b>, <b>Teclas</b> y <b>Master</b>. Arrastra hacia arriba o abajo (de −∞ a +6 dB); un doble toque lo devuelve a 0 dB. A su lado hay un medidor de nivel que se pone rojo cerca del máximo. <b>Mute</b> silencia ese canal.</li><li><b>Ecualizador de 8 bandas</b>: 80, 160, 320, 640 Hz, 1,25, 2,5, 5 y 10 kHz, de −12 a +12 dB cada una. Las bandas de los extremos son filtros de plataforma (shelf). La curva verde muestra el resultado. Hay presets: Plano, Graves +, Brillo, Cálido, Scoop y Sin graves. El botón <b>Ecualizador activado</b> lo puentea para comparar.</li><li><b>Compresor</b>: umbral, ratio, ataque, relajación, knee y ganancia de compensación. Presets: Suave, Glue, Fuerte y Limitador. La barra naranja indica cuántos dB está bajando el nivel. Si tocas un mando, el compresor se activa; el botón <b>Compresor activado</b> lo apaga y enciende.</li><li><b>Restablecer mixer</b> devuelve todo a su valor inicial.</li><li>Los ajustes del mixer se guardan en el navegador y se recuperan al abrir la app, pero no se guardan con los kits.</li><li>El mixer no cambia los kits exportados (WAV, Koala, Ableton, MPC, SP-404), ni los bucles que exportas del Looper, ni el Resample: solo lo que suena por los altavoces.</li><li>Con el compresor muy fuerte o mucha ganancia, el sonido puede saturar. Vigila el medidor Master.</li></ul>
 </details>
 <details><summary>20. Kits: guardar, cargar y copias</summary>
@@ -658,11 +709,52 @@ button:disabled{opacity:.4}
 <details><summary>23. Problemas frecuentes</summary>
 <table><thead><tr><th>Problema</th><th>Qué hacer</th></tr></thead><tbody><tr><td>El micrófono o Importar no funcionan</td><td>Abre la app desde su dirección web (https), o el archivo index.html directamente en Chrome o Firefox, no desde la vista previa de Claude. Acepta el permiso del micrófono cuando el navegador lo pida.</td></tr><tr><td>No se oye nada</td><td>Toca primero la pantalla (los navegadores exigen un gesto antes de reproducir) y comprueba el volumen y el modo silencio del móvil.</td></tr><tr><td>Arrastrar sobre la onda no hace nada</td><td>Comprueba que hay un audio cargado en pantalla. Con un pad ya relleno, arrastrar mueve los marcadores en lugar de crear una región nueva.</td></tr><tr><td>16 Levels no hace nada</td><td>Selecciona un pad que tenga sample y deja un banco completamente vacío. El botón indica cuál de las dos cosas falta.</td></tr><tr><td>Resample no graba nada o graba silencio</td><td>Elige los pads antes de pulsar Rec. Solo se graba lo que suenan los pads elegidos, no los demás. Rec está desactivado hasta que elijas al menos uno.</td></tr><tr><td>Un enlace no carga</td><td>El enlace no es directo o el servidor no lo permite. Descarga el audio e impórtalo.</td></tr><tr><td>Los kits han desaparecido</td><td>Se guardan en el navegador y se pierden si borras sus datos o abres la app desde otro sitio. Usa Exportar kit (.zip) como copia de seguridad.</td></tr><tr><td>Veo la versión antigua</td><td>Cierra la app del todo y ábrela de nuevo. Si sigue igual, espera unos minutos (GitHub tarda en actualizar) o borra los datos del sitio, pero antes exporta tus kits.</td></tr><tr><td>La descarga no aparece</td><td>Comprueba el permiso de descargas del navegador y la carpeta Descargas. Con muchos pads, la exportación puede tardar unos segundos.</td></tr></tbody></table>
 </details>
-<details><summary>24. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.25</b></p>
+<details><summary>24. MIDI: controlar la app con un aparato</summary>
+<p>La app puede recibir MIDI por USB (SP-404 MK2, Ableton Move, MPC Sample u otro controlador). Se abre en <b>Más → MIDI…</b>. <b>Importante:</b> MIDI web funciona en <b>Chrome en Android, Mac, Windows y Linux</b>; <b>no existe en iPad/iPhone (Safari)</b>.</p>
+<ol><li>Conecta el aparato por USB y pulsa <b>Activar MIDI</b>; acepta el permiso del navegador. Verás el nombre del aparato.</li><li>Elige su <b>perfil</b> (la app lo detecta por el nombre si puede). Los perfiles solo son un punto de partida.</li><li>Toca un pad o gira una perilla: el <b>monitor</b> muestra el mensaje exacto que envía (nota, CC y canal).</li><li>Si algo no coincide, usa <b>Aprender</b>: pulsa «Pad 1», «Perilla 1», «Rec»… y luego pulsa o mueve ese control en el aparato. «Pad 1» fija la nota del primer pad y las otras 15 notas van seguidas. <b>Borrar lo aprendido</b> vuelve al perfil.</li></ol>
+<ul><li><b>Pads</b>: los 16 pads del aparato tocan los 16 pads de la pestaña que veas: Sampler (banco actual), Looper, Bajo o Teclas. En Mixer y FX los pads no suenan. La fuerza (velocity) se usa en Teclas.</li><li><b>Rec en el Looper</b>: Rec empieza a grabar al instante; pulsarlo otra vez cierra el bucle y pasa a overdub; con el bucle sonando alterna el overdub. En Sampler, Rec = Grabar, Play = tocar el pad seleccionado, Stop = parar todos y Deshacer = deshacer.</li><li><b>Perillas relativas</b>: los encoders del Move giran sin tope (1 = derecha, 127 = izquierda). La casilla «Perillas relativas» se activa sola con el perfil Move; <b>Sensib.</b> regula cuánto cambia cada paso.</li><li><b>Fuera del Mixer</b>: perillas 1 y 2 = ejes X e Y del efecto elegido, la 3 elige el efecto (Filtro, BIT, Beat repeat). Se suelta solo a los 1,5 s sin moverla.</li><li><b>En el Mixer</b>: las 8 perillas controlan el <b>grupo activo</b>: 1) volúmenes Sampler/Bajo/Teclas (perillas 1-3) y envíos de reverb (4-6); 2) envíos de delay (1-3), retorno reverb (4), retorno delay (5) y repeticiones (6); 3) compresor: umbral, ratio, ataque, relajación, knee y ganancia; 4) EQ: una banda por perilla. El grupo se cambia con los botones de la pantalla o con la rueda principal (aprende «Rueda (grupo)») y «Grupo +/−». «Master» se aprende con la perilla de volumen si el aparato la envía.</li><li><b>Pestañas</b>: aprende «Sampler, Looper, Bajo, Teclas, Mixer, FX» en los botones de pista del Move para cambiar de pantalla. También hay Bancos A-D, Pistas 1-4 del looper, Mute, Solo, Borrar pista, Metrónomo, Loop y Rehacer.</li></ul>
+<p class="tip">Honestidad sobre los números: SP-404 MK2: perillas CC 16-18 y 80-82, REC looper CC 88 y deshacer CC 91 vienen de la tabla de Roland; Play/Stop llegan como MIDI Start/Stop con Sync Out; las notas de los pads se aceptan en modo A y B. Ableton Move y MPC Sample: valores de documentos no oficiales; en el Move se aceptan a la vez los CC 71-78 y 21-28. Todo lo que no responda se ajusta en un minuto con el monitor y Aprender, y la app lo recuerda. Cada botón de Aprender muestra debajo lo que tiene asignado.</p>
+</details>
+<details><summary>25. Proyectos y autoguardado</summary>
+<p>Un <b>proyecto</b> guarda todo el estado de la app: los 64 pads con su audio y ajustes, el bajo, las teclas, el mixer (con los envíos) y el looper (pistas, volúmenes, solo y silencios). Se gestiona en <b>Más → Proyectos…</b>: <b>Guardar</b> (pide un nombre), <b>Cargar</b> y <b>Borrar</b>.</p>
+<ul><li><b>Autoguardado</b>: cada pocos segundos, si algo ha cambiado, la app guarda sola la sesión actual, y al abrirla de nuevo la recupera. Se desactiva con la casilla de la hoja Proyectos. No guarda mientras el looper está grabando su primera pasada.</li><li>Todo se guarda en el navegador del dispositivo, igual que los kits: si borras los datos del sitio, se pierde. Para copias, sigue usando <b>Exportar kit (.zip)</b>.</li><li>Al cargar un proyecto se sustituye lo que haya en pantalla (se puede deshacer lo posterior, no la carga).</li></ul>
+</details>
+<details><summary>26. Medidor y colores</summary>
+<p>Una línea fina sobre las pestañas es el <b>medidor de nivel</b> de la salida final: verde, luego amarillo y rojo; la marca blanca es el pico reciente y el extremo derecho se enciende en rojo un momento si hay saturación. Cada sección tiene su color: Sampler cian, Looper verde, Bajo naranja, Teclas violeta, Mixer amarillo y FX rosa; se repite en la pestaña y en los pads de Bajo y Teclas.</p>
+</details>
+<details><summary>27. Exportar a SP-404A/SX y Ableton Move</summary>
+<p><b>SP-404A / SX</b>: el zip incluye la carpeta ROLAND/IMPORT (importar desde la máquina) y además una <b>tarjeta lista</b> con los samples y los ajustes de los pads (formato leído de una copia real de una SP-404SX). Copia el contenido de la tarjeta a una SD formateada por la máquina; haz antes copia de la tuya. El LEEME del zip explica los pasos.</p><p><b>Ableton Move</b>: genera un set (.ablbundle) con un Drum Rack por banco, samples a 48 kHz y grupos de choke. Ábrelo desde Ableton Move Manager o cópialo al Move. Aviso: no he podido probarlo en un Move real; si lo rechaza, dímelo.</p><p><b>SP-404 MK2</b> sigue usando la carpeta IMPORT, que es el método seguro: el formato de proyecto de la MK2 no se escribe porque un error podría dañar la tarjeta.</p>
+</details>
+<details><summary>28. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.27</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
   <button id="guideclose">Cerrar</button>
+</div>
+<div class="sheet" id="midisheet" hidden>
+  <b>MIDI</b>
+  <div class="note" id="midiins">Pulsa «Activar MIDI» con el aparato conectado por USB.</div>
+  <div class="kit"><button id="midion">Activar MIDI</button><select id="midiprof" aria-label="Perfil del aparato"></select></div>
+  <div class="note" id="midinote"></div>
+  <label class="chk"><input id="midirel" type="checkbox"> Perillas relativas (encoders sin tope, como las del Move)</label>
+  <label class="sl"><span>Sensib.</span><input id="midisens" type="range" min="25" max="300" step="5" value="100" aria-label="Sensibilidad de las perillas relativas"><b></b></label>
+  <b>Monitor</b>
+  <pre id="midimon" class="midimon" aria-live="polite"></pre>
+  <b>Aprender</b>
+  <div class="note" id="midilhint">Pulsa un control de la lista y luego tócalo en el aparato. Se muestra lo asignado debajo de cada nombre.</div>
+  <div class="kit"><button id="midiunset" hidden>Quitar este mapeo</button></div>
+  <div id="midilearn"></div>
+  <div class="note">Los 16 pads del aparato tocan los 16 pads de la pestaña visible (Sampler, Looper, Bajo o Teclas); en Mixer y FX no suenan. Fuera del Mixer: perillas 1 y 2 = ejes X e Y del efecto elegido y la 3 elige el efecto. En el Mixer, las perillas controlan el grupo activo (Volúmenes y reverb · Delays · Compresor · EQ); la rueda o «Grupo +/−» cambian de grupo.</div>
+  <div class="kit"><button id="midiclr">Borrar lo aprendido</button><button id="midiclose">Cerrar</button></div>
+</div>
+<div class="sheet" id="projsheet" hidden>
+  <b>Proyectos</b>
+  <div class="note">Un proyecto guarda todo: pads del sampler, bajo, teclas, mixer y looper. Además la app se autoguarda sola y recupera tu sesión al abrir.</div>
+  <div class="kit"><select id="pjlist" aria-label="Proyectos guardados"></select></div>
+  <div class="kit"><button id="pjsave">Guardar</button><button id="pjload">Cargar</button><button id="pjdel">Borrar</button></div>
+  <label class="chk"><input id="pjauto" type="checkbox" checked> Autoguardar y recuperar la sesión al abrir</label>
+  <div class="note" id="pjinfo"></div>
+  <button id="projclose">Cerrar</button>
 </div>
 <div class="sheet" id="sheet" hidden>
   <b>Cargar desde enlace directo</b>
@@ -682,10 +774,10 @@ button:disabled{opacity:.4}
     <button id="kadg">Exportar a Ableton</button>
   </div>
   <div class="kit files">
-    <button id="kmpc">Exportar a MPC Sample</button>
+    <button id="kmpc">Exportar a MPC Sample</button><button id="kmove">Exportar a Ableton Move</button>
   </div>
   <div class="kit files">
-    <button id="ksp404a">Exportar a SP-404A</button>
+    <button id="ksp404a">Exportar a SP-404A / SX</button>
     <button id="ksp404mk2">Exportar a SP-404MK2</button>
   </div>
   <div class="kit files">
@@ -693,6 +785,7 @@ button:disabled{opacity:.4}
     <label class="btn">Importar kit<input id="kimp" type="file" accept=".zip,application/zip" hidden></label>
   </div>
   <b>Aplicación</b>
+  <div class="kit files"><button id="midibtn">MIDI…</button><button id="projbtn">Proyectos…</button></div>
   <div class="kit"><button id="pwainst" hidden>Instalar app</button></div>
   <div class="note" id="pwainfo"></div>
   <label class="chk"><input id="snap" type="checkbox" checked> Ajustar al cruce por cero al marcar</label>
@@ -937,7 +1030,7 @@ function fxRelease(m){
 const KEYS='zxcvasdfqwer1234';   // fila inferior = pads 1-4, como en la MPC
 const BANKS='ABCD',pl=i=>BANKS[i>>4]+((i&15)+1),plz=i=>BANKS[i>>4]+String((i&15)+1).padStart(2,'0');
 const hue=i=>((i&15)*47)%360,col=(i,a=1)=>`hsla(${hue(i)},75%,62%,${a})`;
-const resetPad=p=>Object.assign(p,{buf:null,name:'',s:0,e:1,ch:0,vol:1,pitch:0,rev:false,loop:false,gate:false,grp:0,fine:0,lofi:0,grade:1,cut:20000,res:0,lockS:false,lockE:false,cache:null});
+const resetPad=p=>Object.assign(p,{buf:null,name:'',s:0,e:1,ch:0,vol:1,pitch:0,rev:false,loop:false,gate:false,grp:0,fine:0,lofi:0,grade:1,cut:20000,res:0,rv:0,dl:0,lockS:false,lockE:false,cache:null});
 const pads=Array.from({length:64},()=>resetPad({src:null}));
 let sel=0,bank=0,rec=null,work=null;
 const status=t=>{$('#status').textContent=t;const b=$('#bstat');if(b)b.textContent=t};
@@ -1044,6 +1137,7 @@ function fxSync(){
   $('#lofiinfo').textContent=m?m.bits+' bits · '+fmtK(m.rate)+' kHz'+(p.lofi===1?' · sin filtro de reconstrucción':''):'Sin efecto lo-fi';
   $('#cut').value=sliderFromCut(p.cut);$('#cutv').textContent=fmtHz(p.cut);
   $('#res').value=p.res;$('#resv').textContent=p.res+'%';
+  if($('#prv')){$('#prv').value=Math.round((p.rv||0)*100);$('#prvv').textContent=Math.round((p.rv||0)*100)+'%';$('#pdl').value=Math.round((p.dl||0)*100);$('#pdlv').textContent=Math.round((p.dl||0)*100)+'%'}
   $('#fxtitle').textContent='Efectos · Pad '+pl(sel)+(p.buf?'':' (vacío)');
   $('#fx').classList.toggle('on',p.lofi>0||p.cut<19900);
   const n=p.grp?pads.filter(q=>q.grp===p.grp).length:0;
@@ -1110,8 +1204,8 @@ function play(i,when){
   if(p.grp)pads.forEach((q,j)=>{if(j!==i&&q.grp===p.grp)stop(j,true,at)});   // grupo: corta solo a los de su mismo grupo
   stop(i,false,at);
   const s=ctx.createBufferSource(),g=ctx.createGain();
-  s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol;
-  p.flt=chain(ctx,s,p,g,sampBus,true);if(rsMode&&rsSel.has(i))g.connect(rsBus);s.start(at);p.src=s;p.gn=g;p.lt=at||ctx.currentTime;
+  s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol*LPV;
+  p.flt=chain(ctx,s,p,g,sampBus,true);if(p.rv>0){const q=ctx.createGain();q.gain.value=p.rv;g.connect(q);q.connect(revIn)}if(p.dl>0){const q=ctx.createGain();q.gain.value=p.dl;g.connect(q);q.connect(dlyIn)}if(rsMode&&rsSel.has(i))g.connect(rsBus);s.start(at);p.src=s;p.gn=g;p.lt=at||ctx.currentTime;
   s.onended=()=>{if(p.src===s){p.src=null;p.flt=null;padEl(i).classList.remove('on')}};
   const dt=at-ctx.currentTime;
   if(dt>.01)setTimeout(()=>{if(p.src===s)padEl(i).classList.add('on')},dt*1000);else padEl(i).classList.add('on');
@@ -1349,7 +1443,7 @@ $('#menubtn').onclick=()=>menu(true);
 const guideOpen=on=>{$('#guide').hidden=!on;$('#veil').hidden=!on;if(on)$('#guide').scrollTop=0};
 $('#help').onclick=()=>guideOpen(true);
 $('#guideclose').onclick=()=>guideOpen(false);
-$('#menuclose').onclick=$('#veil').onclick=()=>{menu(false);fxOpen(false);guideOpen(false);lvOpen(false)};
+$('#menuclose').onclick=$('#veil').onclick=()=>{menu(false);fxOpen(false);guideOpen(false);lvOpen(false);midiOpen(false);projOpen(false)};
 
 /* ---------- forma de onda, zoom y selección ---------- */
 const cv=$('#wave'),g=cv.getContext('2d'),vw={a:0,b:1};
@@ -1414,7 +1508,7 @@ function draw(){
     if(chop.on&&chop.n&&chop.pad===sel){
       g.save();g.setLineDash([5*d,4*d]);g.strokeStyle='#fff';g.fillStyle='#fff';g.lineWidth=1.5*d;g.textAlign='left';
       for(let k=0;k<chop.n;k++){
-        const xa=X(p.s+(p.e-p.s)*k/chop.n),xb=X(p.s+(p.e-p.s)*(k+1)/chop.n);
+        const xa=X(chopEdge(p,k)),xb=X(chopEdge(p,k+1));
         if(k>0&&xa>=0&&xa<=W){g.beginPath();g.moveTo(xa,0);g.lineTo(xa,H);g.stroke()}
         if(xb-xa>16*d&&xb>0&&xa<W)g.fillText(String(k+1),Math.max(xa,0)+4*d,H-6*d);
       }
@@ -1450,14 +1544,15 @@ cv.addEventListener('wheel',e=>{
 
 const gapOf=b=>16/b.length;
 /* ---------- auto chop: divide la región del pad en 16, 8, 4 o 2 partes y las reparte por los pads del banco ---------- */
-const chop={on:false,n:0,pad:-1},CHOPN=[16,8,4,2];
+const chop={on:false,n:0,pad:-1,mode:'',edges:[]},CHOPN=[16,8,4,2];
+const chopEdge=(p,k)=>chop.mode==='hit'&&chop.edges[k]!=null?chop.edges[k]:p.s+(p.e-p.s)*k/chop.n;
 function chopUI(){
   const p=pads[sel],bs=$('#chopb');if(!bs)return;
   bs.disabled=!p.buf&&!chop.on;bs.classList.toggle('on',chop.on);bs.setAttribute('aria-pressed',String(chop.on));
-  $('#chopn').disabled=!chop.on;$('#chopn').textContent=chop.on&&chop.n?'÷ '+chop.n:'Dividir';
+  $('#chopn').disabled=!chop.on;$('#chopn').textContent=chop.on&&chop.n?(chop.mode==='hit'?'Golpes · ':'÷ ')+chop.n:'Dividir';
   $('#chopa').disabled=!(chop.on&&chop.n);$('#chopa').textContent='Asignar a '+BANKS[bank];
 }
-function chopOff(){chop.on=false;chop.n=0;chop.pad=-1;chopUI();draw()}
+function chopOff(){chop.on=false;chop.n=0;chop.pad=-1;chop.mode='';chopUI();draw()}
 $('#chopb').onclick=()=>{
   if(chop.on){chopOff();status('Chop desactivado');return}
   if(!pads[sel].buf){status('Selecciona un pad con sample');return}
@@ -1465,8 +1560,14 @@ $('#chopb').onclick=()=>{
 };
 $('#chopn').onclick=()=>{
   if(!chop.on)return;
-  chop.n=CHOPN[(CHOPN.indexOf(chop.n)+1)%CHOPN.length];   // 16 → 8 → 4 → 2 → 16
-  const p=pads[chop.pad],len=(p.e-p.s)*p.buf.duration/chop.n;
+  const seq=[16,8,4,2,-1],cur=chop.mode==='hit'?-1:chop.n,nx=seq[(seq.indexOf(cur)+1)%seq.length],p=pads[chop.pad];   // 16 → 8 → 4 → 2 → golpes → 16
+  if(nx===-1){
+    chopHits(p);
+    if(chop.edges.length>=3){chop.mode='hit';chop.n=chop.edges.length-1;chopUI();draw();status('Chop por golpes · '+chop.n+' fragmentos');return}
+    chop.mode='';chop.n=16;chopUI();draw();status('No encuentro golpes claros en la región: se usan 16 partes iguales');return;
+  }
+  chop.mode='';chop.n=nx;
+  const len=(p.e-p.s)*p.buf.duration/chop.n;
   chopUI();draw();status('Chop · '+chop.n+' partes de '+len.toFixed(3)+' s');
 };
 function chopAssign(){
@@ -1481,6 +1582,7 @@ function chopAssign(){
     edge.push(Math.min(src.e-gp,Math.max(t,edge[k-1]+gp)));
   }
   edge.push(src.e);
+  if(chop.mode==='hit')edge.splice(0,edge.length,...chop.edges);
   const S={buf:src.buf,ch:src.ch,vol:src.vol,pitch:src.pitch,fine:src.fine,rev:src.rev,lofi:src.lofi,grade:src.grade,cut:src.cut,res:src.res,
     base:(src.name||'chop').replace(/\.[^.]+$/,'')};
   targets.forEach((t,k)=>{
@@ -1659,12 +1761,12 @@ async function kitList(pick){
   const el=$('#kits');
   try{
     const keys=await tx('readonly',s=>s.getAllKeys());
-    el.replaceChildren(...keys.filter(k=>!/^(bass|keys):/.test(String(k))).map(k=>new Option(k,k)));
+    el.replaceChildren(...keys.filter(k=>!/^(bass|keys|proj):/.test(String(k))).map(k=>new Option(k,k)));
     if(pick)el.value=pick;
   }catch{status('Los kits no están disponibles en este navegador')}
 }
 /* ---------- kits ---------- */
-const packMeta=p=>({name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,lockS:!!p.lockS,lockE:!!p.lockE});
+const packMeta=p=>({name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,rv:p.rv||0,dl:p.dl||0,lockS:!!p.lockS,lockE:!!p.lockE});
 function norm(d){
   const c=typeof d.ch==='number'?d.ch:0,r=d.rg?(d.rg[c]||d.rg[0]):d;
   return {...d,ch:c,s:d.s??r.s??0,e:d.e??r.e??1};
@@ -1678,7 +1780,7 @@ function applyKit(items){
   pads.forEach((p,i)=>{
     stop(i);resetPad(p);
     const d=items[i];
-    if(d)Object.assign(p,{buf:d.buf,name:d.name||'',s:d.s,e:d.e,ch:Math.min(d.ch||0,d.buf.numberOfChannels-1),vol:d.vol??1,pitch:d.pitch??0,fine:typeof d.fine==='number'?d.fine:0,rev:!!d.rev,loop:!!d.loop,gate:d.gate??!!d.loop,grp:d.grp===1||d.grp===2?d.grp:0,lofi:d.lofi??0,grade:d.grade??1,cut:d.cut??20000,res:d.res??0,lockS:!!d.lockS,lockE:!!d.lockE});
+    if(d)Object.assign(p,{buf:d.buf,name:d.name||'',s:d.s,e:d.e,ch:Math.min(d.ch||0,d.buf.numberOfChannels-1),vol:d.vol??1,pitch:d.pitch??0,fine:typeof d.fine==='number'?d.fine:0,rev:!!d.rev,loop:!!d.loop,gate:d.gate??!!d.loop,grp:d.grp===1||d.grp===2?d.grp:0,lofi:d.lofi??0,grade:d.grade??1,cut:d.cut??20000,res:d.res??0,rv:d.rv||0,dl:d.dl||0,lockS:!!d.lockS,lockE:!!d.lockE});
     labels(i);
   });
   const f=items.find(Boolean);
@@ -1872,7 +1974,7 @@ async function exportTo(kind,src){
       if(it2.length>120){status('El SP-404A admite 120 samples por importación');return}
       const seen=new Set();
       it2.forEach((it,k)=>{let n=ascii(it.base).slice(0,24)||'pad';while(seen.has(n.toLowerCase()))n=n.slice(0,20)+'_'+k;seen.add(n.toLowerCase());it.name=String(k+1).padStart(3,'0')+'_'+n});
-      save(zip([{name:'LEEME.txt',data:new TextEncoder().encode(spReadmeA(it2,name))},...it2.map(it=>({name:'ROLAND/IMPORT/'+it.name+'.wav',data:it.data}))]),name+'_SP-404A.zip');
+      save(zip([{name:'LEEME.txt',data:new TextEncoder().encode(spReadmeA(it2,name)+sxReadme(it2))},...it2.map(it=>({name:'ROLAND/IMPORT/'+it.name+'.wav',data:it.data})),...sxCard(it2.map(it=>({...it,loop:false})))]),name+'_SP-404A.zip');
       status('Exportado: '+name+'_SP-404A.zip');
     }else if(kind==='mk2'){
       const it2=await bakeKit(toRate(48000),src),dir=ascii(name).slice(0,24)||'Kit';
@@ -1992,7 +2094,7 @@ function doDup(from,to){
   if(from===to){status('Cancelado');return}
   if(pads[to].buf&&!confirm('El pad '+pl(to)+' ya tiene un sample. ¿Sustituirlo?'))return;
   stop(to);
-  Object.assign(pads[to],{buf:p.buf,name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,lockS:p.lockS,lockE:p.lockE,cache:null});
+  Object.assign(pads[to],{buf:p.buf,name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,rv:p.rv||0,dl:p.dl||0,lockS:p.lockS,lockE:p.lockE,cache:null});
   labels(to);select(to);status('Duplicado en pad '+pl(to));
 }
 
@@ -2087,11 +2189,12 @@ function tunerUpdate(){
   tuTimer=setTimeout(()=>{if(pads[sel]===p)tunerShow(p)},180);
 }
 /* ---------- deshacer / rehacer: instantáneas del estado de los pads ---------- */
-const UFIELDS=['name','s','e','ch','vol','pitch','fine','rev','loop','gate','grp','lofi','grade','cut','res','lockS','lockE'];
-const UNAME={buf:'sample',name:'nombre',s:'región',e:'región',ch:'canal',vol:'volumen',pitch:'tono',fine:'afinado',rev:'Reverse',loop:'Loop',gate:'One shot/Gate',grp:'grupo',lofi:'lo-fi',grade:'lo-fi',cut:'filtro',res:'filtro',lockS:'bloqueo',lockE:'bloqueo'};
+const UFIELDS=['name','s','e','ch','vol','pitch','fine','rev','loop','gate','grp','lofi','grade','cut','res','rv','dl','lockS','lockE'];
+const UNAME={buf:'sample',name:'nombre',s:'región',e:'región',ch:'canal',vol:'volumen',pitch:'tono',fine:'afinado',rev:'Reverse',loop:'Loop',gate:'One shot/Gate',grp:'grupo',lofi:'lo-fi',grade:'lo-fi',cut:'filtro',res:'filtro',rv:'envío',dl:'envío',lockS:'bloqueo',lockE:'bloqueo'};
 const bufId=(()=>{const m=new WeakMap();let n=0;return b=>b?(m.get(b)||(m.set(b,++n),n)):0})();
-const uSnap=()=>({pads:pads.map(p=>{const o={buf:p.buf};UFIELDS.forEach(k=>o[k]=p[k]);return o}),work:work?{...work}:null});
-const uSigNow=()=>pads.map(p=>bufId(p.buf)+','+UFIELDS.map(k=>p[k]).join(',')).join(';')+'|'+(work?bufId(work.buf)+work.name:0);
+const uX=()=>{try{return JSON.stringify({bp:BP,bs:BS,kp:KP,ks:KS,mx:MX})}catch{return ''}};
+const uSnap=()=>({pads:pads.map(p=>{const o={buf:p.buf};UFIELDS.forEach(k=>o[k]=p[k]);return o}),work:work?{...work}:null,x:uX()});
+const uSigNow=()=>pads.map(p=>bufId(p.buf)+','+UFIELDS.map(k=>p[k]).join(',')).join(';')+'|'+(work?bufId(work.buf)+work.name:0)+'|'+uX();
 let uLast=uSnap(),uSig=uSigNow(),uStack=[],rStack=[],uPend='',uPtr=false;
 function uCommit(force){
   const s=uSigNow();
@@ -2103,7 +2206,7 @@ function uCommit(force){
 function diffLabel(a,b){
   const ch=[];
   a.pads.forEach((p,i)=>{const ks=new Set();['buf',...UFIELDS].forEach(k=>{if(p[k]!==b.pads[i][k])ks.add(UNAME[k])});if(ks.size)ch.push([i,[...ks]])});
-  if(!ch.length)return a.work!==b.work?'audio cargado':'cambio';
+  if(!ch.length)return a.work!==b.work?'audio cargado':a.x!==b.x?uXLabel(a.x,b.x):'cambio';
   return ch.length===1?pl(ch[0][0])+' '+ch[0][1].join(', '):ch.length+' pads';
 }
 function uRestore(s){
@@ -2112,7 +2215,7 @@ function uRestore(s){
     if(p.buf!==o.buf)stop(i);
     p.buf=o.buf;UFIELDS.forEach(k=>p[k]=o[k]);p.cache=null;labels(i);
   });
-  work=s.work?{...s.work}:null;vw.a=0;vw.b=1;select(sel);
+  work=s.work?{...s.work}:null;vw.a=0;vw.b=1;select(sel);uXApply(s.x);
 }
 function undoUI(){
   const rec=rsMode==='rec';
@@ -2169,7 +2272,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.25';
+const APP_VERSION='1.27';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -2731,7 +2834,7 @@ function kVis(k,on,t){
   const dt=t-ctx.currentTime;
   if(dt>.01)setTimeout(()=>el.classList.toggle('on',on),dt*1000);else el.classList.toggle('on',on);
 }
-function kOn(k,when,vel){const t=when||ctx.currentTime;kp().on(k,t,kNotes(k),vel==null?.8:vel);kLofiApply();kVis(k,true,t)}
+function kOn(k,when,vel){const t=when||ctx.currentTime;kp().on(k,t,kNotes(k),(vel==null?.8:vel)*LPV);kLofiApply();kVis(k,true,t)}
 function kOff(k,when){const t=when||ctx.currentTime;if(keysP)keysP.off(k,t);kVis(k,false,t)}
 function kHit(k,vel){ctx.resume();kLastVel=vel==null?.8:vel;kHeldK.add(k);lpRecord('h',80+k);kOn(k,0,kLastVel);status(kName(k)+(KS.touch?' · fuerza '+Math.round(kLastVel*100)+'%':''))}
 function kRel(k){if(!kHeldK.delete(k))return;lpRecord('r',80+k);kOff(k)}
@@ -2906,7 +3009,7 @@ if(typeof requestAnimationFrame==='function')(function phFrame(){phUpdate();requ
 /* ---------- MIXER: volumen de Sampler / Bajo / Teclas, ecualizador de 8 bandas y compresor del máster ---------- */
 const MXKEY='sampledhead.mixer';
 const EQ_F=[80,160,320,640,1250,2500,5000,10000];
-const MXD=()=>({vol:[0,0,0],mute:[false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0}});
+const MXD=()=>({vol:[0,0,0],mute:[false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0},rev:[0,0,0],dly:[0,0,0],rsz:1,ddiv:2,rret:.8,dret:.7,dfb:.4});
 const MX=MXD();
 try{const sv=JSON.parse(localStorage.getItem(MXKEY)||'null');if(sv&&sv.vol){const d=MXD();Object.assign(MX,d,sv,{comp:{...d.comp,...(sv.comp||{})}})}}catch{}
 let mxSaveT=0;
@@ -3018,7 +3121,9 @@ mxApply();
             · playing (bucle sonando; overdub si lp.over) · stopped (bucle grabado, parado).
    Cada evento guarda su instante dentro del bucle, el pad (índice global) y la capa a la que pertenece. */
 const LP_LOOK=.12,LP_TICK=30,LP_MAX=4000;
-const lp={st:'idle',ev:[],t0:0,len:0,start:0,sched:0,over:false,sess:0,tempo:null,oct:1,trk:0,mute:[false,false,false,false],scope:1};
+const lp={st:'idle',ev:[],t0:0,len:0,start:0,sched:0,over:false,sess:0,tempo:null,oct:1,trk:0,mute:[false,false,false,false],vol:[1,1,1,1],solo:[false,false,false,false],scope:1};
+let LPV=1;
+const lpAud=t=>!lp.mute[t]&&(!lp.solo.some(Boolean)||lp.solo[t]);
 const LP_TC=['#31d0ff','#ff8a1f','#ff4f9a','#9be564'];
 const lpTouched=new Set(),lpPadLayer={};
 let lpTimer=0;
@@ -3039,8 +3144,12 @@ function lpRecord(k,i){
   lp.ev.push(e);if(i<64){lpTouched.add(i);lpPadLayer[i]=e.layer}
 }
 function lpFire(e,a){
+  LPV=lp.vol[e.trk]==null?1:lp.vol[e.trk];
+  try{lpFire2(e,a)}finally{LPV=1}
+}
+function lpFire2(e,a){
   if(e.i>=80){if(e.k==='h')kOn(e.i-80,a,e.v);else kOff(e.i-80,a);return}
-  if(e.i>=64){if(e.k==='h')bOn(e.i-64,a);else bOff(e.i-64,a);return}
+  if(e.i>=64){if(e.k==='h'){const v=BP.vol;BP.vol=v*LPV;try{bOn(e.i-64,a)}finally{BP.vol=v}}else bOff(e.i-64,a);return}
   const p=pads[e.i];lpTouched.add(e.i);lpPadLayer[e.i]=e.layer;
   if(e.k==='h'){if(p.loop&&!p.gate&&p.src)stop(e.i,true,a);else play(e.i,a)}   // misma lógica que al tocar el pad
   else if(p.gate&&p.src)stop(e.i,true,a);
@@ -3062,7 +3171,7 @@ function lpTick(){
     if(cs>=lp.sched&&cs<hz&&keysP)keysP.releaseAll(Math.max(cs,now));
     if(cs>=lp.sched&&cs<hz)lpTouched.forEach(i=>{if(pads[i].loop&&pads[i].src)stop(i,true,Math.max(cs,now))});   // los pads en bucle se cortan al empezar cada pasada
     for(const e of lp.ev){
-      if(lp.mute[e.trk])continue;                         // pista silenciada
+      if(!lpAud(e.trk))continue;                          // pista silenciada (o fuera del solo)
       if(e.sess===lp.sess&&e.pass===c)continue;           // lo grabado en esta pasada ya sonó en directo
       const a=cs+e.t;
       if(a>=lp.sched&&a<hz&&a>=now-.02)lpFire(e,Math.max(a,now));
@@ -3091,7 +3200,7 @@ function lpClose(thenPlay){      // cierra la primera pasada: fija la duración 
 }
 function lpClear(){
   lpLoopTimer(false);lpSilence();
-  lp.st='idle';lp.ev=[];lp.len=0;lp.over=false;lp.tempo=null;lp.oct=1;lp.mute=[false,false,false,false];lpUI();
+  lp.st='idle';lp.ev=[];lp.len=0;lp.over=false;lp.tempo=null;lp.oct=1;lp.mute=[false,false,false,false];lp.vol=[1,1,1,1];lp.solo=[false,false,false,false];lpUI();
 }
 const lpLayers=()=>new Set(lp.ev.filter(e=>e.trk===lp.trk).map(e=>e.layer)).size;
 const lpHas=t=>lp.ev.some(e=>e.trk===t);
@@ -3165,30 +3274,30 @@ const lpBpmTxt=()=>{const b=lpBpm();return b?(Math.round(b*10)/10).toFixed(1).re
 async function lpRender(trk){
   const sr=ctx.sampleRate,L=lp.len,n=Math.max(1,Math.round(L*sr));
   const off=new OfflineAudioContext(1,2*n,sr);               // dos vueltas: la segunda incluye las colas de la primera, así el bucle encaja
-  const st=new Map(),bo=mkBass(off,off.destination,{...BP}),bm=Array.from({length:16},(_,k)=>bMidi(k)),ko=mkKeys(off,off.destination,{...KP}),kn=Array.from({length:16},(_,k)=>kNotes(k));
+  const st=new Map(),bR={...BP},bo=mkBass(off,off.destination,bR),bm=Array.from({length:16},(_,k)=>bMidi(k)),ko=mkKeys(off,off.destination,{...KP}),kn=Array.from({length:16},(_,k)=>kNotes(k));
   const oStop=(i,a,fade)=>{
     const o=st.get(i);if(!o)return;st.delete(i);
     try{if(fade){o.g.gain.setValueAtTime(pads[i].vol,a);o.g.gain.linearRampToValueAtTime(0,a+.015);o.s.stop(a+.02)}else o.s.stop(a)}catch{}
   };
-  const oPlay=(i,a)=>{
+  const oPlay=(i,a,vt)=>{
     const p=pads[i];if(!p.buf)return;
     if(p.grp)for(const j of [...st.keys()])if(j!==i&&pads[j].grp===p.grp)oStop(j,a,true);
     oStop(i,a,false);
     const s=off.createBufferSource(),g=off.createGain();
-    s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol;
+    s.buffer=region(p);s.loop=p.loop;s.playbackRate.value=playRate(p);g.gain.value=p.vol*(vt==null?1:vt);
     chain(off,s,p,g,off.destination);s.start(a);st.set(i,{s,g});
   };
-  const evs=lp.ev.filter(e=>trk==null?!lp.mute[e.trk]:e.trk===trk).sort((a,b)=>a.t-b.t||(a.k==='r')-(b.k==='r'));
+  const evs=lp.ev.filter(e=>trk==null?lpAud(e.trk):e.trk===trk).sort((a,b)=>a.t-b.t||(a.k==='r')-(b.k==='r'));
   for(let c=0;c<2;c++){
     const cs=c*L;
     bo.releaseAll(cs);ko.releaseAll(cs);
     for(const i of [...st.keys()])if(pads[i].loop)oStop(i,cs,true);      // igual que al reproducir: los pads en bucle se cortan al empezar cada vuelta
     for(const e of evs){
-      const a=cs+e.t;
-      if(e.i>=80){if(e.k==='h')ko.on(e.i-80,a,kn[e.i-80],e.v==null?.8:e.v);else ko.off(e.i-80,a);continue}
-      if(e.i>=64){if(e.k==='h')bo.on(e.i-64,a,bm[e.i-64]);else bo.off(e.i-64,a);continue}
+      const a=cs+e.t,vT=lp.vol[e.trk]==null?1:lp.vol[e.trk];
+      if(e.i>=80){if(e.k==='h')ko.on(e.i-80,a,kn[e.i-80],(e.v==null?.8:e.v)*vT);else ko.off(e.i-80,a);continue}
+      if(e.i>=64){if(e.k==='h'){bR.vol=BP.vol*vT;bo.on(e.i-64,a,bm[e.i-64])}else bo.off(e.i-64,a);continue}
       const p=pads[e.i];
-      if(e.k==='h'){if(p.loop&&!p.gate&&st.has(e.i))oStop(e.i,a,true);else oPlay(e.i,a)}
+      if(e.k==='h'){if(p.loop&&!p.gate&&st.has(e.i))oStop(e.i,a,true);else oPlay(e.i,a,vT)}
       else if(p.gate&&st.has(e.i))oStop(e.i,a,true);
     }
   }
@@ -3204,7 +3313,7 @@ const lpTrkList=()=>lp.scope===1?[null]:lp.scope===0?[lp.trk]:[0,1,2,3].filter(l
 const lpNameOf=(t,bp,pre)=>pre+(t==null?'':' P'+(t+1))+(bp?' '+bp+' BPM':'');
 async function lpToPad(){
   if(lpBusy||!lp.len||!lp.ev.length){if(!lp.len)status('Graba un bucle primero');return}
-  const list=lpTrkList().filter(t=>t==null?lp.ev.some(e=>!lp.mute[e.trk]):lpHas(t));
+  const list=lpTrkList().filter(t=>t==null?lp.ev.some(e=>lpAud(e.trk)):lpHas(t));
   if(!list.length){status(lp.scope===0?'La pista '+(lp.trk+1)+' está vacía':'No hay nada que exportar');return}
   lpBusy=true;lpUI();status('Exportando…');
   try{
@@ -3224,7 +3333,7 @@ async function lpToPad(){
 }
 async function lpToWav(){
   if(lpBusy||!lp.len||!lp.ev.length){if(!lp.len)status('Graba un bucle primero');return}
-  const list=lpTrkList().filter(t=>t==null?lp.ev.some(e=>!lp.mute[e.trk]):lpHas(t));
+  const list=lpTrkList().filter(t=>t==null?lp.ev.some(e=>lpAud(e.trk)):lpHas(t));
   if(!list.length){status(lp.scope===0?'La pista '+(lp.trk+1)+' está vacía':'No hay nada que exportar');return}
   lpBusy=true;lpUI();status('Exportando…');
   try{
@@ -3254,7 +3363,7 @@ $('#lpclr').onclick=()=>{
   const t=lp.trk;
   if(lp.st==='rec1'){lpUndo();return}
   if(!lpHas(t)){status('La pista '+(t+1)+' está vacía');return}
-  lp.ev=lp.ev.filter(e=>e.trk!==t);lp.mute[t]=false;
+  lp.ev=lp.ev.filter(e=>e.trk!==t);lp.mute[t]=false;lp.solo[t]=false;lp.vol[t]=1;
   if(!lp.ev.length){lpClear();status('Pista '+(t+1)+' borrada · el looper queda vacío');return}
   lpSilence();lpTempoUpdate();lpUI();status('Pista '+(t+1)+' borrada');
 };
@@ -3270,7 +3379,7 @@ function lpTracksUI(){
     b.classList.toggle('rec',recNow&&t===lp.trk);
     b.setAttribute('aria-pressed',String(t===lp.trk));
   });
-  $('#lpmute').classList.toggle('on',!!lp.mute[lp.trk]);$('#lpmute').disabled=!lp.len;$('#lpclr').disabled=s==='idle'||s==='armed';
+  $('#lpmute').classList.toggle('on',!!lp.mute[lp.trk]);lpMixUI();$('#lpmute').disabled=!lp.len;$('#lpclr').disabled=s==='idle'||s==='armed';
 }
 function lpScopeUI(){
   const sc=$('#lpscope').children||[];[...sc].forEach((b,i)=>b.classList.toggle('on',i===lp.scope));
@@ -3305,7 +3414,7 @@ function lpUI(tickOnly){
 $('#lprec').onclick=()=>{
   ctx.resume();
   const s=lp.st;
-  if(s==='idle'){lp.st='armed';lpUI();status('Rec armado')}
+  if(s==='idle'){if(met.counting)return;if(met.count){metCountIn(()=>{if(lp.st==='idle'){lp.st='armed';lpUI();status('Rec armado: toca un pad')}});return}lp.st='armed';lpUI();status('Rec armado')}
   else if(s==='armed'){lp.st='idle';lpUI()}
   else if(s==='rec1')status('Pulsa Loop para cerrar el bucle');
   else if(s==='stopped')lpPlay(true);
@@ -3366,7 +3475,613 @@ kitList(lastGet(LASTK)).then(async()=>{   // al abrir la app se carga el último
   if(b&&$('#bkits').value===b)await bLoadKit(b,true);
   const ky=lastGet(LASTKY);
   if(ky&&$('#kkits').value===ky)await kLoadKit(ky,true);
-}).catch(()=>{});
+}).catch(()=>{}).then(()=>pjAutoLoad());
+
+/* plantilla de set de Ableton Move (Song.abl) tomada de un set real: pista 1 = Drum Kit con 16 celdas */
+const MOVE_TPL={"$schema":"http://tech.ableton.com/schema/song/1.8.6/song.json","stepEditorResolution":"1/16","tempo":67.5,"globalGrooveAmount":0.0,"timeSignature":{"upper":4,"lower":4},"rootNote":8,"scale":"Hirajoshi","melodicLayout":"inKey","tracks":[{"kind":"midi","name":"","color":11,"isSelected":true,"clipSlots":[{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null}],"isNoteRepeatOn":false,"noteRepeatRate":"1/16","noteRepeatArpeggio":{"style":"chordRepeat"},"uiOctaveIndex":4,"midiInputMode":"auto","midiOutputEndpoint":null,"devices":[{"presetUri":"ableton:/packs/abl-core-library/Track%20Presets/Templates/Drum%20Kit.json","kind":"instrumentRack","name":"","lockId":1001,"lockSeal":-973461132,"parameters":{"Enabled":true,"Macro0":0.0,"Macro1":0.0,"Macro2":0.0,"Macro3":0.0,"Macro4":0.0,"Macro5":0.0,"Macro6":0.0,"Macro7":0.0},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumRack","name":"","lockId":1001,"lockSeal":830049224,"parameters":{"Enabled":true,"Macro0":0.0,"Macro1":0.0,"Macro2":0.0,"Macro3":0.0,"Macro4":0.0,"Macro5":0.0,"Macro6":0.0,"Macro7":0.0},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":{"value":1000.0,"presetValue":999.9998779296876},"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":{"value":0.019999999552965164,"presetValue":0.0},"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":{"value":10000.0,"presetValue":10000.0009765625},"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":{"value":0.30000001192092896,"presetValue":0.29999998211860657},"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":{"value":1000.0,"presetValue":999.9998168945312},"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":{"value":0.10000000149011612,"presetValue":0.09999999403953552},"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":{"value":60.0,"presetValue":59.99999237060547},"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":{"value":60.0,"presetValue":0.6000000238418579},"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":{"value":22000.0,"presetValue":21999.990234375},"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":{"value":0.5,"presetValue":0.3499999940395355},"Volume":{"value":-12.0,"presetValue":-11.999999046325684}},"deviceData":{"sampleUri":"Samples/00_PCM.wav"}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":36,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":{"value":1000.0,"presetValue":999.9998779296876},"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":{"value":0.019999999552965164,"presetValue":0.0},"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":{"value":10000.0,"presetValue":10000.0009765625},"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":{"value":0.30000001192092896,"presetValue":0.29999998211860657},"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":{"value":1000.0,"presetValue":999.9998168945312},"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":{"value":0.10000000149011612,"presetValue":0.09999999403953552},"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":{"value":60.0,"presetValue":59.99999237060547},"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":{"value":60.0,"presetValue":0.6000000238418579},"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":{"value":22000.0,"presetValue":21999.990234375},"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":{"value":0.5,"presetValue":0.3499999940395355},"Volume":{"value":-12.0,"presetValue":-11.999999046325684}},"deviceData":{"sampleUri":"Samples/02_PCM.wav"}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":37,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":{"value":1000.0,"presetValue":999.9998779296876},"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":{"value":0.019999999552965164,"presetValue":0.0},"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":{"value":10000.0,"presetValue":10000.0009765625},"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":{"value":0.30000001192092896,"presetValue":0.29999998211860657},"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":{"value":1000.0,"presetValue":999.9998168945312},"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":{"value":0.10000000149011612,"presetValue":0.09999999403953552},"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":{"value":60.0,"presetValue":59.99999237060547},"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":{"value":60.0,"presetValue":0.6000000238418579},"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":{"value":22000.0,"presetValue":21999.990234375},"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":{"value":0.5,"presetValue":0.3499999940395355},"Volume":{"value":-12.0,"presetValue":-11.999999046325684}},"deviceData":{"sampleUri":"Samples/03_PCM.wav"}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":38,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":39,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":40,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":41,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":42,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":43,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":44,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":45,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":46,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":47,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":48,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":49,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":50,"sendingNote":60,"chokeGroup":null}},{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drumCell","name":"","parameters":{"Effect_EightBitFilterDecay":5.0,"Effect_EightBitResamplingRate":14080.0,"Effect_FmAmount":0.0,"Effect_FmFrequency":999.9998779296876,"Effect_LoopLength":0.30000001192092896,"Effect_LoopOffset":0.0,"Effect_NoiseAmount":0.0,"Effect_NoiseFrequency":10000.0009765625,"Effect_On":true,"Effect_PitchEnvelopeAmount":0.0,"Effect_PitchEnvelopeDecay":0.29999998211860657,"Effect_PunchAmount":0.0,"Effect_PunchTime":0.12015999853610992,"Effect_RingModAmount":0.0,"Effect_RingModFrequency":999.9998168945312,"Effect_StretchFactor":1.0,"Effect_StretchGrainSize":0.09999999403953552,"Effect_SubOscAmount":0.0,"Effect_SubOscFrequency":59.99999237060547,"Effect_Type":"Stretch","Enabled":true,"NotePitchBend":true,"Pan":0.0,"Voice_Detune":0.0,"Voice_Envelope_Attack":0.0010000000474974513,"Voice_Envelope_Decay":0.05000000074505806,"Voice_Envelope_Hold":0.6000000238418579,"Voice_Envelope_Mode":"A-H-D","Voice_Filter_Frequency":21999.990234375,"Voice_Filter_On":true,"Voice_Filter_PeakGain":1.0,"Voice_Filter_Resonance":0.0,"Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_ModulationAmount":0.0,"Voice_ModulationSource":"Velocity","Voice_ModulationTarget":"Filter","Voice_PitchToEnvelopeModulation":true,"Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-11.999999046325684},"deviceData":{"sampleUri":null}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":true,"amount":-70.0}]},"drumZoneSettings":{"receivingNote":51,"sendingNote":60,"chokeGroup":null}}],"returnChains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"reverb","name":"","parameters":{"AllPassGain":0.6000000238418579,"AllPassSize":0.4000000059604645,"BandFreq":829.999755859375,"BandHighOn":false,"BandLowOn":true,"BandWidth":5.849999904632568,"ChorusOn":true,"CutOn":true,"DecayTime":1200.0001220703125,"DiffuseDelay":0.5,"EarlyReflectModDepth":17.5,"EarlyReflectModFreq":0.29770001769065857,"Enabled":true,"FlatOn":true,"FreezeOn":false,"HighFilterType":"Shelf","MixDiffuse":1.0,"MixDirect":1.0,"MixReflect":1.0,"PreDelay":2.499999761581421,"RoomSize":99.99999237060548,"RoomType":"SuperEco","ShelfHiFreq":4500.00146484375,"ShelfHiGain":0.699999988079071,"ShelfHighOn":true,"ShelfLoFreq":90.0,"ShelfLoGain":1.0,"ShelfLowOn":true,"SizeModDepth":0.019999999552965164,"SizeModFreq":0.020000001415610313,"SizeSmoothing":"Fast","SpinOn":true,"StereoSeparation":100.0},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[{"isEnabled":false,"amount":-70.0}]}}]},{"presetUri":null,"kind":"saturator","name":"Saturator","parameters":{"BaseDrive":0.0,"BassShaperThreshold":-50.0,"ColorDepth":0.0,"ColorFrequency":1000.0,"ColorOn":true,"ColorWidth":0.30000001192092896,"DryWet":0.0,"Enabled":true,"Oversampling":false,"PostClip":"off","PostDrive":0.0,"PreDcFilter":false,"PreDrive":0.0,"Type":"Analog Clip","WsCurve":0.7890625,"WsDamp":0.0,"WsDepth":0.0234375,"WsDrive":1.0,"WsLin":0.171875,"WsPeriod":0.1328125},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}},{"kind":"midi","name":"","color":24,"isSelected":false,"clipSlots":[{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null}],"isNoteRepeatOn":false,"noteRepeatRate":"1/16","noteRepeatArpeggio":{"style":"chordRepeat"},"uiOctaveIndex":2,"midiInputMode":"auto","midiOutputEndpoint":null,"devices":[{"presetUri":"ableton:/packs/abl-core-library/Track%20Presets/Bass/Stretch%20Bass.json","kind":"instrumentRack","name":"Stretch Bass","lockId":1001,"lockSeal":558599474,"parameters":{"Enabled":true,"Macro0":0.0,"Macro1":0.0,"Macro2":0.0,"Macro3":0.0,"Macro4":0.0,"Macro5":0.0,"Macro6":0.0,"Macro7":0.0},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"instrumentRack","name":"Wavetable","lockId":1001,"lockSeal":570097652,"parameters":{"Enabled":true,"Macro0":{"value":127.0,"customName":"Filter Freq"},"Macro1":33.02000045776367,"Macro2":{"value":0.0,"customName":"OSC Position"},"Macro3":{"value":34.74167251586914,"customName":"Glide"},"Macro4":{"value":22.0,"customName":"Attack"},"Macro5":{"value":59.0,"customName":"Release"},"Macro6":{"value":80.0,"customName":"LFO Amount"},"Macro7":{"value":50.0,"customName":"LFO Rate"}},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"wavetable","name":"Wavetable","parameters":{"Enabled":true,"HiQ":false,"MonoPoly":"Mono","PolyVoices":"4","Voice_Filter1_CircuitBpNoMo":"Clean","Voice_Filter1_CircuitLpHp":"Clean","Voice_Filter1_Drive":0.0,"Voice_Filter1_Frequency":657.7053833007812,"Voice_Filter1_Morph":0.0,"Voice_Filter1_On":true,"Voice_Filter1_Resonance":0.3769841492176056,"Voice_Filter1_Slope":"12","Voice_Filter1_Type":"Notch","Voice_Filter2_CircuitBpNoMo":"Clean","Voice_Filter2_CircuitLpHp":"Clean","Voice_Filter2_Drive":0.0,"Voice_Filter2_Frequency":{"value":19999.99609375,"macroMapping":{"macroIndex":0,"rangeMin":20.0,"rangeMax":20479.998046875}},"Voice_Filter2_Morph":0.0,"Voice_Filter2_On":true,"Voice_Filter2_Resonance":0.3273809552192688,"Voice_Filter2_Slope":"12","Voice_Filter2_Type":"Lowpass","Voice_Global_FilterRouting":"Serial","Voice_Global_Glide":{"value":0.0,"macroMapping":{"macroIndex":3,"rangeMin":0.0,"rangeMax":20.0}},"Voice_Global_Transpose":12,"Voice_Modulators_Amount":1.0,"Voice_Modulators_AmpEnvelope_LoopMode":"None","Voice_Modulators_AmpEnvelope_Slopes_Attack":-0.5945945978164673,"Voice_Modulators_AmpEnvelope_Slopes_Decay":0.5,"Voice_Modulators_AmpEnvelope_Slopes_Release":0.5,"Voice_Modulators_AmpEnvelope_Sustain":0.5011875629425049,"Voice_Modulators_AmpEnvelope_Times_Attack":{"value":0.0010000001639127731,"macroMapping":{"macroIndex":4,"rangeMin":0.0,"rangeMax":5.0}},"Voice_Modulators_AmpEnvelope_Times_Decay":0.5999999642372131,"Voice_Modulators_AmpEnvelope_Times_Release":{"value":0.5999999642372131,"macroMapping":{"macroIndex":5,"rangeMin":0.001500000013038516,"rangeMax":6.0}},"Voice_Modulators_Envelope2_LoopMode":"None","Voice_Modulators_Envelope2_Slopes_Attack":0.0,"Voice_Modulators_Envelope2_Slopes_Decay":0.5,"Voice_Modulators_Envelope2_Slopes_Release":0.5,"Voice_Modulators_Envelope2_Times_Attack":0.0010000001639127731,"Voice_Modulators_Envelope2_Times_Decay":0.5999999642372131,"Voice_Modulators_Envelope2_Times_Release":0.5999999642372131,"Voice_Modulators_Envelope2_Values_Final":0.0,"Voice_Modulators_Envelope2_Values_Initial":0.0,"Voice_Modulators_Envelope2_Values_Peak":1.0,"Voice_Modulators_Envelope2_Values_Sustain":0.5,"Voice_Modulators_Envelope3_LoopMode":"None","Voice_Modulators_Envelope3_Slopes_Attack":0.0,"Voice_Modulators_Envelope3_Slopes_Decay":0.5,"Voice_Modulators_Envelope3_Slopes_Release":0.5,"Voice_Modulators_Envelope3_Times_Attack":0.0010000001639127731,"Voice_Modulators_Envelope3_Times_Decay":0.5999999642372131,"Voice_Modulators_Envelope3_Times_Release":0.5999999642372131,"Voice_Modulators_Envelope3_Values_Final":0.0,"Voice_Modulators_Envelope3_Values_Initial":0.0,"Voice_Modulators_Envelope3_Values_Peak":1.0,"Voice_Modulators_Envelope3_Values_Sustain":0.5,"Voice_Modulators_Lfo1_Retrigger":true,"Voice_Modulators_Lfo1_Shape_Amount":{"value":1.0,"macroMapping":{"macroIndex":6,"rangeMin":0.0,"rangeMax":1.0}},"Voice_Modulators_Lfo1_Shape_PhaseOffset":171.5625,"Voice_Modulators_Lfo1_Shape_Shaping":0.265625,"Voice_Modulators_Lfo1_Shape_Type":"Triangle","Voice_Modulators_Lfo1_Time_AttackTime":0.0,"Voice_Modulators_Lfo1_Time_Rate":0.9999998807907104,"Voice_Modulators_Lfo1_Time_Sync":"Tempo","Voice_Modulators_Lfo1_Time_SyncedRate":{"value":15,"macroMapping":{"macroIndex":7,"rangeMin":0.0,"rangeMax":21.0}},"Voice_Modulators_Lfo2_Retrigger":false,"Voice_Modulators_Lfo2_Shape_Amount":0.671875,"Voice_Modulators_Lfo2_Shape_PhaseOffset":11.25,"Voice_Modulators_Lfo2_Shape_Shaping":0.0,"Voice_Modulators_Lfo2_Shape_Type":"Sine","Voice_Modulators_Lfo2_Time_AttackTime":0.0,"Voice_Modulators_Lfo2_Time_Rate":0.18399228155612943,"Voice_Modulators_Lfo2_Time_Sync":"Free","Voice_Modulators_Lfo2_Time_SyncedRate":15,"Voice_Modulators_TimeScale":0.0,"Voice_Oscillator1_Effects_Effect1":-0.34375,"Voice_Oscillator1_Effects_Effect2":0.0,"Voice_Oscillator1_Effects_EffectMode":"Modern","Voice_Oscillator1_Gain":1.0,"Voice_Oscillator1_On":true,"Voice_Oscillator1_Pan":0.0,"Voice_Oscillator1_Pitch_Detune":0.0,"Voice_Oscillator1_Pitch_Transpose":0,"Voice_Oscillator1_Wavetables_WavePosition":{"value":0.0,"macroMapping":{"macroIndex":2,"rangeMin":0.0,"rangeMax":0.7200000286102295}},"Voice_Oscillator2_Effects_Effect1":0.0,"Voice_Oscillator2_Effects_Effect2":0.0,"Voice_Oscillator2_Effects_EffectMode":"None","Voice_Oscillator2_Gain":1.0,"Voice_Oscillator2_On":false,"Voice_Oscillator2_Pan":0.0,"Voice_Oscillator2_Pitch_Detune":0.0,"Voice_Oscillator2_Pitch_Transpose":0,"Voice_Oscillator2_Wavetables_WavePosition":0.0,"Voice_SubOscillator_Gain":1.0,"Voice_SubOscillator_On":true,"Voice_SubOscillator_Tone":{"value":0.0,"macroMapping":{"macroIndex":1,"rangeMin":0.0,"rangeMax":1.0}},"Voice_SubOscillator_Transpose":"-1","Voice_Unison_Amount":0.30000001192092896,"Voice_Unison_Mode":"Classic","Voice_Unison_VoiceCount":2,"Volume":0.21627479791641235},"deviceData":{"spriteUri1":"ableton:/device-resources/wavetable-sprites/Basic%20Shapes","spriteUri2":"ableton:/device-resources/wavetable-sprites/Basic%20Shapes","modulations":{"Voice_Filter1_Frequency":[0.0,0.0,0.0,0.0,0.359375,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Voice_Global_AmpModulation":[0.0,0.0,0.0,0.0,0.0,0.6499999761581421,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Voice_Global_PitchModulation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.041666626930236816,0.0,0.0,0.0,1.0,0.0],"Voice_Oscillator1_Effects_Effect1":[0.0,0.0,0.0,0.484375,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Voice_Oscillator1_Wavetables_WavePosition":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0]}}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]},{"presetUri":null,"kind":"saturator","name":"Saturator","parameters":{"BaseDrive":-22.960628509521484,"BassShaperThreshold":-50.0,"ColorDepth":3.2099990844726562,"ColorFrequency":30.0,"ColorOn":true,"ColorWidth":0.6614173054695129,"DryWet":0.6380000114440918,"Enabled":true,"Oversampling":false,"PostClip":"on","PostDrive":-9.73228359222412,"PreDcFilter":true,"PreDrive":16.157480239868164,"Type":"Sinoid Fold","WsCurve":0.05000000074505806,"WsDamp":0.0,"WsDepth":0.0,"WsDrive":1.0,"WsLin":0.5,"WsPeriod":0.0},"deviceData":{}},{"presetUri":null,"kind":"reverb","name":"Reverb","parameters":{"AllPassGain":0.8610555529594421,"AllPassSize":0.3214285671710968,"BandFreq":2134.85205078125,"BandHighOn":true,"BandLowOn":true,"BandWidth":4.75,"ChorusOn":true,"CutOn":false,"DecayTime":1975.9659423828125,"DiffuseDelay":0.30000001192092896,"EarlyReflectModDepth":3.2428934574127197,"EarlyReflectModFreq":0.08429650217294693,"Enabled":true,"FlatOn":false,"FreezeOn":false,"HighFilterType":"Shelf","MixDiffuse":1.8197009563446045,"MixDirect":0.0,"MixReflect":0.48233097791671753,"PreDelay":2.4200003147125244,"RoomSize":43.95694732666016,"RoomType":"SuperEco","ShelfHiFreq":493.5466003417969,"ShelfHiGain":0.6166667342185974,"ShelfHighOn":true,"ShelfLoFreq":58.94239044189453,"ShelfLoGain":0.23333333432674408,"ShelfLowOn":true,"SizeModDepth":0.0834762379527092,"SizeModFreq":0.030468309298157692,"SizeSmoothing":"Fast","SpinOn":true,"StereoSeparation":91.6535415649414},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}},{"kind":"midi","name":"","color":19,"isSelected":false,"clipSlots":[{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null}],"isNoteRepeatOn":false,"noteRepeatRate":"1/16","noteRepeatArpeggio":{"style":"chordRepeat"},"uiOctaveIndex":4,"midiInputMode":"auto","midiOutputEndpoint":null,"devices":[{"presetUri":"ableton:/packs/abl-core-library/Track%20Presets/Strings/Ac%20Strings%20Pizz%20Stage.json","kind":"instrumentRack","name":"Ac Strings Pizz Stage","lockId":1001,"lockSeal":1472017714,"parameters":{"Enabled":true,"Macro0":0.0,"Macro1":0.0,"Macro2":0.0,"Macro3":0.0,"Macro4":0.0,"Macro5":0.0,"Macro6":0.0,"Macro7":0.0},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"melodicSampler","name":"Strings Pizz Stage","parameters":{"Enabled":true,"Voice_AmplitudeEnvelope_Attack":0.00010000000149011611,"Voice_AmplitudeEnvelope_Decay":5.06049072265625,"Voice_AmplitudeEnvelope_Release":1.495978759765625,"Voice_AmplitudeEnvelope_Sustain":0.09297504276037216,"Voice_AmplitudeEnvelope_SustainMode":"Gate","Voice_Detune":0.0,"Voice_FilterEnvelope_Attack":0.00010000000149011611,"Voice_FilterEnvelope_Decay":0.6,"Voice_FilterEnvelope_On":false,"Voice_FilterEnvelope_Release":0.05,"Voice_FilterEnvelope_Sustain":0.0,"Voice_Filter_Frequency":22000.0,"Voice_Filter_FrequencyModulationAmounts_EnvelopeAmount":0,"Voice_Filter_FrequencyModulationAmounts_LfoAmount":0.0,"Voice_Filter_On":true,"Voice_Filter_Resonance":0.0,"Voice_Filter_Slope":"12","Voice_Filter_Type":"Lowpass","Voice_Gain":1.0,"Voice_Lfo_On":true,"Voice_Lfo_Rate":1.0,"Voice_Lfo_Type":"Sine","Voice_PlaybackLength":1.0,"Voice_PlaybackStart":0.0,"Voice_Transpose":0,"Voice_VelocityToVolume":0.3499999940395355,"Volume":-21.25},"deviceData":{"sampleUri":"Samples/Strings%20Pizz%20Stage%20C3.wav"}},{"presetUri":null,"kind":"delay","name":"","parameters":{"DelayLine_CompatibilityMode":"D","DelayLine_Link":true,"DelayLine_OffsetL":0.0,"DelayLine_OffsetR":0.08324998617172241,"DelayLine_PingPong":false,"DelayLine_PingPongDelayTimeL":1.0,"DelayLine_PingPongDelayTimeR":1.0,"DelayLine_SimpleDelayTimeL":100.0,"DelayLine_SimpleDelayTimeR":100.0,"DelayLine_SmoothingMode":"Repitch","DelayLine_SyncL":true,"DelayLine_SyncR":true,"DelayLine_SyncedSixteenthL":"3","DelayLine_SyncedSixteenthR":"4","DelayLine_TimeL":0.3749999403953552,"DelayLine_TimeR":0.3749999403953552,"DryWet":0.0,"DryWetMode":"Equal-loudness","EcoProcessing":true,"Enabled":true,"Feedback":0.30158731341362,"Filter_Bandwidth":3.1842103004455566,"Filter_Frequency":401.7874145507813,"Filter_On":true,"Freeze":false,"Modulation_AmountFilter":0.0,"Modulation_AmountTime":0.0,"Modulation_Frequency":0.5,"Modulation_Morph":0.0,"Modulation_Sixteenth":16,"Modulation_SyncedRate":4,"Modulation_Time":1.0000001192092896,"Modulation_TimeMode":"Rate","Modulation_Waveform":"Triangle"},"deviceData":{}},{"presetUri":null,"kind":"reverb","name":"","parameters":{"AllPassGain":0.6000000238418579,"AllPassSize":0.4000000059604645,"BandFreq":829.999755859375,"BandHighOn":false,"BandLowOn":true,"BandWidth":5.849999904632568,"ChorusOn":true,"CutOn":true,"DecayTime":2012.2144775390625,"DiffuseDelay":0.5,"EarlyReflectModDepth":17.5,"EarlyReflectModFreq":0.29770001769065857,"Enabled":true,"FlatOn":true,"FreezeOn":false,"HighFilterType":"Shelf","MixDiffuse":1.995300054550171,"MixDirect":0.0,"MixReflect":1.995300054550171,"PreDelay":38.36762237548828,"RoomSize":156.10491943359375,"RoomType":"SuperEco","ShelfHiFreq":2117.747802734375,"ShelfHiGain":0.5428571701049805,"ShelfHighOn":true,"ShelfLoFreq":90.00000762939453,"ShelfLoGain":1.0,"ShelfLowOn":true,"SizeModDepth":0.019999999552965164,"SizeModFreq":0.020000001415610313,"SizeSmoothing":"Fast","SpinOn":true,"StereoSeparation":100.0},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}},{"kind":"midi","name":"","color":2,"isSelected":false,"clipSlots":[{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null},{"hasStop":true,"clip":null}],"isNoteRepeatOn":false,"noteRepeatRate":"1/16","noteRepeatArpeggio":{"style":"chordRepeat"},"uiOctaveIndex":4,"midiInputMode":"auto","midiOutputEndpoint":null,"devices":[{"presetUri":"ableton:/packs/abl-core-library/Track%20Presets/Synth%20Lead/Dense%20Lead.json","kind":"instrumentRack","name":"Dense Lead","lockId":1001,"lockSeal":812985650,"parameters":{"Enabled":true,"Macro0":0.0,"Macro1":0.0,"Macro2":0.0,"Macro3":0.0,"Macro4":0.0,"Macro5":0.0,"Macro6":0.0,"Macro7":0.0},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"instrumentRack","name":"Drift","lockId":1001,"lockSeal":278284,"parameters":{"Enabled":true,"Macro0":{"value":117.60841369628906,"customName":"Low Pass Filter"},"Macro1":{"value":45.06357192993164,"customName":"Hi Pass Filter"},"Macro2":{"value":101.95812225341795,"customName":"Osc Wave"},"Macro3":{"value":0.0,"customName":"Shape"},"Macro4":{"value":35.33242416381836,"customName":"Attack"},"Macro5":{"value":84.78504943847656,"customName":"Release"},"Macro6":83.81999969482422,"Macro7":60.45241165161133},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"drift","name":"","parameters":{"CyclingEnvelope_Hold":0.0,"CyclingEnvelope_MidPoint":0.5,"CyclingEnvelope_Mode":"Freq","CyclingEnvelope_Rate":4.999999523162842,"CyclingEnvelope_Ratio":1.0,"CyclingEnvelope_SyncedRate":15,"CyclingEnvelope_Time":1.0000001192092896,"Enabled":true,"Envelope1_Attack":{"value":0.0009999996982514858,"macroMapping":{"macroIndex":4,"rangeMin":0.0,"rangeMax":12.0}},"Envelope1_Decay":0.2518930435180664,"Envelope1_Release":{"value":0.5999999642372131,"macroMapping":{"macroIndex":5,"rangeMin":0.009999999776482582,"rangeMax":12.0}},"Envelope1_Sustain":0.6746031641960144,"Envelope2_Attack":0.0009999996982514858,"Envelope2_Decay":0.6000000238418579,"Envelope2_Release":0.5999999642372131,"Envelope2_Sustain":0.20000000298023224,"Filter_Frequency":{"value":19999.99609375,"macroMapping":{"macroIndex":0,"rangeMin":20.0,"rangeMax":19999.99609375}},"Filter_HiPassFrequency":{"value":10.0,"macroMapping":{"macroIndex":1,"rangeMin":10.0,"rangeMax":11000.0}},"Filter_ModAmount1":0.11017222702503204,"Filter_ModAmount2":0.15000005066394806,"Filter_ModSource1":"Env 2 / Cyc","Filter_ModSource2":"Pressure","Filter_NoiseThrough":true,"Filter_OscillatorThrough1":true,"Filter_OscillatorThrough2":true,"Filter_Resonance":0.2805555760860443,"Filter_Tracking":0.0,"Filter_Type":"I","Global_DriftDepth":0.6875,"Global_Envelope2Mode":"Env","Global_Glide":0.0,"Global_HiQuality":false,"Global_Legato":false,"Global_MonoVoiceDepth":0.0,"Global_NotePitchBend":true,"Global_PitchBendRange":2,"Global_PolyVoiceDepth":0.0,"Global_ResetOscillatorPhase":false,"Global_SerialNumber":7465894,"Global_StereoVoiceDepth":{"value":0.699999988079071,"macroMapping":{"macroIndex":6,"rangeMin":0.0,"rangeMax":1.0}},"Global_Transpose":0,"Global_UnisonVoiceDepth":0.05000000074505806,"Global_VoiceCount":"8","Global_VoiceMode":"Stereo","Global_VolVelMod":0.5,"Global_Volume":0.5011858344078064,"Lfo_Amount":1.0,"Lfo_ModAmount":0.0,"Lfo_ModSource":"Pressure","Lfo_Mode":"Freq","Lfo_Rate":0.39999982714653015,"Lfo_Ratio":1.0,"Lfo_Retrigger":false,"Lfo_Shape":"Sine","Lfo_SyncedRate":15,"Lfo_Time":1.0000001192092896,"Mixer_NoiseLevel":{"value":0.0,"macroMapping":{"macroIndex":7,"rangeMin":0.0,"rangeMax":1.9952679872512815}},"Mixer_NoiseOn":true,"Mixer_OscillatorGain1":0.6237384676933289,"Mixer_OscillatorGain2":0.0,"Mixer_OscillatorOn1":true,"Mixer_OscillatorOn2":true,"ModulationMatrix_Amount1":0.800000011920929,"ModulationMatrix_Amount2":0.0,"ModulationMatrix_Amount3":0.0,"ModulationMatrix_Source1":"Modwheel","ModulationMatrix_Source2":"Velocity","ModulationMatrix_Source3":"Pressure","ModulationMatrix_Target1":"HP Frequency","ModulationMatrix_Target2":"None","ModulationMatrix_Target3":"None","Oscillator1_Shape":{"value":0.0,"macroMapping":{"macroIndex":3,"rangeMin":0.0,"rangeMax":1.0}},"Oscillator1_ShapeMod":0.04999995231628418,"Oscillator1_ShapeModSource":"Slide","Oscillator1_Transpose":0,"Oscillator1_Type":"Saw","Oscillator2_Detune":0.0,"Oscillator2_Transpose":-1,"Oscillator2_Type":{"value":"Sine","macroMapping":{"macroIndex":2}},"PitchModulation_Amount1":0.0,"PitchModulation_Amount2":0.0,"PitchModulation_Source1":"Env 2 / Cyc","PitchModulation_Source2":"LFO"},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]},{"presetUri":null,"kind":"chorus","name":"","parameters":{"Amount":1.0,"ChorusDelayTime":"Auto","ChorusTapCount":"2","DryWet":0.5,"Enabled":true,"Feedback":0.0,"HighpassEnabled":true,"HighpassFrequency":159.00003051757812,"InvertFeedback":false,"Mode":"Classic","OutputGain":0.9999999403953552,"Rate":0.9000000357627869,"Shaping":0.0,"VibratoOffset":0.0,"Warmth":0.4043238162994385,"Width":1.96875},"deviceData":{}},{"presetUri":null,"kind":"reverb","name":"","parameters":{"AllPassGain":0.6000000238418579,"AllPassSize":0.4000000059604645,"BandFreq":829.999755859375,"BandHighOn":false,"BandLowOn":true,"BandWidth":5.849999904632568,"ChorusOn":true,"CutOn":true,"DecayTime":431.76220703125,"DiffuseDelay":0.5,"EarlyReflectModDepth":17.5,"EarlyReflectModFreq":0.29770001769065857,"Enabled":true,"FlatOn":true,"FreezeOn":false,"HighFilterType":"Shelf","MixDiffuse":1.995300054550171,"MixDirect":0.15234375,"MixReflect":1.0,"PreDelay":1.3860207796096802,"RoomSize":0.22200000286102295,"RoomType":"SuperEco","ShelfHiFreq":4500.00146484375,"ShelfHiGain":0.699999988079071,"ShelfHighOn":true,"ShelfLoFreq":90.0,"ShelfLoGain":1.0,"ShelfLowOn":true,"SizeModDepth":0.019999999552965164,"SizeModFreq":0.020000001415610313,"SizeSmoothing":"Fast","SpinOn":true,"StereoSeparation":100.0},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}],"returnTracks":[],"masterTrack":{"color":3,"isSelected":false,"devices":[{"presetUri":"ableton:/packs/abl-core-library/Audio%20Effects/Dynamics/Punch%20Glue.json","kind":"audioEffectRack","name":"Punch Glue","lockId":1001,"lockSeal":-100211998,"parameters":{"Enabled":true,"Macro0":63.35280227661133,"Macro1":63.5,"Macro2":63.35280227661133,"Macro3":{"value":32.8900260925293,"customName":"Comp Hi Pass"},"Macro4":{"value":29.73539161682129,"customName":"Release"},"Macro5":{"value":101.88977014790208,"presetValue":44.9728889465332,"customName":"Threshold"},"Macro6":{"value":0.0,"presetValue":10.583333969116213},"Macro7":{"value":127.0,"customName":"Comp Dry/Wet"}},"chains":[{"name":"","color":0,"devices":[{"presetUri":null,"kind":"channelEq","name":"","parameters":{"Enabled":true,"Gain":1.0,"HighShelfGain":{"value":0.9999999403953552,"macroMapping":{"macroIndex":2,"rangeMin":0.18000000715255737,"rangeMax":5.599999904632568}},"HighpassOn":false,"LowShelfGain":{"value":0.9999999403953552,"macroMapping":{"macroIndex":0,"rangeMin":0.18000000715255737,"rangeMax":5.599999904632568}},"MidFrequency":579.9998779296875,"MidGain":{"value":1.0,"macroMapping":{"macroIndex":1,"rangeMin":0.25,"rangeMax":4.0}}},"deviceData":{}},{"presetUri":null,"kind":"compressor","name":"","parameters":{"Attack":1.0,"AutoReleaseControlOnOff":false,"DryWet":{"value":1.0,"macroMapping":{"macroIndex":7,"rangeMin":0.0,"rangeMax":1.0}},"Enabled":{"value":true,"macroMapping":{"macroIndex":7,"rangeMin":1.0,"rangeMax":127.0}},"ExpansionRatio":1.149999976158142,"Gain":{"value":0.0,"macroMapping":{"macroIndex":6,"rangeMin":0.0,"rangeMax":36.0}},"GainCompensation":false,"Knee":0.10000000149011612,"LogEnvelope":true,"Model":"RMS","Ratio":2.0,"Release":{"value":30.0,"macroMapping":{"macroIndex":4,"rangeMin":1.0,"rangeMax":1000.0}},"SideChainEq_Freq":{"value":80.0,"macroMapping":{"macroIndex":3,"rangeMin":30.0,"rangeMax":15000.0}},"SideChainEq_Gain":0.0,"SideChainEq_Mode":"High pass","SideChainEq_On":true,"SideChainEq_Q":0.4099999964237213,"Threshold":{"value":1.0,"macroMapping":{"macroIndex":5,"rangeMin":0.003162277629598975,"rangeMax":1.0}}},"deviceData":{}}],"mixer":{"pan":0.0,"solo-cue":false,"speakerOn":true,"volume":0.0,"sends":[]}}]},{"presetUri":"ableton:/packs/abl-core-library/Audio%20Effects/Saturator/Analog%20Clip.json","kind":"saturator","name":"Analog Clip","parameters":{"BaseDrive":0.0,"BassShaperThreshold":-50.0,"ColorDepth":0.0,"ColorFrequency":1000.0,"ColorOn":true,"ColorWidth":0.30000001192092896,"DryWet":{"value":0.0,"presetValue":1.0},"Enabled":true,"Oversampling":false,"PostClip":"off","PostDrive":-7.0,"PreDcFilter":false,"PreDrive":9.0,"Type":"Analog Clip","WsCurve":0.05000000074505806,"WsDamp":0.0,"WsDepth":0.0,"WsDrive":1.0,"WsLin":0.5,"WsPeriod":0.0},"deviceData":{}},{"presetUri":null,"kind":"limiter","name":"","parameters":{"AutoRelease":false,"Ceiling":-0.30000001192092896,"Enabled":true,"Gain":0.0,"LegacySmoothing":true,"LinkAmount":1.0,"LinkAmountMidSide":0.0,"Lookahead":"1.5 ms","Maximize":false,"MaximizeOutput":0.0,"MaximizeThreshold":0.0,"Mode":"Standard","Release":100.0,"Routing":"L/R"},"deviceData":{}}],"mixer":{"pan":0.0,"volume":0.0}},"scenes":[{"name":"","color":null},{"name":"","color":null},{"name":"","color":null},{"name":"","color":null},{"name":"","color":null},{"name":"","color":null},{"name":"","color":null},{"name":"","color":null}],"grooves":[],"metadata":{"usedFeatures":["Compressor Device","Compressor Side Chain EQ","Drum Sampler Pitch > Env"]}};
+const SX_STP='0000000000000001000000000000000100000000000000010000000100000001000000010000000000000001000000010000000100000001000000010000000000000001000000010000000000000000000000000000000000000000000000000000000000000000000000010000005d000000000000000100000000';
+/* ---------- SP-404SX / SP-404A: estructura de tarjeta SD (SMPL + PAD_INFO.BIN), descifrada de una copia real de una SP-404SX ---------- */
+const SX_BANKS='ABCDEFGHIJ';
+function sxWavName(k){return SX_BANKS[Math.floor(k/12)]+String(k%12+1).padStart(7,'0')+'.WAV'}
+function sxWav(pcm,k){
+  const hdr=new DataView(new ArrayBuffer(512)),n=pcm.length;
+  const w=(o,s)=>[...s].forEach((c,i)=>hdr.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');hdr.setUint32(4,512-8+n,true);w(8,'WAVE');w(12,'fmt ');hdr.setUint32(16,18,true);
+  hdr.setUint16(20,1,true);hdr.setUint16(22,1,true);hdr.setUint32(24,44100,true);hdr.setUint32(28,88200,true);hdr.setUint16(32,2,true);hdr.setUint16(34,16,true);hdr.setUint16(36,0,true);
+  w(38,'RLND');hdr.setUint32(42,458,true);
+  w(46,'roifspsx');hdr.setUint8(54,4);hdr.setUint8(58,k);   // contenido del bloque RLND: firma, 4 y el número de pad (0-119)
+  w(504,'data');hdr.setUint32(508,n,true);
+  const out=new Uint8Array(512+n);out.set(new Uint8Array(hdr.buffer),0);out.set(pcm,512);return out;
+}
+function sxCard(items){
+  const used=new Map();
+  items.forEach(it=>{if(it.pad<120)used.set(it.pad,it)});
+  const files=[],pi=new DataView(new ArrayBuffer(3840));
+  for(let k=0;k<120;k++){
+    const o=k*32,it=used.get(k);
+    pi.setUint32(o+24,1200,false);pi.setUint32(o+28,1200,false);   // 120,0 BPM
+    pi.setUint8(o+16,127);pi.setUint8(o+21,1);pi.setUint8(o+22,2);
+    pi.setUint32(o,512,false);pi.setUint32(o+4,512,false);pi.setUint32(o+8,512,false);pi.setUint32(o+12,512,false);
+    if(!it){pi.setUint8(o+19,1);continue}                          // pad vacío
+    const f=sxWav(it.data.subarray(44),k),L=f.length;
+    pi.setUint32(o+4,L,false);pi.setUint32(o+12,L,false);pi.setUint8(o+22,1);
+    if(it.loop)pi.setUint8(o+18,1);
+    files.push({name:'SP-404SX/SMPL/'+sxWavName(k),data:f});
+  }
+  files.push({name:'SP-404SX/SMPL/PAD_INFO.BIN',data:new Uint8Array(pi.buffer)});
+  files.push({name:'SP-404SX/SMPL/STPINFO.BIN',data:Uint8Array.from(SX_STP.match(/../g).map(h=>parseInt(h,16)))});
+  return files;
+}
+function sxReadme(items){
+  const rows=items.map(it=>'  pad '+pl(it.pad)+'  ->  banco '+SX_BANKS[Math.floor(it.pad/12)]+', pad '+(it.pad%12+1)+'  ('+sxWavName(it.pad)+')');
+  return ['','=== TARJETA LISTA (carpeta SP-404SX) ===',
+    'Además de la carpeta de importación, este zip trae la estructura de una tarjeta de la SP-404SX: SP-404SX/SMPL con los WAV (44,1 kHz, 16 bits, mono, con la cabecera de 512 bytes de Roland) y PAD_INFO.BIN con los ajustes de los 120 pads.',
+    'Verificado solo contra una copia de tarjeta de una SP-404SX. La SP-404A usa el mismo formato de muestras, pero no he podido comprobar el nombre de su carpeta: si al formatear una tarjeta en tu SP-404A ves otra carpeta (por ejemplo ROLAND/SP-404A), copia ahí el contenido de SMPL.',
+    '1. Haz una copia de seguridad de tu tarjeta.','2. Copia la carpeta SMPL (con PAD_INFO.BIN) a la carpeta correspondiente de la tarjeta, sustituyendo los archivos.',
+    '3. En el aparato, los pads cargan los samples. Los pads que no se usan quedan vacíos.',
+    'Los pads de la app se reparten seguidos: pad 1-12 al banco A, 13-24 al banco B, etc. (un banco de la SP-404 tiene 12 pads).','Pads que se exportan:',...rows,''].join('\r\n');
+}
+/* ---------- Ableton Move: set (.ablbundle) con una Drum Rack de 16 celdas ---------- */
+function moveBundle(items,name,tempo){
+  const s=JSON.parse(JSON.stringify(MOVE_TPL));
+  s.tempo=tempo||120;
+  const rack=s.tracks[0].devices[0].chains[0].devices[0];
+  const cellS=JSON.parse(JSON.stringify(rack.chains[0].devices[0])),cellE=JSON.parse(JSON.stringify(rack.chains[4].devices[0]));
+  const by=new Map(items.map(it=>[it.slot,it])),uris={};
+  rack.chains.forEach((c,i)=>{
+    const it=by.get(i);
+    if(it){const d=JSON.parse(JSON.stringify(cellS));d.deviceData={sampleUri:'Samples/'+encodeURIComponent(it.file)};c.devices[0]=d;c.drumZoneSettings.chokeGroup=it.grp?it.grp:null;uris['Samples/'+encodeURIComponent(it.file)]='ableton:/user-library/Samples/SampledHead/'+encodeURIComponent(it.file)}
+    else{const d=JSON.parse(JSON.stringify(cellE));d.deviceData={sampleUri:null};c.devices[0]=d;c.drumZoneSettings.chokeGroup=null}
+  });
+  const enc=new TextEncoder();
+  return zip([{name:'BundleInfo.json',data:enc.encode(JSON.stringify({originalSampleUris:uris},null,2))},
+    {name:'Song.abl',data:enc.encode(JSON.stringify(s,null,2))},
+    ...items.map(it=>({name:'Samples/'+it.file,data:it.data}))]);
+}
+async function moveExport(src){
+  const bs=src==='bass',ks=src==='keys';
+  if(!bs&&!ks&&!pads.some(p=>p.buf)){status('No hay samples que exportar');return}
+  const name=clean((prompt('Nombre del set de Move',(bs?$('#bkits').value||'Mi bajo':ks?$('#kkits').value||'Mis teclas':$('#kits').value)||'Mi kit')||'').trim());
+  if(!name)return;
+  status('Exportando para Move…');
+  try{
+    const items=await bakeKit(toRate(48000),src),tempo=(typeof lpBpm==='function'&&lpBpm())||120;
+    const groups=new Map();
+    items.forEach(it=>{const b=it.pad>>4;if(!groups.has(b))groups.set(b,[]);groups.get(b).push({slot:it.pad&15,file:String(it.pad+1).padStart(2,'0')+'_'+(ascii(it.base).slice(0,24)||'pad').replace(/ /g,'_')+'.wav',data:it.data,grp:it.grp})});
+    const bundles=[...groups.entries()].map(([b,list])=>({name:groups.size>1?name+' '+BANKS[b]+'.ablbundle':name+'.ablbundle',data:moveBundle(list,name,tempo)}));
+    if(bundles.length===1){save(bundles[0].data,bundles[0].name);status('Exportado: '+bundles[0].name)}
+    else{save(zip(await Promise.all(bundles.map(async b=>({name:b.name,data:new Uint8Array(await b.data.arrayBuffer())})))),name+'_Move.zip');status('Exportado: '+name+'_Move.zip ('+bundles.length+' sets)')}
+  }catch(e){status('No se pudo exportar a Move')}
+}
+
+$('#kmove').onclick=()=>moveExport();$('#bmove').onclick=()=>moveExport('bass');$('#tmove').onclick=()=>moveExport('keys');
+/* ---------- MIDI (Web MIDI: Chrome en Android, Mac y Windows; no existe en iPad/Safari) ---------- */
+const MIDI_KEY='sampledhead.midi';
+const cc=n=>({t:'cc',n}),nt=n=>({t:'n',n}),rt=n=>({t:'rt',n});
+const MIDI_PROFILES={
+  sp404:{name:'Roland SP-404 MK2',rel:false,pad:[36],span:160,
+    note:'Perillas CTRL 1-3 = CC 16/17/18 y CTRL 4-6 = CC 80/81/82, REC del looper = CC 88 y Deshacer = CC 91 (tabla oficial de Roland). Pads: notas desde la 36 en abanico de bancos (según la documentación que aportaste; la tabla de Roland no detalla las notas). Play y Stop llegan como MIDI Start/Stop si activas MIDI Sync Out.',
+    knob:[16,17,18,80,81,82,null,null],act:{rec:[cc(88)],undo:[cc(91)],play:[rt(0xFA),rt(0xFB)],stop:[rt(0xFC)]}},
+  move:{name:'Ableton Move',rel:true,pad:[36,68],span:16,
+    note:'Las perillas son relativas (giran sin tope: 1 = derecha, 127 = izquierda). Se aceptan dos juegos de CC: 71-78 (los que ya te funcionaron en las pruebas) y 21-28 (los de la documentación que aportaste). Rec = CC 86 y Play = CC 85, o las notas 22 y 20 de esa documentación. Pads: notas 36-51 (modo batería) o 68-83. Rueda y botones de pista: usa Aprender.',
+    knob:[[71,21],[72,22],[73,23],[74,24],[75,25],[76,26],[77,27],[78,28]],master:[79],grp:[14],
+    act:{rec:[cc(86),nt(22)],play:[cc(85),nt(20)],stop:[nt(21)]}},
+  mpc:{name:'Akai MPC Sample',rel:false,pad:[36],span:160,
+    note:'Según la documentación que aportaste (no verificada con el aparato): pads desde la nota 36, perillas CC 16-18 absolutas, Stop = CC 81, Play = CC 82, Rec = CC 73. Si algo no responde, usa el monitor y Aprender.',
+    knob:[16,17,18,null,null,null,null,null],act:{stop:[cc(81)],play:[cc(82)],rec:[cc(73)]}},
+  gen:{name:'Genérico',rel:false,pad:[36],span:16,note:'Pads desde la nota 36 y perillas CC 16-18 absolutas. El resto: Aprender.',knob:[16,17,18,null,null,null,null,null],act:{}}
+};
+const midi={acc:null,prof:'sp404',cus:{},learn:null,mon:[],fxSel:0,fxM:-1,fxT:0,down:{},on:false,grp:0,acc2:{sel:0,grp:0}};
+try{const j=JSON.parse(localStorage.getItem(MIDI_KEY)||'{}');if(j.prof&&MIDI_PROFILES[j.prof])midi.prof=j.prof;midi.cus=j.cus||{};midi.on=!!j.on}catch{}
+const midiSave=()=>{try{localStorage.setItem(MIDI_KEY,JSON.stringify({prof:midi.prof,cus:midi.cus,on:midi.on}))}catch{}};
+const MIDI_SECS=[
+  ['Pads',[['pad','Pad 1']]],
+  ['Perillas',[...Array.from({length:8},(_,j)=>['k'+j,'Perilla '+(j+1)]),['master','Master'],['grp','Rueda (grupo)']]],
+  ['Transporte',[['rec','Rec'],['play','Play'],['stop','Stop'],['loop','Loop'],['undo','Deshacer'],['redo','Rehacer']]],
+  ['Pestañas',[['tabS','Sampler'],['tabL','Looper'],['tabB','Bajo'],['tabK','Teclas'],['tabM','Mixer'],['tabF','FX']]],
+  ['Bancos',[['bkA','Banco A'],['bkB','Banco B'],['bkC','Banco C'],['bkD','Banco D']]],
+  ['Looper',[['ltr1','Pista 1'],['ltr2','Pista 2'],['ltr3','Pista 3'],['ltr4','Pista 4'],['lmute','Mute'],['lsolo','Solo'],['lclr','Borrar pista'],['met','Metrónomo']]],
+  ['Mixer',[['grpn','Grupo +'],['grpp','Grupo −']]]
+];
+const MIDI_KNOBLIKE=/^(k\d|master|grp)$/;
+const midiRel=()=>midi.cus.rel!=null?!!midi.cus.rel:!!MIDI_PROFILES[midi.prof].rel;
+const midiStep=()=>.0125*((midi.cus.sens||100)/100);
+const asList=v=>v==null?[]:Array.isArray(v)?v:[v];
+function midiKnobCCs(key){   // key: 'k0'..'k7' | 'master' | 'grp'
+  const c=midi.cus[key],p=MIDI_PROFILES[midi.prof];
+  if(c!==undefined)return asList(c);
+  if(key==='master'||key==='grp')return asList(p[key]);
+  return asList(p.knob[+key.slice(1)]);
+}
+function midiActList(a){const c=midi.cus[a];if(c!==undefined)return c?[c]:[];return MIDI_PROFILES[midi.prof].act[a]||[]}
+function midiPadIndex(n){
+  const p=MIDI_PROFILES[midi.prof],bases=midi.cus.pad!=null?[midi.cus.pad]:p.pad,span=midi.cus.pad!=null?16:(p.span||16);
+  for(const b of bases){const d=n-b;if(d>=0&&d<span)return d%16}
+  return -1;
+}
+function midiPadOn(i,vel){
+  const u=$('.unit');if(u.classList.contains('mix')||u.classList.contains('fxt'))return null;
+  if(keysShown()){kHit(i,Math.max(.1,vel/127));return {k:'k',i}}
+  if(bassShown()){bHit(i);return {k:'b',i}}
+  const n=bank*16+i;hit(n);return {k:'s',i:n};
+}
+function midiPadOff(o){if(!o)return;if(o.k==='k')kRel(o.i);else if(o.k==='b')bRel(o.i);else release(o.i)}
+/* Rec del looper desde el aparato: empieza a grabar al instante; otra pulsación cierra el bucle y pasa a overdub */
+function midiLpRec(){
+  ctx.resume();
+  const go=()=>{lp.st='rec1';lp.t0=ctx.currentTime;lp.ev=[];lp.len=0;lp.over=false;lpUI();status('Grabando el looper… (Rec otra vez cierra el bucle)')};
+  if(lp.st==='idle'||lp.st==='armed'){
+    if(lp.st==='idle'&&met.count){if(met.counting)return;metCountIn(()=>{if(lp.st==='idle')go()});return}
+    go();return;
+  }
+  if(lp.st==='rec1'){lpClose(true);return}
+  $('#lprec').click();
+}
+function midiAct(a){
+  const u=$('.unit'),cl=c=>u.classList.contains(c),samp=!cl('loop')&&!cl('bass')&&!cl('keys')&&!cl('mix')&&!cl('fxt'),lpTab=cl('loop');
+  if(/^tab[SLBKMF]$/.test(a)){showTab('SLBFKM'.indexOf(a[3]));return 'pestaña '+a.slice(3)}
+  if(/^bk[A-D]$/.test(a)){const b=$('#banks').children[a.charCodeAt(2)-65];if(b)b.click();return 'banco '+a[2]}
+  if(/^ltr[1-4]$/.test(a)){lpSelTrack(+a[3]-1);return 'pista '+a[3]}
+  if(a==='grpn'||a==='grpp'){midiGrp(a==='grpn'?1:-1);return 'grupo'}
+  if(a==='lmute'){$('#lpmute').click();return 'mute'}
+  if(a==='lsolo'){$('#lpsolo').click();return 'solo'}
+  if(a==='lclr'){$('#lpclr').click();return 'borrar pista'}
+  if(a==='met'){$('#lpmet').click();return 'metrónomo'}
+  if(a==='redo'){undoGo(true);return 'rehacer'}
+  if(a==='undo'){if(lpTab&&lp.st!=='idle'&&lp.st!=='armed')$('#lpundo').click();else undoGo(false);return 'deshacer'}
+  if(samp){
+    if(a==='rec')$('#rec').click();
+    else if(a==='play'){hit(sel);setTimeout(()=>release(sel),30)}
+    else if(a==='stop'){for(let i=0;i<pads.length;i++)if(pads[i].src)stop(i,true)}
+    else if(a==='loop')$('#lploop').click();
+    return a;
+  }
+  if(a==='stop'){bRelAll();kRelAll()}
+  if(a==='rec'){midiLpRec();return 'rec looper'}
+  $('#lp'+a).click();return a+' looper';
+}
+const clamp01=x=>Math.min(1,Math.max(0,x));
+const nudge=(cur,d,abs)=>abs!=null?abs:clamp01(cur+d*midiStep());
+/* ---- efectos del máster (fuera del Mixer) ---- */
+function midiFxMark(){[0,1,2].forEach(m=>{const b=$('#fxpad'+m);if(b&&b.parentElement)b.parentElement.classList.toggle('sel',m===midi.fxSel)})}
+function midiFxSelect(m){
+  if(m===midi.fxSel)return;
+  if(midi.fxM>=0){fxRelease(midi.fxM);midi.fxM=-1}
+  midi.fxSel=m;midiFxMark();status('Efecto: '+FX_NAMES[m]);
+}
+function midiFxMove(j,d,abs){
+  if(j===2){
+    if(abs!=null)midiFxSelect(abs<.34?0:abs<.67?1:2);
+    else{midi.acc2.sel+=d;if(Math.abs(midi.acc2.sel)>=4){midiFxSelect(Math.min(2,Math.max(0,midi.fxSel+(midi.acc2.sel>0?1:-1))));midi.acc2.sel=0}}
+    return 'efecto '+FX_NAMES[midi.fxSel];
+  }
+  const m=midi.fxSel,S=fx.st[m];
+  if(m===2&&(fx.noRep||!fx.mod))return 'beat repeat no disponible';
+  if(!S.down){ctx.resume();fxNodes(true);S.down=true;S.id='midi';midi.fxM=m}
+  if(j===0)S.x=nudge(S.x,d,abs);else S.y=nudge(S.y,d,abs);
+  fxSend();
+  clearTimeout(midi.fxT);
+  midi.fxT=setTimeout(()=>{if(midi.fxM>=0){fxRelease(midi.fxM);midi.fxM=-1}if(!fx.tab)fxNodes(false)},1500);
+  return FX_NAMES[m]+(j===0?' X ':' Y ')+Math.round((j===0?S.x:S.y)*100)+'%';
+}
+/* ---- mixer: cuatro grupos de perillas ---- */
+const mxT=(l,get,set,fmt)=>({l,get,set,fmt});
+const dbF=v=>(v<=-59.9?'−∞':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1))+' dB';
+function mxGroups(){
+  const vol=i=>mxT('Volumen '+MXN[i],()=>mxVolToP(MX.vol[i]),p=>{MX.vol[i]=Math.round(mxVolFromP(p)*10)/10},()=>dbF(MX.vol[i]));
+  const snd=(k,i,n)=>mxT(n+' '+MXN[i],()=>MX[k][i],p=>{MX[k][i]=Math.round(p*100)/100},()=>Math.round(MX[k][i]*100)+'%');
+  const sc=(l,k,mn,mx,st,fm)=>mxT(l,()=>(MX.comp[k]-mn)/(mx-mn),p=>{MX.comp[k]=Math.round((mn+p*(mx-mn))/st)*st;MX.compOn=true},()=>fm(MX.comp[k]));
+  return [
+    {n:'Volúmenes y reverb',t:[0,1,2].map(vol).concat([0,1,2].map(i=>snd('rev',i,'Reverb')))},
+    {n:'Delays',t:[0,1,2].map(i=>snd('dly',i,'Delay')).concat([
+      mxT('Retorno reverb',()=>MX.rret,p=>{MX.rret=Math.round(p*100)/100},()=>Math.round(MX.rret*100)+'%'),
+      mxT('Retorno delay',()=>MX.dret,p=>{MX.dret=Math.round(p*100)/100},()=>Math.round(MX.dret*100)+'%'),
+      mxT('Repeticiones',()=>MX.dfb/.85,p=>{MX.dfb=Math.round(p*.85*100)/100},()=>Math.round(MX.dfb*100)+'%')])},
+    {n:'Compresor',t:[sc('Umbral','th',-60,0,1,v=>v+' dB'),sc('Ratio','ratio',1,20,.5,v=>v+':1'),sc('Ataque','att',0,100,1,v=>v+' ms'),sc('Relajación','rel',10,1000,10,v=>v+' ms'),sc('Knee','knee',0,40,1,v=>v+' dB'),sc('Ganancia','gain',0,24,.5,v=>'+'+v+' dB')]},
+    {n:'EQ',t:EQ_F.map((hz,i)=>mxT('EQ '+(hz>=1000?hz/1000+'k':hz),()=>(MX.eq[i]+12)/24,p=>{MX.eq[i]=Math.round((-12+p*24)*2)/2;MX.eqOn=true},()=>(MX.eq[i]>0?'+':'')+MX.eq[i]+' dB'))}
+  ];
+}
+function mxRefresh(){mxApply();mxSave();try{mxUI();mxRedraw.forEach(f=>f());mxCurve()}catch{}}
+function midiMixKnob(t,d,abs){
+  const np=nudge(t.get(),d,abs);t.set(np);mxRefresh();
+  return t.l+' · '+t.fmt();
+}
+function midiGrp(step){
+  midi.grp=((midi.grp+step)%4+4)%4;midiGrpUI();status('Perillas del mixer: '+mxGroups()[midi.grp].n);
+}
+function midiGrpUI(){
+  const b=$('#mxgrp');if(!b)return;
+  [...b.children].forEach((x,i)=>x.classList.toggle('on',i===midi.grp));
+  const n=$('#mxgrpn');if(n)n.textContent=mxGroups()[midi.grp].t.map((t,i)=>(i+1)+' '+t.l).join(' · ');
+}
+function midiKnob(key,raw){
+  const rel=midiRel(),d=rel?(raw===0?0:raw<=63?raw:raw-128):0,abs=rel?null:raw/127;
+  if(rel&&!d)return '';
+  if(key==='master'){const t=mxT('Master',()=>mxVolToP(MX.master),p=>{MX.master=Math.round(mxVolFromP(p)*10)/10},()=>dbF(MX.master));return midiMixKnob(t,d,abs)}
+  if(key==='grp'){
+    if(abs!=null)midi.grp=Math.min(3,Math.floor(abs*4));
+    else{midi.acc2.grp+=d;if(Math.abs(midi.acc2.grp)>=3){midi.grp=((midi.grp+(midi.acc2.grp>0?1:-1))%4+4)%4;midi.acc2.grp=0}}
+    midiGrpUI();return 'grupo '+(midi.grp+1)+' · '+mxGroups()[midi.grp].n;
+  }
+  const j=+key.slice(1);
+  if($('.unit').classList.contains('mix')){
+    const t=mxGroups()[midi.grp].t[j];if(!t)return 'sin función';
+    return midiMixKnob(t,d,abs);
+  }
+  if(j>2)return 'sin función fuera del Mixer';
+  return midiFxMove(j,d,abs);
+}
+/* ---- entrada ---- */
+function midiLog(txt){
+  midi.mon.unshift(txt);if(midi.mon.length>7)midi.mon.pop();
+  const m=$('#midimon');if(m)m.textContent=midi.mon.join('\n');
+}
+const MIDI_LABEL={};MIDI_SECS.forEach(([,l])=>l.forEach(([k,n])=>MIDI_LABEL[k]=n));
+function midiMsg(ev){
+  const d=ev.data;if(!d||!d.length)return;
+  const s=d[0];
+  let kind=null,n=d[1],v=d[2]||0,txt='';
+  if(s>=0xF8){if(s===0xF8||s===0xFE)return;kind='rt';n=s;txt='Tiempo real '+(s===0xFA?'Start':s===0xFB?'Continue':s===0xFC?'Stop':'0x'+s.toString(16))}
+  else{
+    const t=s&0xF0,ch=(s&15)+1;
+    if(t===0x90&&v>0){kind='n';txt='Nota '+n+' vel '+v+' · canal '+ch}
+    else if(t===0x80||(t===0x90&&v===0)){kind='o';txt='Nota '+n+' suelta · canal '+ch}
+    else if(t===0xB0){kind='c';txt='CC '+n+' = '+v+' · canal '+ch+((v<=3||v>=125)&&v!==0?'  (¿relativo?)':'')}
+    else return;
+  }
+  /* aprender */
+  if(midi.learn&&(kind==='n'||kind==='c'||kind==='rt')){
+    const L=midi.learn;let ok=true;
+    if(L==='pad'){if(kind==='n')midi.cus.pad=n;else ok=false}
+    else if(MIDI_KNOBLIKE.test(L)){if(kind==='c')midi.cus[L]=n;else ok=false}
+    else midi.cus[L]=kind==='rt'?{t:'rt',n}:{t:kind==='n'?'n':'cc',n};
+    if(ok){midiLog(txt+'  → aprendido: '+MIDI_LABEL[L]);midi.learn=null;midiSave();midiUI();status('MIDI aprendido: '+MIDI_LABEL[L])}
+    else midiLog(txt+'  → para «'+MIDI_LABEL[L]+'» hace falta '+(L==='pad'?'una nota':'un CC (perilla)'));
+    return;
+  }
+  const M=MIDI_PROFILES[midi.prof];let what='';
+  if(kind==='n'){
+    const i=midiPadIndex(n);
+    if(i>=0){midi.down[(s&15)*256+n]=midiPadOn(i,v);what='pad '+(i+1)}
+    else for(const a in MIDI_LABEL){if(MIDI_KNOBLIKE.test(a)||a==='pad')continue;if(midiActList(a).some(x=>x.t==='n'&&x.n===n)){what=midiAct(a);break}}
+  }else if(kind==='o'){
+    const key=(s&15)*256+n;if(key in midi.down){midiPadOff(midi.down[key]);delete midi.down[key]}
+  }else if(kind==='c'){
+    let done=false;
+    for(const key of [...Array.from({length:8},(_,j)=>'k'+j),'master','grp'])if(midiKnobCCs(key).includes(n)){what=midiKnob(key,v);done=true;break}
+    if(!done)for(const a in MIDI_LABEL){if(MIDI_KNOBLIKE.test(a)||a==='pad')continue;if(v>=64&&midiActList(a).some(x=>x.t==='cc'&&x.n===n)){what=midiAct(a);break}}
+  }else if(kind==='rt'){
+    for(const a in MIDI_LABEL){if(MIDI_KNOBLIKE.test(a)||a==='pad')continue;if(midiActList(a).some(x=>x.t==='rt'&&x.n===n)){what=midiAct(a);break}}
+  }
+  midiLog(txt+(what?'  → '+what:'  (sin asignar)'));
+}
+function midiPorts(){
+  const a=midi.acc;if(!a)return;
+  const ins=[...a.inputs.values()];
+  ins.forEach(i=>{i.onmidimessage=midiMsg});
+  $('#midiins').textContent=ins.length?'Conectado: '+ins.map(i=>i.name).join(', '):'Sin aparatos MIDI. Conecta uno por USB.';
+  const f=ins.map(i=>i.name||'').join(' ');
+  if(!midi.cus.auto&&ins.length){const pr=/404/i.test(f)?'sp404':/move/i.test(f)?'move':/mpc/i.test(f)?'mpc':null;if(pr&&pr!==midi.prof){midi.prof=pr;midiSave();midiUI()}}
+}
+async function midiOn(){
+  if(!navigator.requestMIDIAccess){$('#midiins').textContent='Este navegador no tiene MIDI web (en iPad no funciona). Prueba Chrome en Android o en un ordenador.';return}
+  try{
+    midi.acc=await navigator.requestMIDIAccess({sysex:false});
+    midi.acc.onstatechange=midiPorts;midi.on=true;midiSave();midiPorts();midiUI();
+  }catch(e){$('#midiins').textContent='No se pudo activar MIDI: '+(e&&e.message||'permiso denegado')}
+}
+function midiDesc(key){   // texto con el mensaje asignado
+  if(key==='pad'){const b=midi.cus.pad!=null?[midi.cus.pad]:MIDI_PROFILES[midi.prof].pad;return 'nota '+b.join('/')}
+  if(MIDI_KNOBLIKE.test(key)){const l=midiKnobCCs(key);return l.length?'CC '+l.join('/'):'—'}
+  const l=midiActList(key);return l.length?l.map(x=>x.t==='rt'?'MIDI '+(x.n===0xFA?'Start':x.n===0xFB?'Cont.':'Stop'):(x.t==='n'?'nota ':'CC ')+x.n).join(' / '):'—';
+}
+function midiUI(){
+  if(!$('#midisheet'))return;
+  $('#midiprof').value=midi.prof;
+  $('#midinote').textContent=MIDI_PROFILES[midi.prof].note;
+  $('#midirel').checked=midiRel();$('#midisens').value=midi.cus.sens||100;
+  [...$('#midilearn').querySelectorAll('button')].forEach(b=>{
+    b.classList.toggle('on',b.dataset.t===midi.learn);
+    const s=b.querySelector('small');if(s)s.textContent=midiDesc(b.dataset.t);
+  });
+  $('#midilhint').textContent=midi.learn?'Pulsa o mueve «'+MIDI_LABEL[midi.learn]+'» en el aparato…'+(midi.learn==='pad'?' (el pad 1 define las otras 15 notas)':'')+'  Pulsa otra vez para cancelar.':'';
+  $('#midiunset').hidden=!midi.learn;
+}
+function midiOpen(on){const s=$('#midisheet');if(!s)return;s.hidden=!on;$('#veil').hidden=!on;if(on){midiUI();if(!midi.acc&&navigator.requestMIDIAccess&&midi.on)midiOn()}else midi.learn=null}
+(function midiWire(){
+  const sel=$('#midiprof');
+  Object.keys(MIDI_PROFILES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=MIDI_PROFILES[k].name;sel.appendChild(o)});
+  sel.onchange=()=>{midi.prof=sel.value;midi.cus={auto:1};midiSave();midiUI()};
+  const box=$('#midilearn');
+  MIDI_SECS.forEach(([title,list])=>{
+    const h=document.createElement('div');h.className='note';h.textContent=title;box.appendChild(h);
+    const g=document.createElement('div');g.className='mlgrid';box.appendChild(g);
+    list.forEach(([t,n])=>{const b=document.createElement('button');b.dataset.t=t;b.innerHTML='<span>'+n+'</span><small></small>';b.onclick=()=>{midi.learn=midi.learn===t?null:t;midiUI()};g.appendChild(b)});
+  });
+  $('#midion').onclick=midiOn;
+  $('#midiclr').onclick=()=>{midi.cus={};midiSave();midiUI()};
+  $('#midiunset').onclick=()=>{if(midi.learn){midi.cus[midi.learn]=null;midi.learn=null;midiSave();midiUI()}};
+  $('#midirel').onchange=e=>{midi.cus.rel=e.target.checked;midiSave();midiUI()};
+  $('#midisens').oninput=e=>{midi.cus.sens=+e.target.value;midiSave()};
+  $('#midibtn').onclick=()=>{menu(false);midiOpen(true)};
+  $('#midiclose').onclick=()=>midiOpen(false);
+  [0,1,2].forEach(m=>{const b=$('#fxpad'+m);if(b)b.addEventListener('pointerdown',()=>{midi.fxSel=m;midiFxMark()},true)});
+  midiFxMark();
+  const g=$('#mxgrp');
+  if(g){mxGroups().forEach((x,i)=>{const b=document.createElement('button');b.textContent=x.n;b.style.fontSize='12px';b.onclick=()=>{midi.grp=i;midiGrpUI()};g.appendChild(b)});midiGrpUI()}
+  if(midi.on&&navigator.requestMIDIAccess)midiOn();
+})();
+/* ---------- proyectos y autoguardado (en IndexedDB, clave "proj:") ---------- */
+const PJ='proj:',PJAUTO=PJ+'__auto__',PJOPT='sampledhead.autosave';
+const pj={ready:false,sig:'',busy:false};
+const pjAutoOn=()=>{try{return localStorage.getItem(PJOPT)!=='0'}catch{return true}};
+const pjPlain=o=>JSON.parse(JSON.stringify(o));
+function pjSamp(){
+  const u=uniqueSources();
+  return {v:3,sources:u.list.map(b=>({sr:b.sampleRate,audio:Array.from({length:b.numberOfChannels},(_,c)=>b.getChannelData(c).slice())})),
+    pads:pads.map(p=>p.buf?{...packMeta(p),src:u.idx.get(p.buf)}:null)};
+}
+function pjMeta(){   // todo lo que no es audio (barato de comparar)
+  return {bass:{P:pjPlain(BP),S:pjPlain(BS)},keys:{P:pjPlain(KP),S:pjPlain(KS)},mx:pjPlain(MX),
+    lp:{ev:lp.ev.map(e=>({...e})),len:lp.len,tempo:lp.tempo?pjPlain(lp.tempo):null,oct:lp.oct,mute:[...lp.mute],vol:[...lp.vol],solo:[...lp.solo],trk:lp.trk,scope:lp.scope,sess:lp.sess},
+    bank,sel};
+}
+const pjBufIds=new WeakMap();let pjN=0;
+const pjId=b=>{if(!pjBufIds.has(b))pjBufIds.set(b,++pjN);return pjBufIds.get(b)};
+function pjSig(){return JSON.stringify([pads.map(p=>p.buf?[pjId(p.buf),packMeta(p)]:0),pjMeta()])}
+function pjCapture(){return {v:1,t:Date.now(),samp:pjSamp(),...pjMeta()}}
+async function pjApply(d){
+  const mk=(au,sr)=>{const b=ctx.createBuffer(au.length,au[0].length,sr);au.forEach((x,c)=>b.copyToChannel(x,c));return b};
+  if(d.samp){
+    const bufs=d.samp.sources.map(s=>mk(s.audio,s.sr));
+    applyKit(d.samp.pads.map(x=>x&&{...norm(x),buf:bufs[x.src]}));
+  }
+  if(d.bass){Object.assign(BP,BDEF,d.bass.P);Object.assign(BS,d.bass.S);if(bassP)bassP.silence(ctx.currentTime);bScaleUI();bassDraw()}
+  if(d.keys){Object.assign(KP,KDF,d.keys.P);Object.assign(KS,d.keys.S);if(keysP)keysP.silence(ctx.currentTime);kApply();kScaleUI();kDraw()}
+  if(d.mx){Object.assign(MX,MXD(),d.mx);mxApply();mxUI()}
+  if(d.lp){
+    lpClear();
+    if(d.lp.ev&&d.lp.ev.length&&d.lp.len>0){
+      lp.ev=d.lp.ev.map(e=>({...e}));lp.len=d.lp.len;lp.tempo=d.lp.tempo||null;lp.oct=d.lp.oct||1;
+      lp.mute=(d.lp.mute||[false,false,false,false]).slice(0,4);lp.vol=(d.lp.vol||[1,1,1,1]).slice(0,4);lp.solo=(d.lp.solo||[false,false,false,false]).slice(0,4);lp.trk=d.lp.trk|0;lp.scope=d.lp.scope==null?1:d.lp.scope;
+      lp.sess=Math.max(d.lp.sess|0,...lp.ev.map(e=>e.sess|0));lp.st='stopped';
+    }
+    lpUI();
+  }
+  if(typeof d.bank==='number')setBank(d.bank);
+  select(typeof d.sel==='number'?d.sel:0);
+}
+async function pjList(pick){
+  try{
+    const keys=(await tx('readonly',s=>s.getAllKeys())).map(String).filter(k=>k.startsWith(PJ)&&k!==PJAUTO);
+    $('#pjlist').replaceChildren(...keys.map(k=>new Option(k.slice(PJ.length),k.slice(PJ.length))));
+    if(pick)$('#pjlist').value=pick;
+  }catch{}
+}
+async function pjSave(key,quiet){
+  if(pj.busy)return;pj.busy=true;
+  try{await tx('readwrite',s=>s.put(pjCapture(),key));if(!quiet){status('Proyecto guardado');askPersist()}return true}
+  catch{if(!quiet)status('No se pudo guardar el proyecto')}
+  finally{pj.busy=false}
+}
+async function pjAutoLoad(){
+  try{
+    if(pjAutoOn()){
+      const d=await tx('readonly',s=>s.get(PJAUTO));
+      if(d&&d.v===1){await pjApply(d);status('Sesión anterior recuperada')}
+    }
+  }catch{}
+  uLast=uSnap();uSig=uSigNow();uStack=[];rStack=[];pj.sig=pjSig();pj.ready=true;
+}
+function pjTick(force){
+  if(!pj.ready||!pjAutoOn())return;
+  if(lp.st==='rec1'||lp.st==='armed')return;
+  const s=pjSig();if(s===pj.sig&&!force)return;
+  pj.sig=s;pjSave(PJAUTO,true);
+}
+function projOpen(on){
+  const s=$('#projsheet');if(!s)return;s.hidden=!on;$('#veil').hidden=!on;
+  if(on){pjList();$('#pjauto').checked=pjAutoOn();$('#pjinfo').textContent=''}
+}
+(function pjWire(){
+  $('#projbtn').onclick=()=>{menu(false);projOpen(true)};
+  $('#projclose').onclick=()=>projOpen(false);
+  $('#pjauto').onchange=e=>{try{localStorage.setItem(PJOPT,e.target.checked?'1':'0')}catch{}if(e.target.checked)pjTick(true)};
+  $('#pjsave').onclick=async()=>{
+    const name=(prompt('Nombre del proyecto',$('#pjlist').value||'Mi proyecto')||'').trim();if(!name)return;
+    if(await pjSave(PJ+name)){await pjList(name);$('#pjinfo').textContent='Guardado: '+name}else $('#pjinfo').textContent='No se pudo guardar'
+  };
+  $('#pjload').onclick=async()=>{
+    const n=$('#pjlist').value;if(!n)return;
+    try{const d=await tx('readonly',s=>s.get(PJ+n));if(!d){$('#pjinfo').textContent='No existe';return}
+      showTab(0);await pjApply(d);pjTick(true);projOpen(false);status('Proyecto cargado: '+n)}
+    catch{$('#pjinfo').textContent='No se pudo cargar'}
+  };
+  $('#pjdel').onclick=async()=>{
+    const n=$('#pjlist').value;if(!n||!confirm('¿Borrar el proyecto "'+n+'"?'))return;
+    try{await tx('readwrite',s=>s.delete(PJ+n));await pjList();$('#pjinfo').textContent='Borrado'}catch{}
+  };
+  setInterval(()=>pjTick(false),6000);
+  if(typeof document.addEventListener==='function')document.addEventListener('visibilitychange',()=>{if(document.hidden)pjTick(false)});
+  addEventListener('pagehide',()=>pjTick(false));
+})();
+/* ---------- deshacer ampliado (bajo, teclas, mixer) ---------- */
+function uXApply(str){
+  if(!str)return;
+  let o;try{o=JSON.parse(str)}catch{return}
+  if(str===uXCur())return;
+  const cur=uXCur()?JSON.parse(uXCur()):{};
+  if(o.bp&&JSON.stringify(o.bp)!==JSON.stringify(cur.bp)){Object.assign(BP,BDEF,o.bp);if(bassP)bassP.silence(ctx.currentTime);bassDraw()}
+  if(o.bs&&JSON.stringify(o.bs)!==JSON.stringify(cur.bs)){Object.assign(BS,o.bs);bScaleUI()}
+  if(o.kp&&JSON.stringify(o.kp)!==JSON.stringify(cur.kp)){Object.assign(KP,KDF,o.kp);if(keysP)keysP.silence(ctx.currentTime);kApply();kDraw()}
+  if(o.ks&&JSON.stringify(o.ks)!==JSON.stringify(cur.ks)){Object.assign(KS,o.ks);kScaleUI();kDraw()}
+  if(o.mx&&JSON.stringify(o.mx)!==JSON.stringify(cur.mx)){Object.assign(MX,MXD(),o.mx);mxApply();mxUI()}
+}
+const uXCur=()=>uX();
+function uXLabel(a,b){
+  try{const x=JSON.parse(a),y=JSON.parse(b),d=k=>JSON.stringify(x[k])!==JSON.stringify(y[k]);
+    return d('mx')?'mixer':(d('bp')||d('bs'))?'bajo':(d('kp')||d('ks'))?'teclas':'cambio'}catch{return 'cambio'}
+}
+/* botones globales de deshacer/rehacer (la barra bajo las pestañas) */
+$('#gundo').onclick=()=>undoGo(false);
+$('#gredo').onclick=()=>undoGo(true);
+setInterval(()=>{$('#gundo').disabled=$('#undo').disabled;$('#gredo').disabled=$('#redo').disabled},250);
+/* ---------- colores por sección: pads de bajo (naranja) y teclas (violeta) ---------- */
+(function secColors(){
+  [[bgrid,28],[kgrid,265]].forEach(([g,h0])=>{
+    [...g.children].forEach((b,k)=>{
+      const h=h0+((k&3)*4)+((k>>2)*3)-8,l=56+((k>>2)*2);
+      b.style.setProperty('--c','hsla('+h+',78%,'+l+'%,1)');b.style.setProperty('--f','hsl('+h+',42%,28%)');
+    });
+  });
+})();
+/* ---------- medidor de nivel en la barra superior ---------- */
+const mt={pk:-90,hold:-90,ht:0,clip:false,buf:null};
+(function meterFrame(){
+  const cv=$('#meter');
+  const f=()=>{
+    requestAnimationFrame(f);
+    if(!mxAnM||!cv.clientWidth)return;
+    if(!mt.buf)mt.buf=new Float32Array(mxAnM.fftSize);
+    mxAnM.getFloatTimeDomainData(mt.buf);
+    let pk=0;for(let i=0;i<mt.buf.length;i++){const a=Math.abs(mt.buf[i]);if(a>pk)pk=a}
+    const db=pk>1e-5?20*Math.log10(pk):-90,now=performance.now();
+    mt.pk=Math.max(db,mt.pk-1.2);                       // caída suave
+    if(db>=mt.hold||now-mt.ht>1200){mt.hold=Math.max(db,mt.hold-.6);if(db>=mt.hold)mt.ht=now}
+    if(db>=-0.3){mt.clip=true;mt.ct=performance.now()}
+    const dpr=window.devicePixelRatio||1,w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr);
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}
+    const g=cv.getContext('2d'),X=d=>Math.max(0,Math.min(1,(d+60)/60))*w;
+    g.clearRect(0,0,w,h);
+    const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,'#2fd37a');gr.addColorStop(.7,'#2fd37a');gr.addColorStop(.88,'#ffd23f');gr.addColorStop(1,'#ff4a3d');
+    g.fillStyle=gr;g.fillRect(0,0,X(mt.pk),h);
+    g.fillStyle='#fff';g.fillRect(Math.min(w-2*dpr,X(mt.hold)),0,2*dpr,h);
+    if(mt.clip){g.fillStyle='#ff4a3d';g.fillRect(w-14*dpr,0,14*dpr,h)}
+  };
+  requestAnimationFrame(f);
+  setInterval(()=>{if(mt.clip&&performance.now()-mt.ct>1500)mt.clip=false},300);
+})();
+
+/* ---------- chop por golpes ---------- */
+function chopHits(p){   // cada fragmento empieza en un golpe; lo que haya antes del primero se descarta
+  const b=p.buf,dur=b.duration,on=audioOnsets(b),a=p.s*dur,z=p.e*dur,gp=gapOf(b),ed=[];
+  on.filter(t=>t>=a-.005&&t<z-.03).slice(0,16).forEach(t=>{
+    const f=Math.max(p.s,snap(Math.max(a,t-.004)/dur));
+    if(!ed.length||f>ed[ed.length-1]+gp)if(f<p.e-gp)ed.push(f);
+  });
+  ed.push(p.e);chop.edges=ed;
+}
+/* ---------- looper: volumen y solo por pista ---------- */
+function lpMixUI(){
+  const s=$('#lpsolo'),v=$('#lpvol');if(!s||!v)return;
+  s.classList.toggle('on',!!lp.solo[lp.trk]);s.disabled=!lp.len;
+  v.value=Math.round((lp.vol[lp.trk]==null?1:lp.vol[lp.trk])*100);v.disabled=!lp.len;
+  [...($('#lptracks').children||[])].slice(0,4).forEach((b,t)=>b.classList.toggle('solo',!!lp.solo[t]));
+}
+$('#lpsolo').onclick=()=>{
+  const t=lp.trk;lp.solo[t]=!lp.solo[t];
+  if(bassP)bassP.releaseAll(ctx.currentTime);if(keysP)keysP.releaseAll(ctx.currentTime);
+  lpUI();status('Pista '+(t+1)+(lp.solo[t]?' en solo':' sin solo'));
+};
+$('#lpvol').oninput=e=>{lp.vol[lp.trk]=(+e.target.value)/100;status('Pista '+(lp.trk+1)+' · volumen '+e.target.value+'%')};
+dblReset($('#lpvol'),()=>{lp.vol[lp.trk]=1;$('#lpvol').value=100});
+/* ---------- metrónomo con cuenta atrás ---------- */
+const met={on:false,count:false,bpm:100,anchor:0,last:0,counting:false};
+try{const j=JSON.parse(localStorage.getItem('sampledhead.met')||'{}');if(j.bpm>=40&&j.bpm<=240)met.bpm=j.bpm;met.count=!!j.count}catch{}
+const metSave=()=>{try{localStorage.setItem('sampledhead.met',JSON.stringify({bpm:met.bpm,count:met.count}))}catch{}};
+const metBpm=()=>(lp.len&&typeof lpBpm==='function'&&lpBpm())||met.bpm;
+function metClick(t,acc){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.frequency.value=acc?1600:1000;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.06);
+  o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.07);
+}
+function metTick(){
+  if(!met.on||met.counting)return;
+  const now=ctx.currentTime,per=60/metBpm();
+  const a=lp.st==='playing'?lp.start:lp.st==='rec1'?lp.t0:met.anchor;
+  let n=Math.max(0,Math.ceil((now-a)/per-1e-6));
+  for(;;n++){
+    const t=a+n*per;if(t>now+.15)break;
+    if(t>met.last+.005&&t>=now-.01){metClick(Math.max(t,now),n%4===0);met.last=t}
+  }
+}
+function metCountIn(done){
+  ctx.resume();met.counting=true;
+  const per=60/metBpm(),t0=ctx.currentTime+.08;
+  for(let k=0;k<4;k++)metClick(t0+k*per,k===0);
+  met.anchor=t0;met.last=t0+3*per;
+  status('Cuenta… '+Math.round(60/per)+' BPM');
+  setTimeout(()=>{met.counting=false;done()},(t0+4*per-ctx.currentTime)*1000-40);
+}
+function metUI(){
+  $('#lpmet').classList.toggle('on',met.on);$('#lpmet').setAttribute('aria-pressed',String(met.on));
+  $('#lpcnt').classList.toggle('on',met.count);$('#lpcnt').setAttribute('aria-pressed',String(met.count));
+  $('#lpmbpm').value=met.bpm;
+}
+$('#lpmet').onclick=()=>{ctx.resume();met.on=!met.on;met.anchor=ctx.currentTime+.05;met.last=0;metUI();status(met.on?'Metrónomo activado':'Metrónomo apagado')};
+$('#lpcnt').onclick=()=>{met.count=!met.count;metSave();metUI();status(met.count?'Cuenta atrás activada: un compás antes de grabar':'Cuenta atrás desactivada')};
+$('#lpmbpm').onchange=e=>{met.bpm=Math.min(240,Math.max(40,Math.round(+e.target.value)||100));metSave();metUI()};
+setInterval(metTick,25);metUI();
+
+/* ---------- reverb y delay con envíos ---------- */
+const revIn=ctx.createGain(),revConv=ctx.createConvolver(),revOut=ctx.createGain();
+revIn.connect(revConv);revConv.connect(revOut);revOut.connect(master);
+let revSz=-1;
+function revMake(sz){
+  const sr=ctx.sampleRate,L=Math.floor([.9,1.9,3.8][sz]*sr),b=ctx.createBuffer(2,L,sr),pre=Math.floor(sr*.012);
+  for(let c=0;c<2;c++){
+    const d=b.getChannelData(c);let lp=0;
+    for(let i=pre;i<L;i++){const t=(i-pre)/(L-pre);lp+=((Math.random()*2-1)-lp)*(.85-.7*t);d[i]=lp*Math.pow(1-t,2.6)}
+  }
+  return b;
+}
+const dlyIn=ctx.createGain(),dlyL=ctx.createDelay(2),dlyR=ctx.createDelay(2),dlyFbL=ctx.createGain(),dlyFbR=ctx.createGain(),dlyLpL=ctx.createBiquadFilter(),dlyLpR=ctx.createBiquadFilter(),dlyMg=ctx.createChannelMerger(2),dlyOut=ctx.createGain();
+dlyLpL.type=dlyLpR.type='lowpass';dlyLpL.frequency.value=dlyLpR.frequency.value=3800;
+dlyIn.connect(dlyL);dlyL.connect(dlyLpL);dlyLpL.connect(dlyFbL);dlyFbL.connect(dlyR);dlyR.connect(dlyLpR);dlyLpR.connect(dlyFbR);dlyFbR.connect(dlyL);
+dlyL.connect(dlyMg,0,0);dlyR.connect(dlyMg,0,1);dlyMg.connect(dlyOut);dlyOut.connect(master);
+const DLY_DIV=[['1/4',1],['1/8',.5],['1/8 con puntillo',.75],['1/16',.25]],REV_N=['Corta','Media','Larga'];
+const mxSendR=[],mxSendD=[];
+MX_BUS.forEach((b,i)=>{const r=ctx.createGain(),d=ctx.createGain();b.connect(r);r.connect(revIn);b.connect(d);d.connect(dlyIn);mxSendR[i]=r;mxSendD[i]=d});
+function mxSendApply(){
+  MX.rev=MX.rev||[0,0,0];MX.dly=MX.dly||[0,0,0];
+  if(revSz!==MX.rsz){revSz=MX.rsz;try{revConv.buffer=revMake(Math.min(2,Math.max(0,MX.rsz|0)))}catch{}}
+  for(let i=0;i<3;i++){mxSet(mxSendR[i].gain,MX.rev[i]);mxSet(mxSendD[i].gain,MX.dly[i])}
+  mxSet(revOut.gain,MX.rret);mxSet(dlyOut.gain,MX.dret);mxSet(dlyFbL.gain,MX.dfb);mxSet(dlyFbR.gain,MX.dfb);
+  const t=Math.min(1.9,60/fxTempo().bpm*DLY_DIV[MX.ddiv|0][1]);mxSet(dlyL.delayTime,t);mxSet(dlyR.delayTime,t);
+}
+{const o=mxApply;mxApply=function(){o();mxSendApply()}}
+setInterval(()=>{try{mxSendApply()}catch{}},500);
+const mxSL=[];
+(function mxSendsWire(){
+  const box=$('#mxsl');if(!box)return;
+  const row=(label,get,set,fmt)=>{
+    const lb=document.createElement('label');lb.className='sl';lb.innerHTML='<span>'+label+'</span><input type="range" min="0" max="100" aria-label="'+label+'"><b></b>';
+    const inp=lb.querySelector('input'),bb=lb.querySelector('b');
+    inp.oninput=()=>{set(+inp.value/100);bb.textContent=fmt(+inp.value/100);mxApply();mxSave()};
+    lb._sync=()=>{inp.value=Math.round(get()*100);bb.textContent=fmt(get())};
+    box.appendChild(lb);mxSL.push(lb);
+  };
+  const pc=v=>Math.round(v*100)+'%';
+  MXN.forEach((n,i)=>row('Reverb · '+n,()=>MX.rev[i],v=>{MX.rev[i]=v},pc));
+  MXN.forEach((n,i)=>row('Delay · '+n,()=>MX.dly[i],v=>{MX.dly[i]=v},pc));
+  row('Retorno reverb',()=>MX.rret,v=>{MX.rret=v},pc);
+  row('Retorno delay',()=>MX.dret,v=>{MX.dret=v},pc);
+  row('Repeticiones',()=>MX.dfb,v=>{MX.dfb=Math.min(.85,v)},pc);
+  REV_N.forEach((n,k)=>{const b=document.createElement('button');b.textContent='Reverb '+n.toLowerCase();b.onclick=()=>{MX.rsz=k;mxApply();mxSave();mxSendUI()};$('#mxrsz').appendChild(b)});
+  DLY_DIV.forEach(([n],k)=>{const b=document.createElement('button');b.textContent=n;b.style.fontSize='12px';b.onclick=()=>{MX.ddiv=k;mxApply();mxSave();mxSendUI()};$('#mxdd').appendChild(b)});
+  // envío por pad (hoja de efectos del pad)
+  $('#prv').oninput=e=>{const p=pads[sel];p.rv=+e.target.value/100;$('#prvv').textContent=e.target.value+'%'};
+  $('#pdl').oninput=e=>{const p=pads[sel];p.dl=+e.target.value/100;$('#pdlv').textContent=e.target.value+'%'};
+  mxSendUI();
+})();
+function mxSendUI(){
+  mxSL.forEach(l=>l._sync&&l._sync());
+  [...$('#mxrsz').children].forEach((b,k)=>b.classList.toggle('on',k===(MX.rsz|0)));
+  [...$('#mxdd').children].forEach((b,k)=>b.classList.toggle('on',k===(MX.ddiv|0)));
+}
+{const o=mxUI;mxUI=function(){o();mxSendUI()}}
+mxApply();
+uLast=uSnap();uSig=uSigNow();uStack=[];rStack=[];
 
 select(0);status('Listo');
 </script>
