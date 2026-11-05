@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.32</title>
+<title>SampledHeadApp 1.33</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -405,6 +405,21 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 .tabs button{font-size:11.5px;font-weight:600;opacity:.9}
 .tabs button.on{font-size:13px;font-weight:800;opacity:1;box-shadow:0 0 14px -2px var(--tc),inset 0 -3px 0 #0003}
 #tabG{--tc:#4fe3c1}.unit.gen{--acc:#4fe3c1}
+/* 1.33: estética unificada en todas las pestañas — color de la pestaña como acento, secciones plegables y mismos estados activos */
+#genpanel{--acc:var(--mc)}
+.unit .tools button.on,.unit .tools button.lk.on,.unit .chip.on,.unit .rsbox>button.on,.unit .seg button.on,.unit .seg3 button.on,.unit .banks button.on,
+.unit .bgrp button.on,.unit .bwv button.on,.unit .lpbtns button.on,.unit .lpscope button.on,.unit .lptracks button#lpmute.on,.unit .chop button.on,
+.unit .gfx>button.on,.unit .gsb button.on,.unit .glh .gb3 button.on,.unit .gbig.on{background:var(--acc);color:#101216}
+.bsec>.bt{color:var(--acc)}
+.bsec.fold>.bt{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.bsec.fold>.bt::after{content:'▾';font-size:12px;opacity:.7}
+.bsec.fold.shut>.bt::after{content:'▸'}
+.bsec.fold.shut>:not(.bt){display:none!important}
+.unit .bsec{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--acc) 55%,transparent)}
+.unit .lcd{border-color:var(--acc)}
+.unit input[type=range]{accent-color:var(--acc)}
+.mxch>button.on{background:#e0533d;color:#fff}
+.tabs button.on{font-size:11.5px;letter-spacing:-.03em;font-weight:800}.tabs button{padding-left:0;padding-right:0}
 </style>
 </head>
 <body>
@@ -878,16 +893,19 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.32</summary>
+<details><summary>29. Novedades de la 1.33</summary>
+<ul><li><b>Estética unificada</b>: todas las pestañas usan el color de su pestaña como acento (botones activos, títulos, regla lateral de cada sección y deslizadores). Bajo, Teclas y Mixer tienen <b>secciones plegables</b> como el Generador; se recuerda cuáles cierras. Por defecto están cerrados los kits, el lo-fi, trémolo, chorus, ecualizador y compresor.</li></ul>
+</details>
+<details><summary>30. Novedades de la 1.32</summary>
 <ul><li><b>FX</b>: el <b>Filtro</b> va ahora al final y afecta a todo lo que suena (radio, vinilo, reverb, delays). Delay, Dub Delay y Repeat siguen el tempo del generador cuando está sonando, y el tiempo del eco cambia con transiciones suaves.</li>
 <li><b>Generador</b>: transporte (modo, Reproducir y BPM) fijo arriba, secciones plegables (se recuerda cuáles cierras) y un color por modo: batería rosa, bajo naranja, teclas violeta. Rejilla de pasos con brillo y halo en el paso actual.</li>
 <li><b>Pads de FX</b> con brillo, estela del dedo y borde de color mientras suenan. <b>Mixer</b>: color por canal, medidores más gruesos y marca de pico. Pestaña activa más destacada.</li></ul>
 </details>
-<details><summary>30. Novedades de la 1.31</summary>
+<details><summary>31. Novedades de la 1.31</summary>
 <ul><li><b>FX</b>: pad nuevo <b>Dub Delay</b> (eco de cinta oscuro; X = tiempo, Y = realimentación; al soltar el eco se apaga solo) junto al Delay, y pad <b>Radio</b> (radio antigua). Ahora son 8 efectos.</li>
 <li><b>Vinilo</b> con mucha menos saturación: nivel igual al original en el pad de FX, en el lo-fi de los pads y en el generador, con menos grave y crujido más suave.</li></ul>
 </details>
-<details><summary>31. Novedades de la 1.30</summary>
+<details><summary>32. Novedades de la 1.30</summary>
 <ul><li><b>Generador</b>: modo Teclas (acordes por grado de la escala con progresiones y ritmo de acompañamiento por estilo; el bajo puede seguir a las teclas). Interruptor «Tempo del estilo»: apagado, el tempo no cambia al cambiar de estilo.</li>
 <li><b>Mixer</b>: canal nuevo «Gen bat.» para la batería del generador. <b>Teclas</b> con estilo propio (independiente de batería y bajo). Con la pantalla bloqueada o la app en segundo plano el generador se recoloca al volver; en iPhone/iPad el sistema puede pausar el audio, así que al volver pulsa Reproducir si se detuvo.</li>
 <li><b>FX · Radio</b>: pad de radio antigua (banda estrecha tipo AM, válvula, estática y desvanecimiento). X = más estrecha hacia la derecha, Y = estática.</li>
@@ -895,8 +913,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>32. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.32</b></p>
+<details><summary>33. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.33</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1009,16 +1027,19 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.32</summary>
+<details><summary>29. What is new in 1.33</summary>
+<ul><li><b>Unified look</b>: every tab uses its tab colour as the accent (active buttons, titles, a side rule on each section and sliders). Bass, Keys and Mixer now have <b>collapsible sections</b> like the Generator; it remembers which ones you close. Kits, lo-fi, tremolo, chorus, equalizer and compressor are closed by default.</li></ul>
+</details>
+<details><summary>30. What is new in 1.32</summary>
 <ul><li><b>FX</b>: the <b>Filter</b> now sits at the end and affects everything that sounds (radio, vinyl, reverb, delays). Delay, Dub Delay and Repeat follow the generator tempo while it plays, and the echo time changes smoothly.</li>
 <li><b>Generator</b>: transport (mode, Play and BPM) pinned at the top, collapsible sections (it remembers which you close) and one colour per mode: drums pink, bass orange, keys violet. Step grid with glow and a halo on the current step.</li>
 <li><b>FX pads</b> with glow, finger trail and a coloured border while active. <b>Mixer</b>: colour per channel, thicker meters and a peak mark. Active tab stands out more.</li></ul>
 </details>
-<details><summary>30. What is new in 1.31</summary>
+<details><summary>31. What is new in 1.31</summary>
 <ul><li><b>FX</b>: new <b>Dub Delay</b> pad (dark tape echo; X = time, Y = feedback; the echo fades out on its own when released) next to Delay, and the <b>Radio</b> pad (old radio). There are now 8 effects.</li>
 <li><b>Vinyl</b> with much less saturation: same level as the original in the FX pad, the pad lo-fi and the generator, with less rumble and softer crackle.</li></ul>
 </details>
-<details><summary>31. What is new in 1.30</summary>
+<details><summary>32. What is new in 1.30</summary>
 <ul><li><b>Generator</b>: Keys mode (chords by scale degree with progressions and a comping rhythm per style; the bass can follow the keys). «Style tempo» switch: when off, the tempo does not change when the style changes.</li>
 <li><b>Mixer</b>: new «Gen drums» channel for the generator drums. <b>Keys</b> can have their own style (independent of drums and bass). With the screen locked or the app in the background the generator resyncs on return; on iPhone/iPad the system may pause audio, so press Play again if it stopped.</li>
 <li><b>FX · Radio</b>: old-radio pad (narrow AM-style band, tube saturation, static and fading). X = narrower to the right, Y = static.</li>
@@ -1026,8 +1047,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>32. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.32</b></p>
+<details><summary>33. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.33</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2639,7 +2660,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.32';
+const APP_VERSION='1.33';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -5586,6 +5607,30 @@ function gFxBassUI(){
 }
 function gFxKeysUI(){const h=$('#kfxtab');if(h)gFxUI(h,KFX,()=>{kfxLive();gSave()},['lp','tr','ch'])}
 function gFxRefresh(){gFxBassUI();gFxKeysUI();gFxUI($('#gbfx'),BFX,()=>{bfxLive();gSave()},['lp']);gFxUI($('#gkfx'),KFX,()=>{kfxLive();gSave()},['lp','tr','ch'])}
+/* secciones plegables en Bajo, Teclas y Mixer (el Generador ya las tiene en gen_boot); se recuerda el estado */
+(function(){
+  const P=[['#basspanel','bass',()=>typeof bassDraw==='function'&&bassDraw(),['Kits de bajo']],
+           ['#keyspanel','keys',()=>typeof kDraw==='function'&&kDraw(),['Kits de teclas','Lo-fi de sampler clásico','Trémolo / auto-pan','Chorus']],
+           ['#mixpanel','mix',()=>typeof mixDraw==='function'&&mixDraw(),['Ecualizador de 8 bandas · master','Compresor · master']]];
+  P.forEach(([sel,key,redraw,defShut])=>{
+    const host=document.querySelector(sel);if(!host)return;
+    const secs=[...host.querySelectorAll(':scope>.bsec')],store='sampledhead.fold.'+key;
+    let shut;try{shut=JSON.parse(localStorage.getItem(store)||'null')}catch{}
+    const name=s=>s.querySelector(':scope>.bt').textContent.trim();
+    if(!Array.isArray(shut))shut=defShut;
+    secs.forEach(sec=>{
+      const bt=sec.querySelector(':scope>.bt');if(!bt)return;
+      sec.classList.add('fold');if(shut.includes(name(sec)))sec.classList.add('shut');
+      bt.setAttribute('role','button');bt.tabIndex=0;
+      const tg=()=>{
+        sec.classList.toggle('shut');
+        try{localStorage.setItem(store,JSON.stringify(secs.filter(x=>x.classList.contains('shut')).map(name)))}catch{}
+        if(!sec.classList.contains('shut'))try{redraw()}catch{}
+      };
+      bt.onclick=tg;bt.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tg()}};
+    });
+  });
+})();
 /* ---------- idioma: español (por defecto) e inglés. El texto fuente es el español; el diccionario EN lo traduce ---------- */
 const LANG_KEY='sampledhead.lang';
 let LANG='es';try{if(localStorage.getItem(LANG_KEY)==='en')LANG='en'}catch{}
