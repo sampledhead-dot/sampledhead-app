@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.31</title>
+<title>SampledHeadApp 1.32</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -124,7 +124,8 @@ button:disabled{cursor:default}
 .mxch.mut .mxtr{opacity:.45}
 .mxtr{position:relative;width:46px;background:#101216;border-radius:8px;touch-action:none;cursor:ns-resize}
 .mxtr::before{content:'';position:absolute;left:50%;top:6px;bottom:6px;width:4px;margin-left:-2px;border-radius:2px;background:#2b313b}
-.mxtr u{position:absolute;left:3px;bottom:3px;width:5px;height:0;border-radius:2px;background:#5fd48a;max-height:calc(100% - 6px);text-decoration:none}
+.mxtr u{position:absolute;left:3px;bottom:3px;width:9px;height:0;border-radius:3px;background:var(--mc,#5fd48a);max-height:calc(100% - 6px);text-decoration:none}
+.mxtr em{position:absolute;left:3px;bottom:0;width:9px;height:2px;border-radius:1px;background:#fff;opacity:.85}
 .mxtr u.hot{background:#e0533d}
 .mxtr i{position:absolute;left:50%;width:30px;height:14px;margin-left:-15px;border-radius:4px;background:var(--ink);box-shadow:0 1px 4px #000a}
 .mxtr s{position:absolute;left:0;right:0;height:1px;background:#ffffff40}
@@ -159,7 +160,10 @@ canvas#mxeqc{display:block;width:100%;height:110px;flex:none;min-height:0;border
 .unit.fxt #fxpanel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr)) auto;gap:8px}
 .fxbox[data-m="0"]{--c:49,208,255}.fxbox[data-m="1"]{--c:255,138,31}.fxbox[data-m="2"]{--c:255,79,154}.fxbox[data-m="3"]{--c:155,229,100}.fxbox[data-m="4"]{--c:255,210,63}.fxbox[data-m="5"]{--c:217,178,124}.fxbox[data-m="6"]{--c:111,208,180}.fxbox[data-m="7"]{--c:180,140,255}.fxbox.free{--c:120,126,138;opacity:.4}
 .fxpad{background:linear-gradient(180deg,rgba(var(--c),.34),rgba(var(--c),.16));box-shadow:inset 0 0 0 1.5px rgba(var(--c),.6)}
-.fxbox .fxt{color:rgb(var(--c))}
+.fxbox .fxt{color:rgb(var(--c));transition:text-shadow .15s}
+.fxpad{transition:box-shadow .15s}
+.fxbox.act .fxpad{box-shadow:inset 0 0 0 2px rgb(var(--c)),0 0 18px rgba(var(--c),.55)}
+.fxbox.act .fxt{text-shadow:0 0 10px rgba(var(--c),.9)}
 .unit.fxt .fxbox{min-height:0}
 .unit.fxt .fxpad{min-height:90px}
 .unit.fxt .fxt{text-align:center;min-height:0}
@@ -380,6 +384,26 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 .gfx.on .gfb{display:flex}
 
 .tabs button{font-size:12px;letter-spacing:-.01em}
+
+/* 1.32: transporte fijo arriba, secciones plegables, color por modo */
+#genpanel{--mc:#ff4f9a}
+#genpanel[data-mode=b]{--mc:#ff8a1f}
+#genpanel[data-mode=k]{--mc:#b48cff}
+.gstick{position:sticky;top:0;z-index:5;background:var(--bg,#14171c);padding:6px 0 8px;display:flex;flex-direction:column;gap:8px;box-shadow:0 6px 8px -6px #000c}
+#genpanel .bgrp#gmode button.on,#genpanel .gbig.on{background:var(--mc);color:#101216}
+#genpanel .bsec>.bt{color:var(--mc)}
+#genpanel .bsec.fold>.bt{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+#genpanel .bsec.fold>.bt::after{content:'▾';font-size:12px;opacity:.7}
+#genpanel .bsec.fold.shut>.bt::after{content:'▸'}
+#genpanel .bsec.fold.shut>:not(.bt){display:none!important}
+.gc{transition:background .08s,box-shadow .08s}
+.gc.on{background:var(--lc,var(--mc));box-shadow:0 0 6px -1px var(--lc,var(--mc)),inset 0 1px 0 #ffffff40}
+.gc.gh{background:var(--lc,var(--mc))}
+.gc.ph{outline:2px solid #fff;box-shadow:0 0 10px 1px #fff9;z-index:1;position:relative}
+.gc{border-radius:5px}
+/* pestañas: la activa destaca, las demás compactas */
+.tabs button{font-size:11.5px;font-weight:600;opacity:.9}
+.tabs button.on{font-size:13px;font-weight:800;opacity:1;box-shadow:0 0 14px -2px var(--tc),inset 0 -3px 0 #0003}
 </style>
 </head>
 <body>
@@ -535,14 +559,16 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
       <div class="bgrp c4"><button id="bwav">WAV</button><button id="bkoala">Koala</button><button id="badg">Ableton</button><button id="bmpc">MPC</button><button id="bsp404a">SP-404A/SX</button><button id="bmove">Move</button><button id="bsp404mk2">SP-404MK2</button></div>
     </div>
   </div>
-  <div id="genpanel">
-    <div class="bsec">
-      <div class="bt">Generador</div>
+  <div id="genpanel" data-mode="d">
+    <div class="gstick">
       <div class="bgrp c3" id="gmode"><button data-m="d" class="on">Batería</button><button data-m="b">Bajo</button><button data-m="k">Teclas</button></div>
       <div class="gtr">
         <button id="gplay" class="gbig">Reproducir</button>
         <div class="gbpm"><button id="gbm" aria-label="Bajar el tempo">−</button><input id="gbpm" type="number" min="40" max="240" inputmode="numeric" aria-label="BPM"><button id="gbp" aria-label="Subir el tempo">+</button></div>
       </div>
+    </div>
+    <div class="bsec">
+      <div class="bt">Generador</div>
       <div class="gsel2">
         <label>Compás<select id="gts"></select></label>
         <label>Compases<select id="gbars"><option>1</option><option>2</option><option>4</option></select></label>
@@ -851,11 +877,16 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.31</summary>
+<details><summary>29. Novedades de la 1.32</summary>
+<ul><li><b>FX</b>: el <b>Filtro</b> va ahora al final y afecta a todo lo que suena (radio, vinilo, reverb, delays). Delay, Dub Delay y Repeat siguen el tempo del generador cuando está sonando, y el tiempo del eco cambia con transiciones suaves.</li>
+<li><b>Generador</b>: transporte (modo, Reproducir y BPM) fijo arriba, secciones plegables (se recuerda cuáles cierras) y un color por modo: batería rosa, bajo naranja, teclas violeta. Rejilla de pasos con brillo y halo en el paso actual.</li>
+<li><b>Pads de FX</b> con brillo, estela del dedo y borde de color mientras suenan. <b>Mixer</b>: color por canal, medidores más gruesos y marca de pico. Pestaña activa más destacada.</li></ul>
+</details>
+<details><summary>30. Novedades de la 1.31</summary>
 <ul><li><b>FX</b>: pad nuevo <b>Dub Delay</b> (eco de cinta oscuro; X = tiempo, Y = realimentación; al soltar el eco se apaga solo) junto al Delay, y pad <b>Radio</b> (radio antigua). Ahora son 8 efectos.</li>
 <li><b>Vinilo</b> con mucha menos saturación: nivel igual al original en el pad de FX, en el lo-fi de los pads y en el generador, con menos grave y crujido más suave.</li></ul>
 </details>
-<details><summary>30. Novedades de la 1.30</summary>
+<details><summary>31. Novedades de la 1.30</summary>
 <ul><li><b>Generador</b>: modo Teclas (acordes por grado de la escala con progresiones y ritmo de acompañamiento por estilo; el bajo puede seguir a las teclas). Interruptor «Tempo del estilo»: apagado, el tempo no cambia al cambiar de estilo.</li>
 <li><b>Mixer</b>: canal nuevo «Gen bat.» para la batería del generador. <b>Teclas</b> con estilo propio (independiente de batería y bajo). Con la pantalla bloqueada o la app en segundo plano el generador se recoloca al volver; en iPhone/iPad el sistema puede pausar el audio, así que al volver pulsa Reproducir si se detuvo.</li>
 <li><b>FX · Radio</b>: pad de radio antigua (banda estrecha tipo AM, válvula, estática y desvanecimiento). X = más estrecha hacia la derecha, Y = estática.</li>
@@ -863,8 +894,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>31. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.31</b></p>
+<details><summary>32. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.32</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -977,11 +1008,16 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.31</summary>
+<details><summary>29. What is new in 1.32</summary>
+<ul><li><b>FX</b>: the <b>Filter</b> now sits at the end and affects everything that sounds (radio, vinyl, reverb, delays). Delay, Dub Delay and Repeat follow the generator tempo while it plays, and the echo time changes smoothly.</li>
+<li><b>Generator</b>: transport (mode, Play and BPM) pinned at the top, collapsible sections (it remembers which you close) and one colour per mode: drums pink, bass orange, keys violet. Step grid with glow and a halo on the current step.</li>
+<li><b>FX pads</b> with glow, finger trail and a coloured border while active. <b>Mixer</b>: colour per channel, thicker meters and a peak mark. Active tab stands out more.</li></ul>
+</details>
+<details><summary>30. What is new in 1.31</summary>
 <ul><li><b>FX</b>: new <b>Dub Delay</b> pad (dark tape echo; X = time, Y = feedback; the echo fades out on its own when released) next to Delay, and the <b>Radio</b> pad (old radio). There are now 8 effects.</li>
 <li><b>Vinyl</b> with much less saturation: same level as the original in the FX pad, the pad lo-fi and the generator, with less rumble and softer crackle.</li></ul>
 </details>
-<details><summary>30. What is new in 1.30</summary>
+<details><summary>31. What is new in 1.30</summary>
 <ul><li><b>Generator</b>: Keys mode (chords by scale degree with progressions and a comping rhythm per style; the bass can follow the keys). «Style tempo» switch: when off, the tempo does not change when the style changes.</li>
 <li><b>Mixer</b>: new «Gen drums» channel for the generator drums. <b>Keys</b> can have their own style (independent of drums and bass). With the screen locked or the app in the background the generator resyncs on return; on iPhone/iPad the system may pause audio, so press Play again if it stopped.</li>
 <li><b>FX · Radio</b>: old-radio pad (narrow AM-style band, tube saturation, static and fading). X = narrower to the right, Y = static.</li>
@@ -989,8 +1025,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>31. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.31</b></p>
+<details><summary>32. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.32</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1130,13 +1166,14 @@ function padTempo(i){
 }
 /* efectos en serie y simultáneos: master → FILTRO → BIT → REPEAT → salida; cada etapa tiene su camino limpio y su camino con efecto (se alternan con ganancias) */
 const fxMix=ctx.createGain();
+/* FILTRO: va al final, tras la suma de todos los efectos (incluidos reverb y delays), para que afecte a todo lo que suena */
+const fxLP=ctx.createBiquadFilter(),fxHP=ctx.createBiquadFilter();
+fxLP.type='lowpass';fxHP.type='highpass';fxLP.frequency.value=20000;fxHP.frequency.value=20;fxMix.connect(fxLP);fxLP.connect(fxHP);
 /* salida: mezcla de FX → ecualizador de 8 bandas → compresor → ganancia → master (volumen) → altavoces */
 const mixEq=EQ_FREQS().map((f,i)=>{const q=ctx.createBiquadFilter();q.type=i===0?'lowshelf':i===7?'highshelf':'peaking';q.frequency.value=f;q.Q.value=1.1;q.gain.value=0;return q});
 const mixComp=ctx.createDynamicsCompressor?ctx.createDynamicsCompressor():ctx.createGain(),mixMk=ctx.createGain(),mixMaster=ctx.createGain();
-{let prev=fxMix;for(const n of mixEq){prev.connect(n);prev=n}prev.connect(mixComp);mixComp.connect(mixMk);mixMk.connect(mixMaster);mixMaster.connect(ctx.destination)}
+{let prev=fxHP;for(const n of mixEq){prev.connect(n);prev=n}prev.connect(mixComp);mixComp.connect(mixMk);mixMk.connect(mixMaster);mixMaster.connect(ctx.destination)}
 function EQ_FREQS(){return [80,160,320,640,1250,2500,5000,10000]}
-const fxLP=ctx.createBiquadFilter(),fxHP=ctx.createBiquadFilter();
-fxLP.type='lowpass';fxHP.type='highpass';fxLP.frequency.value=20000;fxHP.frequency.value=20;
 const fxIn=Array.from({length:5},()=>ctx.createGain()),fxOut=Array.from({length:5},()=>ctx.createGain()),
       fxDry=Array.from({length:5},()=>ctx.createGain()),fxW=Array.from({length:5},()=>ctx.createGain());
 for(let i=0;i<5;i++){
@@ -1144,7 +1181,7 @@ for(let i=0;i<5;i++){
   fxIn[i].connect(fxDry[i]);fxDry[i].connect(fxOut[i]);fxW[i].connect(fxOut[i]);
   if(i<4)fxOut[i].connect(fxIn[i+1]);else fxOut[i].connect(fxMix);
 }
-master.connect(fxIn[0]);fxIn[0].connect(fxLP);fxLP.connect(fxHP);fxHP.connect(fxW[0]);
+master.connect(fxIn[0]);   // etapa 0 = paso limpio (el filtro está después de fxMix)
 /* reverb y delay: pads de lanzamiento desde el máster; el retorno entra después de los FX para no realimentarse */
 const revIn=ctx.createGain(),revConv=ctx.createConvolver(),revOut=ctx.createGain(),fxRevSend=ctx.createGain();
 fxRevSend.gain.value=0;revOut.gain.value=.8;master.connect(fxRevSend);fxRevSend.connect(revIn);revIn.connect(revConv);revConv.connect(revOut);revOut.connect(fxMix);
@@ -1195,6 +1232,7 @@ async function fxInit(){
   fxSend();
 }
 function fxTempo(){
+  try{if(typeof G!=='undefined'&&G.play&&G.bpm)return {bpm:G.bpm,src:'generador'}}catch{}
   let best=-1,bt=-1;
   pads.forEach((p,i)=>{if(p.loop&&p.src&&(p.lt||0)>=bt){const t=padTempo(i);if(t){bt=p.lt||0;best=i}}});   // el pad en loop lanzado más recientemente
   if(best>=0){const t=padTempo(best);return {bpm:t.bpm,src:'loop '+pl(best)}}
@@ -1231,9 +1269,9 @@ function fxSend(){
     else if(fxShaper){const n=Math.pow(2,v.bits-1),c=new Float32Array(8193);for(let i=0;i<c.length;i++){const x=i/4096-1;c[i]=Math.round(x*n)/n}fxShaper.curve=c}
   }
   if(d[3]){const v=fxVals(3);if(revSz!==v.k){revSz=v.k;try{revConv.buffer=revMake(v.k)}catch{}}fxSet(fxRevSend.gain,v.a,t,.02)}else fxSet(fxRevSend.gain,0,t,.05);
-  if(d[4]){const v=fxVals(4),tt=Math.min(1.9,fxBeatLen()*DLY_DIV[v.k][1]);fxSet(dlyL.delayTime,tt,t,.04);fxSet(dlyR.delayTime,tt,t,.04);fxSet(fxDlySend.gain,v.a,t,.02)}else fxSet(fxDlySend.gain,0,t,.05);
+  if(d[4]){const v=fxVals(4),tt=Math.min(1.9,fxBeatLen()*DLY_DIV[v.k][1]);fxSet(dlyL.delayTime,tt,t,.14);fxSet(dlyR.delayTime,tt,t,.14);fxSet(fxDlySend.gain,v.a,t,.02)}else fxSet(fxDlySend.gain,0,t,.05);
   if(fxRep){if(d[2]){const v=fxVals(2);fxRep.port.postMessage({L:v.L,g:v.g})}else fxRep.port.postMessage({off:1})}
-  for(let i=0;i<3;i++){fxSet(fxDry[i].gain,d[i]?0:1,t,.01);fxSet(fxW[i].gain,d[i]?1:0,t,.01)}
+  for(let i=1;i<3;i++){fxSet(fxDry[i].gain,d[i]?0:1,t,.01);fxSet(fxW[i].gain,d[i]?1:0,t,.01)}
   fxVinSend(d[5],t);fxRadioSend(d[6],t);fxDubSend(d[7],t);
   if(!d[0]){fxSet(fxLP.frequency,20000,t,.012);fxSet(fxHP.frequency,20,t,.012);fxSet(fxLP.Q,.7,t,.012);fxSet(fxHP.Q,.7,t,.012)}
   fxDraw();
@@ -1250,12 +1288,15 @@ function fxDrawOne(m){
   for(let i=1;i<4;i++){const y=Math.round(h*i/4)+.5;g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}
   g.font='700 '+12*dpr+'px Barlow Condensed,sans-serif';g.textAlign='left';g.fillStyle='rgba(255,255,255,.55)';
   const S=fx.st[m],on=S.down;
+  const bx=cv.closest('.fxbox');if(bx)bx.classList.toggle('act',!!on);
   if(on){
+    const tr=S.tr||[];for(let i=0;i<tr.length;i++){const q=tr[i],a=(i+1)/tr.length;g.fillStyle=c;g.globalAlpha=a*.28;g.beginPath();g.arc(q.x*w,(1-q.y)*h,(3+a*8)*dpr,0,7);g.fill()}g.globalAlpha=1;
     const v=fxVals(m),px=S.x*w,py=(1-S.y)*h;
     g.strokeStyle=c;g.globalAlpha=.55;g.lineWidth=1.5*dpr;g.beginPath();g.moveTo(px,0);g.lineTo(px,h);g.moveTo(0,py);g.lineTo(w,py);g.stroke();g.globalAlpha=1;
     const gr=g.createRadialGradient(px,py,0,px,py,44*dpr);gr.addColorStop(0,c);gr.addColorStop(1,'rgba(0,0,0,0)');
     g.fillStyle=gr;g.globalAlpha=.55;g.beginPath();g.arc(px,py,44*dpr,0,7);g.fill();g.globalAlpha=1;
     g.fillStyle='#fff';g.beginPath();g.arc(px,py,7*dpr,0,7);g.fill();
+    g.fillStyle='rgba(0,0,0,.42)';{const bh=(v.sub2?62:44)*dpr,by=h-bh-2*dpr;g.beginPath();(g.roundRect?g.roundRect(6*dpr,by,w-12*dpr,bh,8*dpr):g.rect(6*dpr,by,w-12*dpr,bh));g.fill()}
     g.textAlign='center';g.fillStyle='#fff';g.font='700 '+19*dpr+'px Barlow Condensed,sans-serif';g.fillText(v.txt,w/2,h-(v.sub2?46:24)*dpr);
     g.font='600 '+12*dpr+'px Barlow,sans-serif';g.fillStyle='rgba(255,255,255,.7)';g.fillText(v.sub,w/2,h-(v.sub2?24:9)*dpr);
     if(v.sub2){g.font='600 '+10*dpr+'px Barlow,sans-serif';g.fillStyle='rgba(255,255,255,.55)';g.fillText(v.sub2,w/2,h-8*dpr)}
@@ -1268,10 +1309,11 @@ function fxDraw(){for(let m=0;m<8;m++)fxDrawOne(m)}
 function fxPos(e,m){
   const r=$('#fxpad'+m).getBoundingClientRect(),S=fx.st[m];
   S.x=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));S.y=Math.min(1,Math.max(0,1-(e.clientY-r.top)/r.height));
+  (S.tr=S.tr||[]).push({x:S.x,y:S.y});if(S.tr.length>16)S.tr.shift();
 }
 function fxRelease(m){
   let ch=false;
-  (m===undefined?[0,1,2,3,4,5,6,7]:[m]).forEach(i=>{const S=fx.st[i];if(S.down){S.down=false;S.id=null;ch=true}});
+  (m===undefined?[0,1,2,3,4,5,6,7]:[m]).forEach(i=>{const S=fx.st[i];if(S.down){S.down=false;S.id=null;S.tr=[];ch=true}});
   if(m===undefined)for(let i=0;i<8;i++){fx.st[i].hold=false;const b=document.querySelector('.fxhold[data-m="'+i+'"]');if(b)b.setAttribute('aria-pressed','false')}
   if(ch)fxSend();
 }
@@ -2596,7 +2638,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.31';
+const APP_VERSION='1.32';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -3376,8 +3418,8 @@ function mxApply(){
 const mxRedraw=[];
 function mkVFader(parent,o){   // o: {get,set,toP,fromP,fmt,label,h,zero}
   const box=document.createElement('div');box.className='mxch';
-  const val=document.createElement('b'),lab=document.createElement('span'),tr=document.createElement('div'),th=document.createElement('i'),mt=document.createElement('u');
-  tr.className='mxtr';tr.style.height=(o.h||200)+'px';tr.append(mt,th);
+  const val=document.createElement('b'),lab=document.createElement('span'),tr=document.createElement('div'),th=document.createElement('i'),mt=document.createElement('u'),pk=document.createElement('em');
+  tr.className='mxtr';tr.style.height=(o.h||200)+'px';tr.append(mt,pk,th);
   if(o.zero!=null){const z=document.createElement('s');z.style.bottom=(o.zero*100)+'%';tr.append(z)}
   lab.textContent=o.label;box.append(val,tr,lab);parent.appendChild(box);
   const upd=()=>{const p=o.toP(o.get());th.style.bottom='calc('+(p*100)+'% - 7px)';val.textContent=o.fmt(o.get())};
@@ -3388,12 +3430,12 @@ function mkVFader(parent,o){   // o: {get,set,toP,fromP,fmt,label,h,zero}
   const end=e=>{if(e.pointerId===id)id=null};tr.addEventListener('pointerup',end);tr.addEventListener('pointercancel',end);
   tr.addEventListener('dblclick',()=>{o.set(o.def);upd()});
   mxRedraw.push(upd);upd();
-  return {box,meter:mt,upd};
+  return {box,meter:mt,peak:pk,upd};
 }
 const mxDbFmt=v=>(v<=-59.9?'−∞':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1))+' dB';
 const mxVolToP=db=>db<=-59.9?0:Math.max(.02,(db+60)/66),mxVolFromP=p=>p<.02?-60:-60+p*66;
 const mxMeters=[];
-const MXN=['Sampler','Bajo','Teclas','Gen bat.'];
+const MXN=['Sampler','Bajo','Teclas','Gen bat.'],MXCOL=['#31d0ff','#ff8a1f','#b48cff','#ff4f9a'];
 function mxCurve(){
   const cv=$('#mxeqc');if(!cv||!cv.getBoundingClientRect)return;
   const f=bFit(cv);if(!f)return;
@@ -3415,7 +3457,7 @@ const MXCP=[['Suave',{th:-14,ratio:2,att:25,rel:250,knee:20,gain:2}],['Glue',{th
   [0,1,2,3].forEach(i=>{
     const f=mkVFader(chs,{label:MXN[i],h:200,def:0,get:()=>MX.vol[i],set:v=>{MX.vol[i]=v;mxApply();mxSave()},toP:mxVolToP,fromP:mxVolFromP,fmt:mxDbFmt,zero:mxVolToP(0)});
     const m=document.createElement('button');m.textContent='Mute';m.setAttribute('aria-label','Silenciar '+MXN[i]);
-    m.onclick=()=>{MX.mute[i]=!MX.mute[i];mxApply();mxSave();mxUI()};f.box.appendChild(m);f.mute=m;mxMeters.push(f);
+    m.onclick=()=>{MX.mute[i]=!MX.mute[i];mxApply();mxSave();mxUI()};f.box.appendChild(m);f.mute=m;f.box.style.setProperty('--mc',MXCOL[i]);mxMeters.push(f);
   });
   const fm=mkVFader(chs,{label:'Master',h:200,def:0,get:()=>MX.master,set:v=>{MX.master=v;mxApply();mxSave()},toP:mxVolToP,fromP:mxVolFromP,fmt:mxDbFmt,zero:mxVolToP(0)});
   fm.box.classList.add('master');mxMeters.push(fm);
@@ -3444,7 +3486,7 @@ function mxUI(){
 /* medidores: pico de cada bus mientras la pestaña está abierta */
 const mxAn=MX_BUS.map(b=>{const a=ctx.createAnalyser?ctx.createAnalyser():null;if(a){a.fftSize=1024;b.connect(a)}return a});
 const mxAnM=ctx.createAnalyser?ctx.createAnalyser():null;if(mxAnM){mxAnM.fftSize=1024;mixMaster.connect(mxAnM)}
-const mxBuf=new Float32Array(1024),mxHold=[0,0,0,0,0];
+const mxBuf=new Float32Array(1024),mxHold=[0,0,0,0,0],mxPk=[0,0,0,0,0];
 function mxPeak(a){if(!a)return 0;a.getFloatTimeDomainData(mxBuf);let m=0;for(let i=0;i<1024;i++){const v=Math.abs(mxBuf[i]);if(v>m)m=v}return m}
 function mxMeterFrame(){
   if(!$('.unit').classList.contains('mix'))return;
@@ -3452,6 +3494,7 @@ function mxMeterFrame(){
     const db=Math.max(-60,20*Math.log10(Math.max(1e-6,mxPeak(a)))),p=(db+60)/60;
     mxHold[i]=Math.max(p,mxHold[i]-.025);
     mxMeters[i].meter.style.height=(mxHold[i]*100)+'%';
+    mxPk[i]=Math.max(p,mxPk[i]-.004);if(mxMeters[i].peak)mxMeters[i].peak.style.bottom='calc('+(mxPk[i]*100)+'% - 1px)';
     mxMeters[i].meter.classList.toggle('hot',db>-1);
   });
   const gr=Math.min(0,mixComp.reduction&&typeof mixComp.reduction==='object'?mixComp.reduction.value:(mixComp.reduction||0));
@@ -4576,7 +4619,7 @@ function fxDubInit(){
 function fxDubSend(down,t){
   if(down){
     const d=fxDubInit(),v=fxVals(7),tt=Math.min(1.9,fxBeatLen()*v.bt);
-    fxSet(d.dl.delayTime,tt,t,.09);fxSet(d.fb.gain,v.fb,t,.03);fxSet(d.send.gain,.7,t,.02);
+    fxSet(d.dl.delayTime,tt,t,.16);fxSet(d.fb.gain,v.fb,t,.03);fxSet(d.send.gain,.7,t,.02);
   }else if(fxDub){fxSet(fxDub.send.gain,0,t,.03);fxSet(fxDub.fb.gain,.6,t,.1)}
 }
 /* ---------- GENERADOR: estilos (aproximaciones inspiradas en el carácter general, no copias) ----------
@@ -5297,7 +5340,7 @@ const pl_=i=>typeof pl==='function'?pl(i):i+1;
 /* ---- sincronizar todo ---- */
 function gUI(){
   if(!$('#genpanel'))return;
-  const m=G.mode;
+  const m=G.mode;$('#genpanel').dataset.mode=m;
   $('#gmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
   const pb=$('#gplay');pb.textContent=G.play?'Parar':'Reproducir';pb.classList.toggle('on',G.play);
   $('#gbpm').value=G.bpm;$('#gts').value=G.ts;$('#gbars').value=G.bars;
@@ -5522,6 +5565,18 @@ function gToLooper(){
   gFxBassUI();gFxKeysUI();
   bfxLive();kfxLive();
   gSlotRestore();
+  /* secciones plegables (se recuerda cuáles están cerradas) */
+  let shut;try{shut=JSON.parse(localStorage.getItem('sampledhead.gfold')||'null')}catch{}
+  if(!Array.isArray(shut))shut=['gslots','gdfxs','gkfxs','gbfxs','gexp'];
+  const secs=[...document.querySelectorAll('#genpanel .bsec')];
+  secs.forEach((sec,i)=>{
+    const bt=sec.querySelector(':scope>.bt');if(!bt)return;
+    const key=sec.id||('s'+i);if(!sec.id&&i===secs.length-1)sec.id='gexp';
+    const k=sec.id||key;sec.classList.add('fold');if(shut.includes(k))sec.classList.add('shut');
+    bt.setAttribute('role','button');bt.tabIndex=0;
+    const tg=()=>{sec.classList.toggle('shut');const now=secs.filter(x=>x.classList.contains('shut')).map(x=>x.id||('s'+secs.indexOf(x)));try{localStorage.setItem('sampledhead.gfold',JSON.stringify(now))}catch{}};
+    bt.onclick=tg;bt.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tg()}};
+  });
   gUI();
 })();
 function gFxBassUI(){
