@@ -4923,18 +4923,25 @@ function gBassStep(E,n,t,sd){
   if(e&&G.useB&&!G.mB)gBassOn(E,e);
 }
 function gTick(){
-  const L=G.L,sd=15/G.bpm,until=ctx.currentTime+.14;
+  const L=G.L,sd=15/G.bpm,until=ctx.currentTime+.35;
   while(GP_.td<until){gDrumStep(L,GP_.nd,GP_.td,sd);GP_.q.push({t:GP_.td,d:GP_.nd%gLd()});GP_.nd++;GP_.td+=sd}
   while(GP_.tb<until){gBassStep(L,GP_.nb,GP_.tb,sd);GP_.q.push({t:GP_.tb,b:GP_.nb%gLb()});GP_.nb++;GP_.tb+=sd}
+}
+/* reloj en un Worker: no se frena ni se atasca con el hilo principal (menús, canvas) */
+function gTimer(on){
+  if(!GP_.w&&on){try{GP_.w=new Worker(URL.createObjectURL(new Blob(['let t;onmessage=e=>{clearInterval(t);if(e.data)t=setInterval(()=>postMessage(0),e.data)}'])));GP_.w.onmessage=()=>{if(G.play)gTick()}}catch{GP_.w=null}}
+  if(GP_.w){GP_.w.postMessage(on?30:0);return}
+  clearInterval(GP_.timer);if(on)GP_.timer=setInterval(gTick,30);
 }
 function gStart(){
   ctx.resume();gLive();if(G.play)return;
   const t=ctx.currentTime+.08;GP_.td=GP_.tb=t;GP_.nd=GP_.nb=0;GP_.q=[];G.play=true;
-  GP_.timer=setInterval(gTick,25);gTick();gUI();
+  gTimer(true);gTick();gUI();
 }
 function gStop(){
   if(!G.play)return;
-  clearInterval(GP_.timer);G.play=false;GP_.q=[];
+  gTimer(false);G.play=false;GP_.q=[];
+  if(G.L){G.L.drum.disconnect();G.L.drum=ctx.createGain();gFxLive()}
   if(G.bassP)G.bassP.silence(ctx.currentTime);if(G.keysP)G.keysP.silence(ctx.currentTime);
   gUI();gPlayhead(-1,-1);
 }
