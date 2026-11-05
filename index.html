@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.33</title>
+<title>SampledHeadApp 1.34</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -893,19 +893,23 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.33</summary>
+<details><summary>29. Novedades de la 1.34</summary>
+<ul><li><b>Mixer</b>: vuelve a verse la barra de nivel de Bajo y Teclas cuando suenan desde el Generador.</li>
+<li><b>Bajos más naturales</b>: Fender, Fretless, Contrabajo, Púa, Muted, Vinilo, Nu soul y Dilla usan ahora un modelo de cuerda pulsada (en lugar de osciladores): ataque de dedo o púa, sustain que se apaga solo y más oscuros o brillantes según el instrumento. Los bajos de síntesis (808, Moog, Reese, Acid, etc.) no cambian.</li></ul>
+</details>
+<details><summary>30. Novedades de la 1.33</summary>
 <ul><li><b>Estética unificada</b>: todas las pestañas usan el color de su pestaña como acento (botones activos, títulos, regla lateral de cada sección y deslizadores). Bajo, Teclas y Mixer tienen <b>secciones plegables</b> como el Generador; se recuerda cuáles cierras. Por defecto están cerrados los kits, el lo-fi, trémolo, chorus, ecualizador y compresor.</li></ul>
 </details>
-<details><summary>30. Novedades de la 1.32</summary>
+<details><summary>31. Novedades de la 1.32</summary>
 <ul><li><b>FX</b>: el <b>Filtro</b> va ahora al final y afecta a todo lo que suena (radio, vinilo, reverb, delays). Delay, Dub Delay y Repeat siguen el tempo del generador cuando está sonando, y el tiempo del eco cambia con transiciones suaves.</li>
 <li><b>Generador</b>: transporte (modo, Reproducir y BPM) fijo arriba, secciones plegables (se recuerda cuáles cierras) y un color por modo: batería rosa, bajo naranja, teclas violeta. Rejilla de pasos con brillo y halo en el paso actual.</li>
 <li><b>Pads de FX</b> con brillo, estela del dedo y borde de color mientras suenan. <b>Mixer</b>: color por canal, medidores más gruesos y marca de pico. Pestaña activa más destacada.</li></ul>
 </details>
-<details><summary>31. Novedades de la 1.31</summary>
+<details><summary>32. Novedades de la 1.31</summary>
 <ul><li><b>FX</b>: pad nuevo <b>Dub Delay</b> (eco de cinta oscuro; X = tiempo, Y = realimentación; al soltar el eco se apaga solo) junto al Delay, y pad <b>Radio</b> (radio antigua). Ahora son 8 efectos.</li>
 <li><b>Vinilo</b> con mucha menos saturación: nivel igual al original en el pad de FX, en el lo-fi de los pads y en el generador, con menos grave y crujido más suave.</li></ul>
 </details>
-<details><summary>32. Novedades de la 1.30</summary>
+<details><summary>33. Novedades de la 1.30</summary>
 <ul><li><b>Generador</b>: modo Teclas (acordes por grado de la escala con progresiones y ritmo de acompañamiento por estilo; el bajo puede seguir a las teclas). Interruptor «Tempo del estilo»: apagado, el tempo no cambia al cambiar de estilo.</li>
 <li><b>Mixer</b>: canal nuevo «Gen bat.» para la batería del generador. <b>Teclas</b> con estilo propio (independiente de batería y bajo). Con la pantalla bloqueada o la app en segundo plano el generador se recoloca al volver; en iPhone/iPad el sistema puede pausar el audio, así que al volver pulsa Reproducir si se detuvo.</li>
 <li><b>FX · Radio</b>: pad de radio antigua (banda estrecha tipo AM, válvula, estática y desvanecimiento). X = más estrecha hacia la derecha, Y = estática.</li>
@@ -913,8 +917,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>33. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.33</b></p>
+<details><summary>34. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.34</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1027,19 +1031,23 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.33</summary>
+<details><summary>29. What is new in 1.34</summary>
+<ul><li><b>Mixer</b>: the Bass and Keys level bars show again when they play from the Generator.</li>
+<li><b>More natural basses</b>: Fender, Fretless, Upright, Pick, Muted, Vinyl, Nu soul and Dilla now use a plucked-string model (instead of oscillators): finger or pick attack, a sustain that dies out naturally, darker or brighter depending on the instrument. The synth basses (808, Moog, Reese, Acid, etc.) are unchanged.</li></ul>
+</details>
+<details><summary>30. What is new in 1.33</summary>
 <ul><li><b>Unified look</b>: every tab uses its tab colour as the accent (active buttons, titles, a side rule on each section and sliders). Bass, Keys and Mixer now have <b>collapsible sections</b> like the Generator; it remembers which ones you close. Kits, lo-fi, tremolo, chorus, equalizer and compressor are closed by default.</li></ul>
 </details>
-<details><summary>30. What is new in 1.32</summary>
+<details><summary>31. What is new in 1.32</summary>
 <ul><li><b>FX</b>: the <b>Filter</b> now sits at the end and affects everything that sounds (radio, vinyl, reverb, delays). Delay, Dub Delay and Repeat follow the generator tempo while it plays, and the echo time changes smoothly.</li>
 <li><b>Generator</b>: transport (mode, Play and BPM) pinned at the top, collapsible sections (it remembers which you close) and one colour per mode: drums pink, bass orange, keys violet. Step grid with glow and a halo on the current step.</li>
 <li><b>FX pads</b> with glow, finger trail and a coloured border while active. <b>Mixer</b>: colour per channel, thicker meters and a peak mark. Active tab stands out more.</li></ul>
 </details>
-<details><summary>31. What is new in 1.31</summary>
+<details><summary>32. What is new in 1.31</summary>
 <ul><li><b>FX</b>: new <b>Dub Delay</b> pad (dark tape echo; X = time, Y = feedback; the echo fades out on its own when released) next to Delay, and the <b>Radio</b> pad (old radio). There are now 8 effects.</li>
 <li><b>Vinyl</b> with much less saturation: same level as the original in the FX pad, the pad lo-fi and the generator, with less rumble and softer crackle.</li></ul>
 </details>
-<details><summary>32. What is new in 1.30</summary>
+<details><summary>33. What is new in 1.30</summary>
 <ul><li><b>Generator</b>: Keys mode (chords by scale degree with progressions and a comping rhythm per style; the bass can follow the keys). «Style tempo» switch: when off, the tempo does not change when the style changes.</li>
 <li><b>Mixer</b>: new «Gen drums» channel for the generator drums. <b>Keys</b> can have their own style (independent of drums and bass). With the screen locked or the app in the background the generator resyncs on return; on iPhone/iPad the system may pause audio, so press Play again if it stopped.</li>
 <li><b>FX · Radio</b>: old-radio pad (narrow AM-style band, tube saturation, static and fading). X = narrower to the right, Y = static.</li>
@@ -1047,8 +1055,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>33. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.33</b></p>
+<details><summary>34. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.34</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2660,7 +2668,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.33';
+const APP_VERSION='1.34';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -2704,17 +2712,17 @@ const BPRE=[
   ['Pluck',{w1:'square',l1:.8,l2:0,ws:'sine',ls:.5,cut:380,res:6,fenv:.8,fdec:.14,a:.002,d:.2,s:0,r:.1,drv:.1,gl:0}],
   ['Acid',{w1:'sawtooth',l1:.9,l2:0,ls:0,cut:480,res:14,fenv:.7,fdec:.2,a:.003,d:.25,s:.3,r:.08,drv:.3,gl:.06}],
   ['Fuzz',{w1:'square',l1:.7,w2:'sawtooth',l2:.6,det:12,ws:'square',ls:.3,cut:2500,res:3,fenv:.2,fdec:.2,a:.003,d:.3,s:.8,r:.15,drv:.8,gl:.02}],
-  ['Fender',{w1:'sawtooth',l1:.7,w2:'triangle',l2:.5,det:3,ws:'sine',ls:.5,cut:700,res:1,fenv:.5,fdec:.18,a:.004,d:.5,s:.35,r:.2,drv:.08,gl:0}],
-  ['Fretless',{w1:'sawtooth',l1:.6,w2:'triangle',l2:.6,det:4,ws:'sine',ls:.4,cut:900,res:3,fenv:.25,fdec:.3,a:.02,d:.5,s:.7,r:.25,drv:.05,gl:.09}],
-  ['Contrabajo',{w1:'triangle',l1:.9,w2:'sawtooth',l2:.25,det:2,ws:'sine',ls:.3,cut:420,res:1,fenv:.9,fdec:.08,a:.003,d:.35,s:.05,r:.12,drv:.05,gl:0}],
-  ['Púa',{w1:'sawtooth',l1:.8,w2:'square',l2:.2,det:2,ws:'sine',ls:.3,cut:1400,res:2,fenv:.8,fdec:.1,a:.002,d:.4,s:.4,r:.15,drv:.15,gl:0}],
-  ['Muted',{w1:'triangle',l1:.8,w2:'sine',l2:.4,det:0,ws:'sine',ls:.3,cut:350,res:1,fenv:.3,fdec:.06,a:.002,d:.12,s:0,r:.05,drv:.05,gl:0}],
+  ['Fender',{l1:0,l2:0,ls:0,ks:{t60:2.2,br:.45,pos:.28,dmp:.55,click:.12},cut:2400,res:.7,fenv:0,a:.002,d:.1,s:1,r:.2,drv:.12,gl:0}],
+  ['Fretless',{l1:0,l2:0,ls:0,ks:{t60:2.6,br:.3,pos:.4,dmp:.45,click:.03},cut:800,res:3.5,fenv:.55,fdec:.45,a:.012,d:.1,s:1,r:.25,drv:.1,gl:.09}],
+  ['Contrabajo',{l1:0,l2:0,ls:0,ks:{t60:1.1,br:.5,pos:.12,dmp:.5,click:.35,lv:1.6},cut:1000,res:1,fenv:0,a:.002,d:.1,s:1,r:.12,drv:.05,gl:0}],
+  ['Púa',{l1:0,l2:0,ls:0,ks:{t60:1.6,br:.9,pos:.18,dmp:.85,click:.5},cut:3800,res:1,fenv:0,a:.001,d:.1,s:1,r:.15,drv:.22,gl:0}],
+  ['Muted',{l1:0,l2:0,ls:0,ks:{t60:.35,br:.25,pos:.3,dmp:.35,click:.05,lv:1.5},cut:800,res:1,fenv:0,a:.002,d:.1,s:1,r:.05,drv:.05,gl:0}],
   ['808 caída',{w1:'sine',l1:1,l2:0,ws:'sine',ls:0,cut:12000,res:0,fenv:0,a:.001,d:1.4,s:.5,r:.35,drv:.2,gl:0,pd:7,pdt:.07}],
   ['FM DX7',{w1:'sine',l1:1,l2:0,ws:'sine',ls:.3,cut:9000,res:0,fenv:0,a:.002,d:.5,s:.2,r:.1,drv:.1,gl:0,fm:2.2,fmr:1,fmd:.15}],
-  ['Vinilo',{w1:'triangle',l1:.9,l2:0,ws:'sine',ls:.6,cut:260,res:.5,fenv:.15,fdec:.15,a:.006,d:.6,s:.5,r:.2,drv:.25,gl:.02}],
+  ['Vinilo',{l1:0,l2:0,ls:0,ks:{t60:1.2,br:.08,pos:.4,dmp:.25,click:0},cut:380,res:.5,fenv:0,a:.006,d:.1,s:1,r:.2,drv:.3,gl:.02}],
   ['Wobble',{w1:'sawtooth',l1:.8,w2:'sawtooth',l2:.6,det:14,ws:'sine',ls:.6,cut:300,res:7,fenv:0,a:.005,d:.3,s:1,r:.15,drv:.4,gl:.03,lfo:2.2,lfd:2}],
-  ['Nu soul',{w1:'sine',l1:1,w2:'triangle',l2:.35,det:0,ws:'sine',ls:.4,cut:520,res:1,fenv:.2,fdec:.2,a:.012,d:.9,s:.6,r:.3,drv:.2,gl:.03}],
-  ['Dilla',{w1:'triangle',l1:.9,l2:0,ws:'sine',ls:.7,cut:340,res:1.5,fenv:.25,fdec:.25,a:.015,d:1,s:.65,r:.35,drv:.35,gl:.05}],
+  ['Nu soul',{l1:0,l2:0,ls:0,ks:{t60:2.5,br:.15,pos:.3,dmp:.3,click:0},cut:650,res:1,fenv:0,a:.008,d:.1,s:1,r:.3,drv:.25,gl:.03}],
+  ['Dilla',{l1:0,l2:0,ls:0,ks:{t60:1.4,br:.1,pos:.35,dmp:.28,click:0},cut:500,res:1.2,fenv:0,a:.01,d:.1,s:1,r:.35,drv:.4,gl:.05}],
   ['Sucio',{w1:'sawtooth',l1:.8,w2:'square',l2:.5,det:18,ws:'sine',ls:.5,cut:1200,res:7,fenv:.35,fdec:.18,a:.002,d:.3,s:.7,r:.12,drv:1,gl:.03}]];
 const bHz=m=>440*Math.pow(2,(m-69)/12);
 const bMidi=k=>{const sc=BSCALES[BS.scale],s=levelSemis(sc.iv)[k];return 12*(BS.oct+1)+BS.root+s};
@@ -2728,6 +2736,34 @@ function bCurve(a){
   }
   return c;
 }
+/* cuerda pulsada por modelado físico (Karplus-Strong): la nota se calcula una vez (con caché) y se reproduce como buffer.
+   K: t60 (s de sustain), br (brillo del pulso), pos (posición de la púa/dedo 0..1), dmp (apagado en el bucle 0..1: menor = más oscuro), click (ruido de ataque) */
+const bKSc=new Map();
+function bKS(sr,f,K){
+  const key=sr+'|'+Math.round(f*50)+'|'+[K.t60,K.br,K.pos,K.dmp,K.click].join(',');
+  let o=bKSc.get(key);if(o)return o;
+  const t60=(K.t60||1.5)*Math.pow(110/f,.25),len=Math.min(3,t60*1.15+.15),n=Math.round(sr*len),a=Math.min(.98,Math.max(.12,K.dmp||.6));
+  const T=Math.max(2.5,sr/f-(1-a)/a),L=Math.ceil(T)+4,buf=new Float32Array(L),nx=Math.floor(T);
+  /* excitación: ruido suavizado según el brillo y con peine por la posición de la pulsación */
+  let seed=(Math.round(f*100)*2654435761)>>>0;const rnd=()=>{seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296*2-1};
+  const e=new Float32Array(nx),eb=.12+.85*(K.br==null?.5:K.br);let lp=0;
+  for(let i=0;i<nx;i++){lp+=eb*(rnd()-lp);e[i]=lp}
+  const pp=Math.max(1,Math.round((K.pos||.25)*T));for(let i=nx-1;i>=pp;i--)e[i]-=e[i-pp]*.9;
+  let mx=0,mean=0;for(let i=0;i<nx;i++)mean+=e[i];mean/=nx;for(let i=0;i<nx;i++){e[i]-=mean;mx=Math.max(mx,Math.abs(e[i]))}
+  for(let i=0;i<nx;i++)buf[i]=e[i]/(mx||1);
+  const g=Math.pow(10,-3*(T/sr)/t60),out=new Float32Array(n);let w=nx,y1=0,lpv=0;
+  for(let i=0;i<n;i++){
+    let rd=w-T;if(rd<0)rd+=L;const i0=Math.floor(rd),fr=rd-i0,v=buf[i0%L]*(1-fr)+buf[(i0+1)%L]*fr;
+    lpv+=a*(v-lpv);buf[w%L]=lpv*g;w=(w+1)%L;out[i]=v;
+  }
+  /* ruido de ataque (dedo, púa o cuerda contra el diapasón) y filtro de continua */
+  const ck=K.click||0,cn=Math.round(sr*.012);
+  for(let i=0;i<cn;i++)out[i]+=ck*rnd()*Math.exp(-i/(sr*.003))*.9;
+  let px=0,py=0,pk=0;for(let i=0;i<n;i++){const x=out[i];py=x-px+.995*py;px=x;out[i]=py;pk=Math.max(pk,Math.abs(py))}
+  const ng=.9/(pk||1),fd=Math.round(sr*.05);for(let i=0;i<n;i++){let v=out[i]*ng;if(i>n-fd)v*=(n-i)/fd;out[i]=v}
+  const ab=ctx.createBuffer?ctx.createBuffer(1,n,sr):null;if(ab)ab.copyToChannel(out,0);
+  if(bKSc.size>160)bKSc.clear();bKSc.set(key,ab);return ab;
+}
 /* una voz: osciladores -> filtro con envolvente -> distorsión -> envolvente de volumen */
 function bVoice(c,dest,P,m,t){
   const f=bHz(m),oscs=[],mix=c.createGain(),fl=c.createBiquadFilter(),amp=c.createGain();
@@ -2738,8 +2774,10 @@ function bVoice(c,dest,P,m,t){
     o.connect(g);g.connect(mix);o.start(t);oscs.push({o,k:hz/f});
   };
   add(P.w1,f,P.l1,0);add(P.w2,f,P.l2,P.det);add(P.ws,f/2,P.ls,0);
-  if(!oscs.length)add('sine',f,.0001,0);
-  mix.gain.value=.7/Math.max(1,P.l1+P.l2+P.ls);
+  let ksrc=null;
+  if(P.ks){ksrc=c.createBufferSource();ksrc.buffer=bKS(c.sampleRate,f,P.ks);const kg=c.createGain();kg.gain.value=P.ks.lv||1;ksrc.connect(kg);kg.connect(mix);ksrc.start(t)}
+  if(!oscs.length&&!ksrc)add('sine',f,.0001,0);
+  mix.gain.value=ksrc?.9:.7/Math.max(1,P.l1+P.l2+P.ls);
   fl.type='lowpass';fl.Q.value=P.res;
   const peak=Math.min(18000,P.cut*Math.pow(2,P.fenv*5));
   fl.frequency.setValueAtTime(P.cut,t);
@@ -2755,7 +2793,8 @@ function bVoice(c,dest,P,m,t){
   amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(P.vol*.8,t+A);amp.gain.setTargetAtTime(Math.max(0,P.s)*P.vol*.8,t+A,Math.max(.01,P.d)/3);
   const v={m,rel:false,
     slide(m2,t2,gl){
-      v.m=m2;if(fmo)fmo.frequency.setTargetAtTime(bHz(m2)*P.fmr,t2,gl>.002?gl/3:.001);
+      v.m=m2;if(ksrc)ksrc.playbackRate.setTargetAtTime(bHz(m2)/f,t2,gl>.002?gl/3:.001);
+      if(fmo)fmo.frequency.setTargetAtTime(bHz(m2)*P.fmr,t2,gl>.002?gl/3:.001);
       for(const x of oscs){
         const hz=bHz(m2)*x.k;
         if(gl>0.002)x.o.frequency.setTargetAtTime(hz,t2,gl/3);
@@ -2765,11 +2804,11 @@ function bVoice(c,dest,P,m,t){
     release(t2){
       v.rel=true;const R=Math.max(.01,P.r);
       amp.gain.cancelScheduledValues(t2);amp.gain.setTargetAtTime(0,t2,R/5);
-      const e=t2+R*1.5+.05;for(const x of oscs)try{x.o.stop(e)}catch{};for(const m of mods)try{m.stop(e)}catch{}
+      const e=t2+R*1.5+.05;if(ksrc)try{ksrc.stop(e)}catch{};for(const x of oscs)try{x.o.stop(e)}catch{};for(const m of mods)try{m.stop(e)}catch{}
     },
     kill(t2){
       v.rel=true;amp.gain.cancelScheduledValues(t2);amp.gain.setTargetAtTime(0,t2,.004);
-      for(const x of oscs)try{x.o.stop(t2+.05)}catch{};for(const m of mods)try{m.stop(t2+.05)}catch{}
+      if(ksrc)try{ksrc.stop(t2+.05)}catch{};for(const x of oscs)try{x.o.stop(t2+.05)}catch{};for(const m of mods)try{m.stop(t2+.05)}catch{}
     }};
   return v;
 }
@@ -5040,15 +5079,15 @@ function gFxLive(){
 }
 let kfxChain=null;
 function kfxLive(){
-  if(kfxChain)kfxChain.stop();
-  try{keysBus.disconnect()}catch{}
+  if(kfxChain){try{keysBus.disconnect(kfxChain.inp)}catch{}kfxChain.stop()}
+  try{keysBus.disconnect(master)}catch{}   // solo la salida al máster: así siguen conectados el medidor del mixer y los demás analizadores
   if(!Object.values(KFX).some(x=>x.on)){kfxChain=null;keysBus.connect(master);return}
   kfxChain=gFxChain(ctx,KFX,G.bpm);keysBus.connect(kfxChain.inp);kfxChain.out.connect(master);
 }
 let bfxChain=null;
 function bfxLive(){
-  if(bfxChain)bfxChain.stop();
-  try{bassBus.disconnect()}catch{}
+  if(bfxChain){try{bassBus.disconnect(bfxChain.inp)}catch{}bfxChain.stop()}
+  try{bassBus.disconnect(master)}catch{}
   const anyOn=Object.values(BFX).some(x=>x.on);
   if(!anyOn){bfxChain=null;bassBus.connect(master);return}
   bfxChain=gFxChain(ctx,BFX,G.bpm);bassBus.connect(bfxChain.inp);bfxChain.out.connect(master);
