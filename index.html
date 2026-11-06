@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.47</title>
+<title>SampledHeadApp 1.48</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -913,8 +913,9 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.47</summary>
-<ul><li><b>Grabar sesión</b> (botón ⏺ de arriba): graba todo lo que suena (sampler, looper, generador, efectos FX, mixer). Al pulsarlo de nuevo se detiene y se descarga un WAV estéreo de 16 bits. Límite: 30 min.</li>
+<details><summary>29. Novedades de la 1.48</summary>
+<ul><li><b>FX en hold</b>: un efecto bloqueado con Hold sigue activo al cambiar de pestaña hasta que lo desactives.</li>
+<li><b>Grabar sesión</b> (botón ⏺ de arriba): graba todo lo que suena (sampler, looper, generador, efectos FX, mixer). Al pulsarlo de nuevo se detiene y se descarga un WAV estéreo de 16 bits. Límite: 30 min.</li>
 <li><b>Looper · Mute pad</b>: con el botón activo, pulsar un pad lo silencia o lo reactiva; al desactivarlo suenan todos. Desde la pestaña Sampler siempre suenan.</li>
 <li><b>Sampler · efectos del pad</b>: EQ de 8 bandas, <b>Normalizar</b> y <b>Render</b>, que aplica todos los efectos al sample del pad (filtro, lo-fi, tono, EQ…) y los deja a cero. Los envíos de reverb y delay no se renderizan.</li>
 <li><b>Mixer</b>: dos canales nuevos, <b>Grupo 1</b> y <b>Grupo 2</b> (pads con grupo), con fader, mute y envíos; los pads sin grupo siguen en Sampler.</li>
@@ -965,7 +966,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.47</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.48</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1078,8 +1079,9 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.47</summary>
-<ul><li><b>Record session</b> (⏺ button at the top): records everything that sounds (sampler, looper, generator, FX effects, mixer). Press again to stop and a 16-bit stereo WAV is downloaded. Limit: 30 min.</li>
+<details><summary>29. What is new in 1.48</summary>
+<ul><li><b>FX on hold</b>: an effect locked with Hold stays active when you change tab until you turn it off.</li>
+<li><b>Record session</b> (⏺ button at the top): records everything that sounds (sampler, looper, generator, FX effects, mixer). Press again to stop and a 16-bit stereo WAV is downloaded. Limit: 30 min.</li>
 <li><b>Looper · Mute pad</b>: with the button on, tapping a pad mutes or unmutes it; turning it off unmutes all. From the Sampler tab they always sound.</li>
 <li><b>Sampler · pad effects</b>: 8-band EQ, <b>Normalize</b> and <b>Render</b>, which bakes all effects into the pad sample (filter, lo-fi, pitch, EQ…) and resets them. Reverb and delay sends are not rendered.</li>
 <li><b>Mixer</b>: two new channels, <b>Group 1</b> and <b>Group 2</b> (grouped pads), with fader, mute and sends; ungrouped pads stay on Sampler.</li>
@@ -1130,7 +1132,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.47</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.48</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1456,6 +1458,7 @@ function fxPos(e,m){
   S.x=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));S.y=Math.min(1,Math.max(0,1-(e.clientY-r.top)/r.height));
   (S.tr=S.tr||[]).push({x:S.x,y:S.y});if(S.tr.length>16)S.tr.shift();
 }
+function fxRelNH(){fx.st.forEach((S,i)=>{if(!S.hold)fxRelease(i)})}
 function fxRelease(m){
   let ch=false;
   (m===undefined?[0,1,2,3,4,5,6,7]:[m]).forEach(i=>{const S=fx.st[i];if(S.down){S.down=false;S.id=null;S.tr=[];ch=true}});
@@ -1485,7 +1488,7 @@ function fxHold(m,on){
   });
   const fm=$('#fxmix');if(fm)fm.onclick=()=>showTab(5);
   addEventListener('resize',fxDraw);
-  if(typeof document.addEventListener==='function')document.addEventListener('visibilitychange',()=>{if(document.hidden)fxRelease()});
+  if(typeof document.addEventListener==='function')document.addEventListener('visibilitychange',()=>{if(document.hidden)fxRelNH()});
   try{fxInit().catch(()=>{})}catch{}
   fxDraw();
 })();
@@ -2803,7 +2806,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.47';
+const APP_VERSION='1.48';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -4055,7 +4058,7 @@ function showTab(mode){
   u.classList.toggle('loop',mode===1);u.classList.toggle('bass',mode===2);u.classList.toggle('fxt',mode===3);u.classList.toggle('keys',mode===4);u.classList.toggle('mix',mode===5);u.classList.toggle('gen',mode===6);u.classList.toggle('lbass',mode===1&&bassView);u.classList.toggle('lkeys',mode===1&&keysView);
   [['#tabS',0],['#tabL',1],['#tabB',2],['#tabF',3],['#tabK',4],['#tabM',5],['#tabG',6]].forEach(([id,m])=>{$(id).classList.toggle('on',mode===m);$(id).setAttribute('aria-selected',String(mode===m))});
   bankMarks();
-  fxRelease();fx.tab=mode===3;fxNodes(fx.tab);
+  fxRelNH();fx.tab=mode===3;fxNodes(fx.tab||fx.st.some(o=>o.down));
   if(mode===0){draw();tuneLayout()}else if(mode===1)lpUI();else if(mode===2)bassDraw();else if(mode===4)kDraw();else if(mode===5)mixDraw();else if(mode===6)gDraw();
   if(mode===2||mode===4||mode===6)gFxRefresh();
   fxDraw();
@@ -6295,10 +6298,10 @@ $('#trimb').onclick=()=>{
 /* segundo plano / selector de archivos: al volver se reanuda el audio y se reinician efectos y ecos */
 let bgT=0;
 function bgRecover(){
-  try{fxRelease()}catch{}
+  try{fxRelNH()}catch{}
   try{dlyBuild()}catch{}
   try{if(fxDub){const d=fxDub;fxDub=null;try{d.lf.stop()}catch{}Object.values(d).forEach(n=>{try{n.disconnect&&n.disconnect()}catch{}})}}catch{}
-  try{if(fx.tab){fxNodes(false);fxNodes(true)}}catch{}
+  try{if(fx.tab||fx.st.some(o=>o.down)){fxNodes(false);fxNodes(true)}}catch{}
   try{fxSend()}catch{}
   try{if(G.play)gResync()}catch{}
   try{if(lp.st==='playing'){if(bassP)bassP.releaseAll(ctx.currentTime);if(keysP)keysP.releaseAll(ctx.currentTime)}}catch{}
