@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.45</title>
+<title>SampledHeadApp 1.46</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -424,6 +424,13 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 .gkitrow select{width:auto;flex:1 1 150px}
 .gkitrow button{font-size:13px}
 .gkhint{font-size:12px;color:var(--mut,#8b94a3);flex:1 1 100%;line-height:1.35}
+.lptracks button#lpmute{display:none}
+.sxbox{margin-top:12px;border-top:1px solid var(--line,#2a303a);padding-top:10px}
+.sxbox h4{margin:0 0 6px;font-size:13px}
+.sxg{display:grid;grid-template-columns:44px repeat(4,minmax(0,1fr));gap:6px 8px;align-items:center;font-size:11px}
+.sxg input{width:100%;min-width:0}
+.sxg b{font-weight:400;opacity:.7;text-align:center}
+.sxg .sxv{font-size:10px;text-align:center;opacity:.8}
 </style>
 </head>
 <body>
@@ -462,6 +469,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
     <div class="chop" id="chop">
       <button id="chopb" aria-pressed="false" aria-label="Auto chop: dividir la región del pad en partes iguales o por golpes">✂ Chop</button>
       <button id="chopn" disabled aria-label="Dividir la región en 16, 8, 4 o 2 partes">Dividir</button>
+      <button id="trimb" aria-label="Recortar el pad al tramo marcado">✂ Recortar</button>
       <button id="chopa" disabled aria-label="Asignar los fragmentos a los pads del banco">Asignar</button>
     </div>
   </div>
@@ -492,7 +500,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
     <div class="lpprog" aria-hidden="true"><i id="lpprog"></i></div>
     <div class="lptracks" id="lptracks" role="group" aria-label="Pistas del looper">
       <button data-t="0" aria-label="Pista 1">1</button><button data-t="1" aria-label="Pista 2">2</button><button data-t="2" aria-label="Pista 3">3</button><button data-t="3" aria-label="Pista 4">4</button>
-      <button id="lpmute" aria-label="Silenciar la pista seleccionada">Mute</button><button id="lpclr" aria-label="Borrar la pista seleccionada">Borrar</button>
+      <button id="lpmute" hidden aria-label="Silenciar la pista seleccionada">Mute</button><button id="lpclr" aria-label="Borrar la pista seleccionada">Borrar</button>
     </div>
     <div class="lpmix" id="lpmix">
       <button id="lpsolo" aria-label="Solo: oír solo la pista seleccionada">Solo</button>
@@ -897,8 +905,13 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.45</summary>
-<ul><li><b>Delay y Dub delay</b> van ahora al final de la cadena (después del filtro): suenan sobre lo que se oye, también con STOP pulsado, que ya no deja volver el audio.</li>
+<details><summary>29. Novedades de la 1.46</summary>
+<ul><li><b>Mixer · Envíos</b>: bajo los faders, cada pista tiene envíos a Delay, Dub delay y Reverb. En FX, estos tres efectos actúan solo sobre las pistas con envío; mientras estén activos STOP, Repeat o Radio actúan sobre todo el máster.</li>
+<li><b>Looper</b>: sin botón Mute. Al reproducir, el botón de cada pista la silencia o la activa; al grabar, elige la pista donde se graba.</li>
+<li><b>Sampler</b>: botón <b>✂ Recortar</b> que deja el pad solo con el tramo marcado.</li>
+<li><b>Radio</b> sin subida de volumen ni saturación.</li>
+<li><b>Segundo plano</b>: al volver (o tras elegir un archivo) se reanuda el audio y se reinician efectos y ecos para evitar ruidos y saltos de tempo.</li>
+<li><b>Delay y Dub delay</b> van ahora al final de la cadena (después del filtro): suenan sobre lo que se oye, también con STOP pulsado, que ya no deja volver el audio.</li>
 <li><b>Nuevo proyecto</b> deja todo vacío: pads del sampler, looper, efectos y generador.</li>
 <li><b>Pantalla de inicio</b>: tras el logo eliges Nuevo proyecto, Cargar el último abierto o Abrir un proyecto guardado (la primera vez, sin nada guardado, se entra directo).</li>
 <li><b>FX · STOP</b> (el hueco libre): mantén pulsado y el sonido se frena como un disco que se para; al soltar vuelve justo donde va la secuencia, como un mute con efecto de parada. X: duración de la frenada; Y: curva (suave a brusca).</li>
@@ -940,7 +953,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.45</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.46</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1053,8 +1066,13 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.45</summary>
-<ul><li><b>Delay and Dub delay</b> now sit at the end of the chain (after the filter): they act on what you hear, even with STOP held, so audio no longer leaks back.</li>
+<details><summary>29. What is new in 1.46</summary>
+<ul><li><b>Mixer · Sends</b>: below the faders, each track has sends to Delay, Dub delay and Reverb. In FX these three effects act only on tracks with a send; while STOP, Repeat or Radio are active they act on the whole master.</li>
+<li><b>Looper</b>: no Mute button. While playing, each track button mutes or unmutes it; while recording it selects the track to record on.</li>
+<li><b>Sampler</b>: <b>✂ Trim</b> button that keeps only the marked region of the pad.</li>
+<li><b>Radio</b> no longer raises the volume or saturates.</li>
+<li><b>Background</b>: on return (or after picking a file) audio resumes and effects and echoes are reset to avoid noise and tempo jumps.</li>
+<li><b>Delay and Dub delay</b> now sit at the end of the chain (after the filter): they act on what you hear, even with STOP held, so audio no longer leaks back.</li>
 <li><b>New project</b> leaves everything empty: sampler pads, looper, effects and generator.</li>
 <li><b>Start screen</b>: after the logo you choose New project, Load the last one or Open a saved project (the first time, with nothing saved, it goes straight in).</li>
 <li><b>FX · STOP</b> (the free slot): hold it and the sound slows down like a record stopping; on release it comes back exactly where the sequence is, like a mute with a stop effect. X: stop length; Y: curve (soft to abrupt).</li>
@@ -1096,7 +1114,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.45</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.46</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1145,6 +1163,9 @@ const master=ctx.createGain();   // todo lo que suena pasa por aquí y luego por
 const rsBus=ctx.createGain();      // suma solo los pads elegidos para el resample (no va a la salida)
 const chOut=[0,1,2,3].map(()=>ctx.createGain()),chDry=[0,1,2,3].map(()=>ctx.createGain()),chVin=[0,1,2,3].map(()=>ctx.createGain());
 for(let k=0;k<4;k++){chOut[k].connect(chDry[k]);chDry[k].connect(master);chOut[k].connect(chVin[k]);chVin[k].gain.value=0}
+const sxBus={dly:ctx.createGain(),dub:ctx.createGain(),rev:ctx.createGain()},sxG=[0,1,2,3].map(()=>({dly:ctx.createGain(),dub:ctx.createGain(),rev:ctx.createGain()}));var sxMd=false;
+for(let k=0;k<4;k++)for(const e of ['dly','dub','rev']){chOut[k].connect(sxG[k][e]);sxG[k][e].connect(sxBus[e])}
+function sxApply(){try{for(let k=0;k<4;k++)for(const e of ['dly','dub','rev'])mxSet(sxG[k][e].gain,MX.sx&&MX.sx[e]&&MX.sx[e][k]!=null?MX.sx[e][k]:1)}catch{}}
 const genBus=ctx.createGain();genBus.connect(chOut[3]);   // batería del generador (canal del mixer)
 const sampBus=ctx.createGain();sampBus.connect(chOut[0]);   // todos los pads del sampler (volumen del mixer)
 /* ---------- FX del máster: pad XY con Filtro, Bit y Beat repeat (como los FX táctiles del Koala) ---------- */
@@ -1284,7 +1305,7 @@ for(let i=0;i<5;i++){
 master.connect(fxIn[0]);   // etapa 0 = paso limpio (el filtro está después de fxMix)
 /* reverb y delay: pads de lanzamiento desde el máster; el retorno entra después de los FX para no realimentarse */
 const revIn=ctx.createGain(),revConv=ctx.createConvolver(),revOut=ctx.createGain(),fxRevSend=ctx.createGain();
-fxRevSend.gain.value=0;revOut.gain.value=.8;master.connect(fxRevSend);fxRevSend.connect(revIn);revIn.connect(revConv);revConv.connect(revOut);revOut.connect(fxMix);
+fxRevSend.gain.value=0;revOut.gain.value=.8;master.connect(fxRevSend);fxRevSend.connect(revIn);const fxRevSendT=ctx.createGain();fxRevSendT.gain.value=0;sxBus.rev.connect(fxRevSendT);fxRevSendT.connect(revIn);revIn.connect(revConv);revConv.connect(revOut);revOut.connect(fxMix);
 let revSz=-1;
 function revMake(sz){
   const sr=ctx.sampleRate,L=Math.floor([.9,1.9,3.8][sz]*sr),b=ctx.createBuffer(2,L,sr),pre=Math.floor(sr*.012);
@@ -1294,12 +1315,18 @@ function revMake(sz){
   }
   return b;
 }
-const dlyIn=ctx.createGain(),dlyL=ctx.createDelay(2),dlyR=ctx.createDelay(2),dlyFbL=ctx.createGain(),dlyFbR=ctx.createGain(),dlyLpL=ctx.createBiquadFilter(),dlyLpR=ctx.createBiquadFilter(),dlyMg=ctx.createChannelMerger(2),dlyOut=ctx.createGain(),fxDlySend=ctx.createGain();
-dlyLpL.type=dlyLpR.type='lowpass';dlyLpL.frequency.value=dlyLpR.frequency.value=3800;
-fxDlySend.gain.value=0;dlyOut.gain.value=.7;dlyFbL.gain.value=dlyFbR.gain.value=.4;dlyL.delayTime.value=dlyR.delayTime.value=.5;
-fxHP.connect(fxDlySend);fxDlySend.connect(dlyIn);
-dlyIn.connect(dlyL);dlyL.connect(dlyLpL);dlyLpL.connect(dlyFbL);dlyFbL.connect(dlyR);dlyR.connect(dlyLpR);dlyLpR.connect(dlyFbR);dlyFbR.connect(dlyL);
-dlyL.connect(dlyMg,0,0);dlyR.connect(dlyMg,0,1);dlyMg.connect(dlyOut);dlyOut.connect(fxEnd);
+let dlyIn,dlyL,dlyR,dlyFbL,dlyFbR,dlyLpL,dlyLpR,dlyMg,dlyOut;const fxDlySend=ctx.createGain(),fxDlySendT=ctx.createGain();
+fxDlySend.gain.value=0;fxDlySendT.gain.value=0;fxHP.connect(fxDlySend);sxBus.dly.connect(fxDlySendT);
+function dlyBuild(){
+  [dlyIn,dlyL,dlyR,dlyFbL,dlyFbR,dlyLpL,dlyLpR,dlyMg,dlyOut,fxDlySend,fxDlySendT].forEach(n=>{try{n&&n.disconnect()}catch{}});
+  dlyIn=ctx.createGain();dlyL=ctx.createDelay(2);dlyR=ctx.createDelay(2);dlyFbL=ctx.createGain();dlyFbR=ctx.createGain();dlyLpL=ctx.createBiquadFilter();dlyLpR=ctx.createBiquadFilter();dlyMg=ctx.createChannelMerger(2);dlyOut=ctx.createGain();
+  dlyLpL.type=dlyLpR.type='lowpass';dlyLpL.frequency.value=dlyLpR.frequency.value=3800;
+  dlyOut.gain.value=.7;dlyFbL.gain.value=dlyFbR.gain.value=.4;dlyL.delayTime.value=dlyR.delayTime.value=.5;
+  fxDlySend.connect(dlyIn);fxDlySendT.connect(dlyIn);
+  dlyIn.connect(dlyL);dlyL.connect(dlyLpL);dlyLpL.connect(dlyFbL);dlyFbL.connect(dlyR);dlyR.connect(dlyLpR);dlyLpR.connect(dlyFbR);dlyFbR.connect(dlyL);
+  dlyL.connect(dlyMg,0,0);dlyR.connect(dlyMg,0,1);dlyMg.connect(dlyOut);dlyOut.connect(fxEnd);
+}
+dlyBuild();
 const DLY_DIV=[['1/4',1],['1/8',.5],['1/8 con puntillo',.75],['1/16',.25]],REV_N=['Corta','Media','Larga'];
 let fxCrush=null,fxRep=null,fxShaper=null;
 const fx={tab:false,noRep:false,ok:{crush:false,rep:false},st:[0,1,2,3,4,5,6,7].map(()=>({down:false,hold:false,x:.5,y:.5,id:null}))};
@@ -1363,15 +1390,15 @@ function fxVals(m){
 const fxHz=f=>f>=1000?(f/1000).toFixed(f>=10000?0:1)+' kHz':Math.round(f)+' Hz';
 const fxSet=(p,v,t,tc)=>{if(p.setTargetAtTime)p.setTargetAtTime(v,t,tc);else p.value=v};
 function fxSend(){
-  const t=ctx.currentTime,d=fx.st.map(o=>o.down);
+  const t=ctx.currentTime,d=fx.st.map(o=>o.down);sxMd=!!(d[2]||d[5]||d[6]);
   if(d[0]){const v=fxVals(0);fxSet(fxLP.frequency,v.lp,t,.012);fxSet(fxHP.frequency,v.hp,t,.012);fxSet(fxLP.Q,v.q,t,.012);fxSet(fxHP.Q,v.q*.6,t,.012)}
   if(d[1]){
     const v=fxVals(1);
     if(fxCrush)fxCrush.port.postMessage({h:v.h,q:Math.pow(2,v.bits-1)});
     else if(fxShaper){const n=Math.pow(2,v.bits-1),c=new Float32Array(8193);for(let i=0;i<c.length;i++){const x=i/4096-1;c[i]=Math.round(x*n)/n}fxShaper.curve=c}
   }
-  if(d[3]){const v=fxVals(3);if(revSz!==v.k){revSz=v.k;try{revConv.buffer=revMake(v.k)}catch{}}fxSet(fxRevSend.gain,v.a,t,.02)}else fxSet(fxRevSend.gain,0,t,.05);
-  if(d[4]){const v=fxVals(4),tt=Math.min(1.9,fxBeatLen()*DLY_DIV[v.k][1]);fxSet(dlyL.delayTime,tt,t,.14);fxSet(dlyR.delayTime,tt,t,.14);fxSet(fxDlySend.gain,v.a,t,.02)}else fxSet(fxDlySend.gain,0,t,.05);
+  if(d[3]){const v=fxVals(3);if(revSz!==v.k){revSz=v.k;try{revConv.buffer=revMake(v.k)}catch{}}fxSet(fxRevSend.gain,sxMd?v.a:0,t,.02);fxSet(fxRevSendT.gain,sxMd?0:v.a,t,.02)}else{fxSet(fxRevSend.gain,0,t,.05);fxSet(fxRevSendT.gain,0,t,.05)}
+  if(d[4]){const v=fxVals(4),tt=Math.min(1.9,fxBeatLen()*DLY_DIV[v.k][1]);fxSet(dlyL.delayTime,tt,t,.14);fxSet(dlyR.delayTime,tt,t,.14);fxSet(fxDlySend.gain,sxMd?v.a:0,t,.02);fxSet(fxDlySendT.gain,sxMd?0:v.a,t,.02)}else{fxSet(fxDlySend.gain,0,t,.05);fxSet(fxDlySendT.gain,0,t,.05)}
   if(fxRep){if(d[2]){const v=fxVals(2);fxRep.port.postMessage({L:v.L,g:v.g})}else fxRep.port.postMessage({off:1})}
   for(let i=1;i<3;i++){fxSet(fxDry[i].gain,d[i]?0:1,t,.01);fxSet(fxW[i].gain,d[i]?1:0,t,.01)}
   fxStopSend(d[5],t);fxRadioSend(d[6],t);fxDubSend(d[7],t);
@@ -2750,7 +2777,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.45';
+const APP_VERSION='1.46';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -3542,7 +3569,7 @@ if(typeof requestAnimationFrame==='function')(function phFrame(){phUpdate();requ
 /* ---------- MIXER: volumen de Sampler / Bajo / Teclas, ecualizador de 8 bandas y compresor del máster ---------- */
 const MXKEY='sampledhead.mixer';
 const EQ_F=[80,160,320,640,1250,2500,5000,10000];
-const MXD=()=>({vol:[0,0,0,0],mute:[false,false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0},vn:{on:0,ch:[1,1,1,1],crk:.5,his:.12,wow:.3,lpf:9000,drv:.15}});
+const MXD=()=>({vol:[0,0,0,0],mute:[false,false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0},sx:{dly:[1,1,1,1],dub:[1,1,1,1],rev:[1,1,1,1]},vn:{on:0,ch:[1,1,1,1],crk:.5,his:.12,wow:.3,lpf:9000,drv:.15}});
 const MX=MXD();
 try{const sv=JSON.parse(localStorage.getItem(MXKEY)||'null');if(sv&&sv.vol){const d=MXD();Object.assign(MX,d,sv,{comp:{...d.comp,...(sv.comp||{})},vn:{...d.vn,...(sv.vn||{})}});if(!Array.isArray(MX.vn.ch)||MX.vn.ch.length!==4)MX.vn.ch=[1,1,1,1];while(MX.vol.length<4)MX.vol.push(0);while(MX.mute.length<4)MX.mute.push(false)}}catch{}
 let mxSaveT=0;
@@ -3554,7 +3581,7 @@ function mxApply(){
   try{vnApply();if(window.vnSync)window.vnSync()}catch{}
   for(const k of ['rev','dly','rsz','ddiv','rret','dret','dfb'])delete MX[k];   // envíos del mixer retirados en 1.28
   MX_BUS.forEach((b,i)=>mxSet(b.gain,MX.mute[i]?0:dbG(MX.vol[i])));
-  mxSet(mixMaster.gain,dbG(MX.master));
+  mxSet(mixMaster.gain,dbG(MX.master));sxApply();
   mixEq.forEach((f,i)=>mxSet(f.gain,MX.eqOn?MX.eq[i]:0));
   const c=MX.comp;
   if(MX.compOn){mxSet(mixComp.threshold,c.th);mxSet(mixComp.ratio,c.ratio);mxSet(mixComp.attack,c.att/1000);mxSet(mixComp.release,c.rel/1000);mxSet(mixComp.knee,c.knee);mxSet(mixMk.gain,dbG(c.gain))}
@@ -3886,6 +3913,11 @@ async function lpToWav(){
 $('#lptopad').onclick=lpToPad;
 $('#lptowav').onclick=lpToWav;
 function lpSelTrack(t){
+  if(lp.st==='playing'&&!lp.over&&lpHas(t)){
+    lp.trk=t;lp.mute[t]=!lp.mute[t];
+    if(lp.mute[t]){if(bassP)bassP.releaseAll(ctx.currentTime);if(keysP)keysP.releaseAll(ctx.currentTime)}
+    lpUI();status('Pista '+(t+1)+(lp.mute[t]?' silenciada':' activa'));return;
+  }
   if(lp.st==='rec1'){status('Cerrar la primera grabación (Loop) antes de cambiar de pista');return}
   lp.trk=t;lpUI();status('Pista '+(t+1)+(lpHas(t)?'':' (vacía)')+(lp.mute[t]?' · silenciada':''));
 }
@@ -4707,15 +4739,15 @@ function fxVinSend(down,t){
 }
 
 /* pad de radio antigua en FX: quinta etapa en serie (banda estrecha tipo AM, válvula, estática y desvanecimiento); los nodos solo existen mientras se usa */
-var fxRad=null,fxRadBuf=null;
+var fxRad=null,fxRadBuf=null;const RADMK=.17;
 function fxRadOn(on){
   if(on&&!fxRad){
-    const hp=ctx.createBiquadFilter(),lp=ctx.createBiquadFilter(),pk=ctx.createBiquadFilter(),sh=ctx.createWaveShaper(),am=ctx.createGain(),mk=ctx.createGain(),ng=ctx.createGain(),nb=ctx.createBiquadFilter(),
+    const hp=ctx.createBiquadFilter(),lp=ctx.createBiquadFilter(),pk=ctx.createBiquadFilter(),sh=ctx.createWaveShaper(),pg=ctx.createGain(),am=ctx.createGain(),mk=ctx.createGain(),ng=ctx.createGain(),nb=ctx.createBiquadFilter(),
       lf=ctx.createOscillator(),lg=ctx.createGain(),lf2=ctx.createOscillator(),lg2=ctx.createGain();
-    hp.type='highpass';lp.type='lowpass';hp.Q.value=.9;lp.Q.value=.9;pk.type='peaking';pk.frequency.value=1400;pk.Q.value=1.2;pk.gain.value=5;
-    sh.curve=bCurve(.35);mk.gain.value=.2;am.gain.value=1;
+    hp.type='highpass';lp.type='lowpass';hp.Q.value=.9;lp.Q.value=.9;pk.type='peaking';pk.frequency.value=1400;pk.Q.value=1.2;pk.gain.value=2;
+    sh.curve=bCurve(.35);pg.gain.value=.55;mk.gain.value=RADMK;am.gain.value=1;
     lf.frequency.value=.23;lf2.frequency.value=1.7;lf.connect(lg);lg.connect(am.gain);lf2.connect(lg2);lg2.connect(am.gain);
-    fxIn[4].connect(hp);hp.connect(pk);pk.connect(lp);lp.connect(sh);sh.connect(am);am.connect(mk);mk.connect(fxW[4]);
+    fxIn[4].connect(hp);hp.connect(pk);pk.connect(lp);lp.connect(pg);pg.connect(sh);sh.connect(am);am.connect(mk);mk.connect(fxW[4]);
     if(!fxRadBuf||fxRadBuf.sampleRate!==ctx.sampleRate){
       const sr=ctx.sampleRate,n=sr*3,b=ctx.createBuffer(1,n,sr),d=b.getChannelData(0);let e=0;
       for(let i=0;i<n;i++){if(i%Math.round(sr/90)===0)e=Math.random();d[i]=(Math.random()*2-1)*(.4+.6*e)*(Math.random()<.0004?3:1)}
@@ -4724,7 +4756,7 @@ function fxRadOn(on){
     nb.type='bandpass';nb.frequency.value=2600;nb.Q.value=.5;
     const ns=ctx.createBufferSource();ns.buffer=fxRadBuf;ns.loop=true;ns.connect(nb);nb.connect(ng);ng.connect(fxW[4]);
     lf.start();lf2.start();ns.start();
-    fxRad={hp,lp,pk,sh,am,mk,ng,nb,lf,lg,lf2,lg2,ns};
+    fxRad={pg,hp,lp,pk,sh,am,mk,ng,nb,lf,lg,lf2,lg2,ns};
   }else if(!on&&fxRad){
     const v=fxRad;fxRad=null;
     try{v.lf.stop();v.lf2.stop();v.ns.stop()}catch{}
@@ -4751,16 +4783,16 @@ function fxDubInit(){
   if(fxDub)return fxDub;
   const send=ctx.createGain(),dl=ctx.createDelay(2),hp=ctx.createBiquadFilter(),lp=ctx.createBiquadFilter(),sh=ctx.createWaveShaper(),fb=ctx.createGain(),out=ctx.createGain(),
     lf=ctx.createOscillator(),lg=ctx.createGain();
-  send.gain.value=0;hp.type='highpass';hp.frequency.value=220;lp.type='lowpass';lp.frequency.value=2200;sh.curve=vinylCurve(.5);fb.gain.value=.6;out.gain.value=.55;
+  const dgm=ctx.createGain(),dgt=ctx.createGain();dgm.gain.value=0;dgt.gain.value=0;send.gain.value=0;hp.type='highpass';hp.frequency.value=220;lp.type='lowpass';lp.frequency.value=2200;sh.curve=vinylCurve(.5);fb.gain.value=.6;out.gain.value=.55;
   lf.frequency.value=.6;lg.gain.value=.0012;lf.connect(lg);lg.connect(dl.delayTime);
-  fxHP.connect(send);send.connect(dl);dl.connect(hp);hp.connect(lp);lp.connect(sh);sh.connect(fb);fb.connect(dl);sh.connect(out);out.connect(fxEnd);
+  fxHP.connect(dgm);dgm.connect(send);sxBus.dub.connect(dgt);dgt.connect(send);send.connect(dl);dl.connect(hp);hp.connect(lp);lp.connect(sh);sh.connect(fb);fb.connect(dl);sh.connect(out);out.connect(fxEnd);
   lf.start();dl.delayTime.value=.5;
-  return fxDub={send,dl,fb,out};
+  return fxDub={send,dl,fb,out,dgm,dgt,lf,lg,hp,lp,sh};
 }
 function fxDubSend(down,t){
   if(down){
     const d=fxDubInit(),v=fxVals(7),tt=Math.min(1.9,fxBeatLen()*v.bt);
-    fxSet(d.dl.delayTime,tt,t,.16);fxSet(d.fb.gain,v.fb,t,.03);fxSet(d.send.gain,.7,t,.02);
+    fxSet(d.dl.delayTime,tt,t,.16);fxSet(d.fb.gain,v.fb,t,.03);fxSet(d.send.gain,.7,t,.02);fxSet(d.dgm.gain,sxMd?1:0,t,.03);fxSet(d.dgt.gain,sxMd?0:1,t,.03);
   }else if(fxDub){fxSet(fxDub.send.gain,0,t,.03);fxSet(fxDub.fb.gain,.6,t,.1)}
 }
 /* ---------- GENERADOR: estilos (aproximaciones inspiradas en el carácter general, no copias) ----------
@@ -6186,6 +6218,62 @@ async function pjStart(){
   });
 }
 Object.assign(I18N.x,{"¿Cómo empezamos?":"How shall we start?","Nuevo proyecto":"New project","Cargar el último abierto":"Load the last one","Abrir un proyecto guardado":"Open a saved project","Proyectos guardados":"Saved projects","← Volver":"← Back","Todo vacío, con efectos y generador reiniciados":"Everything empty, with effects and generator reset"});
+
+/* ---------- 1.46: envíos por pista, recortar, segundo plano ---------- */
+(function(){
+  const host=$('#mxch');if(!host||!host.parentNode)return;
+  const box=document.createElement('div');box.className='sxbox';box.id='mxsx';
+  const h4=document.createElement('h4');h4.textContent='Envíos a efectos';box.appendChild(h4);
+  const g=document.createElement('div');g.className='sxg';box.appendChild(g);
+  const E=[['dly','Delay'],['dub','Dub'],['rev','Reverb']];
+  g.appendChild(document.createElement('span'));
+  MXN.forEach(n=>{const b=document.createElement('b');b.textContent=n;g.appendChild(b)});
+  const refs=[];
+  E.forEach(([e,l])=>{
+    const s=document.createElement('span');s.textContent=l;g.appendChild(s);
+    for(let k=0;k<4;k++){
+      const w=document.createElement('div'),i=document.createElement('input'),v=document.createElement('div');
+      i.type='range';i.min=0;i.max=100;i.step=1;i.setAttribute('aria-label','Envío de '+MXN[k]+' a '+l);v.className='sxv';
+      const rf=()=>{i.value=Math.round((MX.sx[e][k])*100);v.textContent=i.value+'%'};
+      i.oninput=()=>{MX.sx[e][k]=+i.value/100;v.textContent=i.value+'%';sxApply();mxSave()};
+      w.append(i,v);g.appendChild(w);refs.push(rf);rf();
+    }
+  });
+  const note=document.createElement('div');note.className='note';note.textContent='Delay, Dub delay y Reverb (pestaña FX) actúan solo sobre las pistas con envío. Con STOP, Repeat o Radio activos actúan sobre todo el máster.';box.appendChild(note);
+  host.parentNode.insertBefore(box,host.nextSibling);
+  window.sxRefresh=()=>{refs.forEach(f=>f())};
+  const m0=mxUI;mxUI=function(){m0.apply(this,arguments);try{sxRefresh()}catch{}};
+  sxApply();
+})();
+$('#trimb').onclick=()=>{
+  const p=pads[sel];if(!p.buf){status('Pad vacío');return}
+  const b=p.buf,n=b.length,a=Math.max(0,Math.floor(p.s*n)),z=Math.min(n,Math.ceil(p.e*n));
+  if(z-a<64){status('Región demasiado corta');return}
+  if(a<=0&&z>=n){status('Nada que recortar: la región ocupa todo el sample');return}
+  stop(sel);
+  const nb=ctx.createBuffer(b.numberOfChannels,z-a,b.sampleRate);
+  for(let c=0;c<b.numberOfChannels;c++)nb.copyToChannel(b.getChannelData(c).slice(a,z),c);
+  p.buf=nb;p.s=0;p.e=1;p.cache=null;vw.a=0;vw.b=1;
+  labels(sel);select(sel);status('Recortado a '+nb.duration.toFixed(2)+' s');
+};
+/* segundo plano / selector de archivos: al volver se reanuda el audio y se reinician efectos y ecos */
+let bgT=0;
+function bgRecover(){
+  try{fxRelease()}catch{}
+  try{dlyBuild()}catch{}
+  try{if(fxDub){const d=fxDub;fxDub=null;try{d.lf.stop()}catch{}Object.values(d).forEach(n=>{try{n.disconnect&&n.disconnect()}catch{}})}}catch{}
+  try{if(fx.tab){fxNodes(false);fxNodes(true)}}catch{}
+  try{fxSend()}catch{}
+  try{if(G.play)gResync()}catch{}
+  try{if(lp.st==='playing'){if(bassP)bassP.releaseAll(ctx.currentTime);if(keysP)keysP.releaseAll(ctx.currentTime)}}catch{}
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){bgT=performance.now();return}
+  const away=bgT?performance.now()-bgT:0;bgT=0;
+  const r=()=>{if(away>1500){bgRecover();status('Audio reanudado')}};
+  try{ctx.resume().then(r,r)}catch{r()}
+});
+addEventListener('pageshow',()=>{try{ctx.resume()}catch{}});
 
 Object.assign(I18N.x,{"Kits sintetizados…": "Synthesized kits…", "Sugerido por el estilo": "Suggested for the style", "Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.": "Sounds created inside the app: no files, no licenses. You can also load your own.", "Tono del kit": "Kit pitch", "Largo del kit": "Kit length", "Brillo del kit": "Kit brightness", "Calidez": "Warmth", "Variación": "Variation"});Object.assign(I18N.f,{});
 
