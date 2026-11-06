@@ -2746,12 +2746,12 @@ const BPRE=[
   ['Dedos',BS_('yrfinger',{})],
   ['Púa',BS_('yrpick',{gl:0})],
   ['Swagbass',BS_('swag',{r:.16})],
-  ['Contrabajo',BS_('blueac',{r:.18,gl:0,vol:.95})],
-  ['Fretless',BS_('fret',{a:.004,r:.2,gl:.09,vol:.9})],
-  ['Muted',BS_('yrfinger',{cut:380,res:1,fenv:.25,fdec:.06,d:.22,s:0,r:.05,gl:0})],
-  ['Nu soul',BS_('fjazz',{cut:560,res:1,fenv:.2,fdec:.2,d:.9,s:.6,r:.3,drv:.2,gl:.03})],
-  ['Dilla',BS_('swag',{cut:340,res:1.5,fenv:.25,fdec:.25,d:1,s:.65,r:.35,drv:.35,gl:.05})],
-  ['Vinilo',BS_('yrfinger',{cut:260,res:.5,fenv:.15,fdec:.15,d:.6,s:.5,r:.2,drv:.25,gl:.02})],
+  ['Contrabajo',BS_('blueac',{r:.18,gl:0,vol:.95,fold:1})],
+  ['Fretless',BS_('fret',{a:.004,r:.2,gl:.09,vol:.9,fold:1})],
+  ['Muted',BS_('yrfinger',{cut:700,res:0,fenv:.2,fdec:.06,d:.25,s:.05,r:.06,gl:0})],
+  ['Nu soul',BS_('fjazz',{cut:900,res:0,fenv:.15,fdec:.2,d:1.2,s:.7,r:.3,drv:.03,gl:.03})],
+  ['Dilla',BS_('swag',{cut:600,res:0,fenv:.2,fdec:.25,d:1.2,s:.7,r:.35,drv:.03,gl:.05})],
+  ['Vinilo',BS_('yrfinger',{cut:520,res:0,fenv:.12,fdec:.15,d:.8,s:.6,r:.2,drv:.03,gl:.02})],
   ['Sub 808',{w1:'sine',l1:1,l2:0,ls:0,cut:12000,res:0,fenv:0,a:.002,d:1.2,s:.55,r:.3,drv:.12,gl:.05}],
   ['Sub largo',{w1:'sine',l1:.9,l2:0,ws:'sine',ls:.5,cut:6000,res:0,fenv:0,a:.01,d:.3,s:1,r:.5,drv:0,gl:.02}],
   ['Moog',{w1:'sawtooth',l1:.8,w2:'sawtooth',l2:.6,det:6,ws:'sine',ls:.6,cut:650,res:5,fenv:.5,fdec:.3,a:.004,d:.35,s:.6,r:.2,drv:.1,gl:.03}],
@@ -2815,7 +2815,7 @@ function bVoice(c,dest,P,m,t){
   add(P.w1,f,P.l1,0);add(P.w2,f,P.l2,P.det);add(P.ws,f/2,P.ls,0);
   let ksrc=null;
   if(P.smp){const SM=smpGet('bass',P.smp);if(!SM){smpUse('bass',P.smp);return {m,rel:true,slide(){},release(){},kill(){}}}
-    const pk=smpPick(SM,m);ksrc=c.createBufferSource();ksrc.buffer=pk.n.b;ksrc.playbackRate.value=pk.rate;ksrc._r=pk.rate;ksrc._m=pk.n.m;ksrc.connect(mix);ksrc.start(t)}
+    const lo7=SM.notes[0].m-7,fm=x=>{if(P.fold)while(x<lo7)x+=12;return x};ksrc=c.createBufferSource();const pk=smpPick(SM,fm(m));ksrc.buffer=pk.n.b;ksrc.playbackRate.value=pk.rate;ksrc._m=pk.n.m;ksrc._fm=fm;ksrc.connect(mix);ksrc.start(t)}
   if(P.ks){ksrc=c.createBufferSource();ksrc.buffer=bKS(c.sampleRate,f,P.ks);const kg=c.createGain();kg.gain.value=P.ks.lv||1;ksrc.connect(kg);kg.connect(mix);ksrc.start(t)}
   if(!oscs.length&&!ksrc)add('sine',f,.0001,0);
   mix.gain.value=ksrc?(P.smp?1:.9):.7/Math.max(1,P.l1+P.l2+P.ls);
@@ -2834,7 +2834,7 @@ function bVoice(c,dest,P,m,t){
   amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(P.vol*.8,t+A);amp.gain.setTargetAtTime(Math.max(0,P.s)*P.vol*.8,t+A,Math.max(.01,P.d)/3);
   const v={m,rel:false,
     slide(m2,t2,gl){
-      v.m=m2;if(ksrc)ksrc.playbackRate.setTargetAtTime(ksrc._m?Math.pow(2,(m2-ksrc._m)/12):bHz(m2)/f,t2,gl>.002?gl/3:.001);
+      v.m=m2;if(ksrc)ksrc.playbackRate.setTargetAtTime(ksrc._m?Math.pow(2,(ksrc._fm(m2)-ksrc._m)/12):bHz(m2)/f,t2,gl>.002?gl/3:.001);
       if(fmo)fmo.frequency.setTargetAtTime(bHz(m2)*P.fmr,t2,gl>.002?gl/3:.001);
       for(const x of oscs){
         const hz=bHz(m2)*x.k;
@@ -2860,14 +2860,14 @@ function mkBass(c,dest,P){
     on(idx,t,m){
       const i=st.findIndex(x=>x.idx===idx);if(i>=0)st.splice(i,1);
       st.push({idx,m});
-      if(cur&&!cur.rel)cur.slide(m,t,P.gl);
-      else{if(cur)cur.kill(t);cur=bVoice(c,dest,P,m,t)}
+      if(cur&&!cur.rel&&(!P.smp||P.gl>=.06))cur.slide(m,t,P.gl);
+      else{if(cur)P.smp?cur.release(t):cur.kill(t);cur=bVoice(c,dest,P,m,t)}
     },
     off(idx,t){
       const i=st.findIndex(x=>x.idx===idx);if(i<0)return;
       st.splice(i,1);
       if(!cur||cur.rel)return;
-      if(st.length)cur.slide(st[st.length-1].m,t,P.gl);else cur.release(t);
+      if(st.length){if(!P.smp||P.gl>=.06)cur.slide(st[st.length-1].m,t,P.gl);else{cur.release(t);cur=bVoice(c,dest,P,st[st.length-1].m,t)}}else cur.release(t);
     },
     releaseAll(t){st.length=0;if(cur&&!cur.rel)cur.release(t)},
     silence(t){st.length=0;if(cur){cur.kill(t);cur=null}}
@@ -3168,13 +3168,13 @@ const KBASE_={jrhodes:3.3,piano:3.8,xylo:3.8};   // el nivel de las muestras es 
 const KS_=(id,o)=>{const g=1+Math.round((o.drv||0)*40)*1.1;return {smp:id,a:.003,d:2,s:1,r:.35,cut:16000,res:0,drv:0,trem:4.5,tdep:0,tmode:1,crate:.7,cdep:0,cmix:0,...o,vol:KBASE_[id]*(o.vol||1)/Math.pow(g,.85)}};
 const KPRE=[
   ['Rhodes',KS_('jrhodes',{r:.4})],
-  ['Rhodes suave',KS_('jrhodes',{cut:5200,drv:.05,trem:4.5,tdep:.22,r:.45})],
-  ['Rhodes brillante',KS_('jrhodes',{cut:16000,drv:.2,trem:5.5,tdep:.15,cdep:.4,cmix:.25,r:.3,vol:.85})],
-  ['Rhodes oscuro',KS_('jrhodes',{cut:2600,drv:.05,trem:3.5,tdep:.35,r:.5})],
-  ['Rhodes sucio',KS_('jrhodes',{cut:3200,drv:.4,trem:3.5,tdep:.25,tmode:0,cdep:.6,cmix:.4,r:.4,vol:.65})],
-  ['Rhodes nu soul',KS_('jrhodes',{cut:4200,drv:.12,trem:2.2,tdep:.45,cdep:.7,cmix:.45,r:.5,vol:.6})],
+  ['Rhodes suave',KS_('jrhodes',{cut:5200,drv:.02,trem:4.5,tdep:.22,r:.45})],
+  ['Rhodes brillante',KS_('jrhodes',{cut:16000,drv:.05,trem:5.5,tdep:.15,cdep:.4,cmix:.25,r:.3,vol:.9})],
+  ['Rhodes oscuro',KS_('jrhodes',{cut:2600,drv:.02,trem:3.5,tdep:.35,r:.5})],
+  ['Rhodes sucio',KS_('jrhodes',{cut:3200,drv:.2,trem:3.5,tdep:.25,tmode:0,cdep:.6,cmix:.4,r:.4,vol:.75})],
+  ['Rhodes nu soul',KS_('jrhodes',{cut:4200,drv:.04,trem:2.2,tdep:.45,cdep:.7,cmix:.45,r:.5,vol:.85})],
   ['Piano vertical',KS_('piano',{r:.3})],
-  ['Piano lo-fi',KS_('piano',{cut:2200,drv:.2,cdep:.2,cmix:.15,r:.25})],
+  ['Piano lo-fi',KS_('piano',{cut:2200,drv:.06,cdep:.2,cmix:.15,r:.25})],
   ['Xilófono',KS_('xylo',{r:.25})],
   ['FM',{wave:'sine',mr:1,idx:.55,idec:.22,tl:.4,tr:3.5,tdec:.12,a:.002,d:1.6,s:0,r:.3,cut:12000,drv:.05,trem:4,tdep:0,tmode:1,crate:.6,cdep:.4,cmix:.25,vol:1}],
   ['Pad suave',{wave:'sawtooth',mr:1,idx:.08,idec:2,tl:0,tr:2,tdec:.1,a:.45,d:1.5,s:.85,r:1,cut:1800,res:1,drv:0,trem:3,tdep:.15,tmode:1,crate:.4,cdep:.8,cmix:.5,vol:1.5}],
