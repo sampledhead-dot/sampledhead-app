@@ -5,7 +5,7 @@
    - Tipografías de Google: se guardan la primera vez y después salen de la copia.
    Los kits del usuario NO pasan por aquí: están en la base de datos local del navegador (IndexedDB). */
 const VERSION = 'sampledhead-v1.36';
-const KITS = 'sampledhead-kits';
+const KITS = 'sampledhead-kits-2';   // (la caché 'sampledhead-kits' de una primera prueba guardaba ficheros dañados: se borra sola)
 const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
