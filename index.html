@@ -4726,11 +4726,14 @@ function fxDubSend(down,t){
     fxSet(d.dl.delayTime,tt,t,.16);fxSet(d.fb.gain,v.fb,t,.03);fxSet(d.send.gain,.7,t,.02);
   }else if(fxDub){fxSet(fxDub.send.gain,0,t,.03);fxSet(fxDub.fb.gain,.6,t,.1)}
 }
-/* ---------- 1.36: kits incluidos e instrumentos con muestras reales (carpeta kits/ junto a index.html) ---------- */
+/* ---------- 1.36: kits incluidos e instrumentos con muestras reales (ficheros kit_*.bin, inst_*.bin y kits_index.json junto a index.html) ---------- */
 const KITV='136';
 let kIdxP=null;
-const kIdx=()=>kIdxP||(kIdxP=fetch('kits/index.json?v='+KITV).then(r=>{if(!r.ok)throw new Error('kits');return r.json()}).catch(e=>{kIdxP=null;throw e}));
-const kFetch=async p=>{const r=await fetch('kits/'+p+'?v='+KITV);if(!r.ok)throw new Error(p);return ctx.decodeAudioData(await r.arrayBuffer())};
+const kIdx=()=>kIdxP||(kIdxP=fetch('kits_index.json?v='+KITV).then(r=>{if(!r.ok)throw new Error('kits');return r.json()}).catch(e=>{kIdxP=null;throw e}));
+/* cada kit o instrumento es un solo fichero plano (kit_*.bin, inst_*.bin) con los audios uno tras otro; el índice da [inicio,largo] de cada uno */
+const kPk=new Map();
+const kPack=n=>{let p=kPk.get(n);if(!p){p=fetch(n+'?v='+KITV).then(r=>{if(!r.ok)throw new Error(n);return r.arrayBuffer()}).then(ab=>{setTimeout(()=>kPk.delete(n),4000);return ab}).catch(e=>{kPk.delete(n);throw e});kPk.set(n,p)}return p};
+const kDec=async(pack,e)=>{const ab=await kPack(pack);return ctx.decodeAudioData(ab.slice(e[0],e[0]+e[1]))};
 /* instrumentos con muestras (bajos y teclas): se bajan al elegirlos y quedan guardados para usar sin conexión */
 const SMP=new Map();   // 'bass:fjazz' -> {ok,t,meta,notes:[{m,b,b2}],p}
 function smpTrim(){
@@ -4745,7 +4748,7 @@ function smpLoad(kind,id){
   S.p=kIdx().then(async ix=>{
     const meta=(ix[kind]||[]).find(x=>x.id===id);if(!meta)throw new Error('sin '+id);
     S.meta=meta;
-    S.notes=await Promise.all(meta.notes.map(async n=>({m:n.m,b:await kFetch(n.f),b2:n.f2?await kFetch(n.f2):null})));
+    S.notes=await Promise.all(meta.notes.map(async n=>({m:n.m,b:await kDec(meta.pack,n.f),b2:n.f2?await kDec(meta.pack,n.f2):null})));
     S.ok=true;S.t=Date.now();smpTrim();return S;
   }).catch(e=>{SMP.delete(key);throw e});
   return S.p;
@@ -4786,7 +4789,7 @@ async function loadIncluded(id,quiet){
   try{
     status('Cargando kit…');
     const ix=await kIdx(),k=ix.kits.find(x=>x.id===id);if(!k)return false;
-    const bufs=await Promise.all(k.files.map(f=>kFetch(k.dir+'/'+f)));
+    const bufs=await Promise.all(k.files.map(f=>kDec(k.pack,f)));
     applyKit(bufs.slice(0,16).map((b,i)=>({buf:b,name:k.pads[i],s:0,e:1,ch:0})));lastSet(LASTK,'inc:'+id);
     status((quiet?'Kit abierto: ':'Kit cargado: ')+k.name);return true;
   }catch{status('No se pudo cargar el kit (¿sin conexión?)');return false}
@@ -5532,7 +5535,7 @@ function gKitPick(sel,i){
     const [id,j]=v.split('|'),k=GKI.find(x=>x.id===id);
     try{
       status('Cargando sonido…');
-      const b=await kFetch(k.dir+'/'+k.files[+j]);
+      const b=await kDec(k.pack,k.files[+j]);
       gSetSlot(i,b,k.pads[+j]);status(GDRUM[i].n+': '+k.pads[+j]+' ('+k.name+')');
       if(typeof gHit==='function'){ctx.resume();gHit(gLive(),i,ctx.currentTime,115)}
     }catch{status('No se pudo cargar el sonido (¿sin conexión?)')}
@@ -5548,7 +5551,7 @@ async function gKitFull(id){
   if(!k){status('Ningún kit incluido encaja con este estilo');return}
   try{
     status('Cargando kit…');
-    const g=k.gen,idx=[g.kick,g.snare,g.hatC,g.hatO],bufs=await Promise.all(idx.map(j=>kFetch(k.dir+'/'+k.files[j])));
+    const g=k.gen,idx=[g.kick,g.snare,g.hatC,g.hatO],bufs=await Promise.all(idx.map(j=>kDec(k.pack,k.files[j])));
     bufs.forEach((b,i)=>gSetSlot(i,b,k.pads[idx[i]]));
     status('Kit completo: '+k.name);
   }catch{status('No se pudo cargar el kit (¿sin conexión?)')}

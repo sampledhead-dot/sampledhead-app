@@ -1,7 +1,7 @@
 /* SampledHeadApp 1.36: funciona sin conexión.
    - Archivos de la app: primero la red (así siempre ves la última versión) y, si no hay conexión, la copia guardada.
-   - Carpeta kits/ (kits de batería y muestras de bajos y teclas): se guardan la primera vez que se usan y después salen de la copia;
-     esta copia se conserva al cambiar de versión (cada fichero lleva ?v=… para renovarlo cuando cambie). kits/index.json va primero por la red.
+   - Ficheros kit_*.bin, inst_*.bin y kits_index.json (kits de batería y muestras de bajos y teclas): se guardan la primera vez que se usan y después salen de la copia;
+     esta copia se conserva al cambiar de versión (cada fichero lleva ?v=… para renovarlo cuando cambie). kits_index.json va primero por la red.
    - Tipografías de Google: se guardan la primera vez y después salen de la copia.
    Los kits del usuario NO pasan por aquí: están en la base de datos local del navegador (IndexedDB). */
 const VERSION = 'sampledhead-v1.36';
@@ -24,7 +24,8 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin === location.origin) {
-    if (/\/kits\//.test(url.pathname) && !/index\.json$/.test(url.pathname)) {
+    const isKit = /\/(kit|inst)_[^/]+\.bin$/.test(url.pathname), isIdx = /\/kits_index\.json$/.test(url.pathname);
+    if (isKit) {
       // muestras: primero la copia guardada; si no está, se baja y se guarda
       e.respondWith(
         caches.open(KITS).then(c => c.match(req).then(hit => hit || fetch(req).then(res => {
@@ -34,7 +35,7 @@ self.addEventListener('fetch', e => {
       );
       return;
     }
-    const cacheName = /\/kits\//.test(url.pathname) ? KITS : VERSION;
+    const cacheName = isIdx ? KITS : VERSION;
     e.respondWith(
       fetch(req.url, { cache: 'reload' }).then(res => {   // salta la caché HTTP (GitHub Pages guarda 10 min)
         if (res.ok) { const copy = res.clone(); caches.open(cacheName).then(c => c.put(req, copy)); }
