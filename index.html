@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.36</title>
+<title>SampledHeadApp 1.37</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -405,11 +405,6 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 .tabs button{font-size:11.5px;font-weight:600;opacity:.9}
 .tabs button.on{font-size:13px;font-weight:800;opacity:1;box-shadow:0 0 14px -2px var(--tc),inset 0 -3px 0 #0003}
 #tabG{--tc:#4fe3c1}.unit.gen{--acc:#4fe3c1}
-
-.gkitrow{display:flex;gap:8px;align-items:center;margin:2px 0 8px;flex-wrap:wrap}
-.gkitrow select{width:auto;flex:1 1 150px}
-.gkhint{font-size:12px;color:var(--mut,#8b94a3)}
-.gkpick{font-size:13px}
 /* 1.33: estética unificada en todas las pestañas — color de la pestaña como acento, secciones plegables y mismos estados activos */
 #genpanel{--acc:var(--mc)}
 .unit .tools button.on,.unit .tools button.lk.on,.unit .chip.on,.unit .rsbox>button.on,.unit .seg button.on,.unit .seg3 button.on,.unit .banks button.on,
@@ -425,9 +420,10 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 .unit input[type=range]{accent-color:var(--acc)}
 .mxch>button.on{background:#e0533d;color:#fff}
 .tabs button.on{font-size:11.5px;letter-spacing:-.03em;font-weight:800}.tabs button{padding-left:0;padding-right:0}
-
-.bsec[hidden]{display:none!important}
-#keyspanel[data-smp="1"] #kk1 .knob:nth-child(-n+3){display:none}
+.gkitrow{display:flex;gap:8px;align-items:center;margin:2px 0 10px;flex-wrap:wrap}
+.gkitrow select{width:auto;flex:1 1 150px}
+.gkitrow button{font-size:13px}
+.gkhint{font-size:12px;color:var(--mut,#8b94a3);flex:1 1 100%;line-height:1.35}
 </style>
 </head>
 <body>
@@ -637,7 +633,6 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
     </div>
     <div class="bsec" id="gslots">
       <div class="bt">Sonidos</div>
-      <div class="gkitrow" id="gkitrow"></div>
       <div id="gcards"></div>
       <input type="file" id="gfile" accept="audio/*,video/*" hidden>
     </div>
@@ -854,12 +849,12 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <ul><li><b>Pistas 1–4</b> comparten duración. Rec graba en la pista seleccionada. <b>Mute</b>, <b>Borrar</b>, <b>Solo</b> y volumen (0–150 %) actúan sobre la pista seleccionada.</li><li><b>Metro</b>, BPM y <b>Cuenta</b> (4 clics antes de armar).</li><li><b>Tempo</b>: se calcula al cerrar el bucle (fiable, aproximado o poco fiable); <b>÷2</b> y <b>×2</b> corrigen.</li><li><b>Exportar</b>: Pista N, Mezcla o Cada pista, a pad o a WAV (zip si son varias). Se respetan grupos, loops y efectos.</li><li>El bucle no se guarda con los kits; sí con los proyectos.</li></ul>
 </details>
 <details><summary>17. Bajo</summary>
-<p>Bajo monofónico de 16 pads, con sonidos de bajos reales (muestras) y sintetizados, kits y exportaciones propios.</p>
-<ul><li><b>Monofónico</b>: glide entre notas pulsadas.</li><li><b>Presets con muestras reales</b>: Fender Jazz, Dedos, Púa, Swagbass, Contrabajo, Fretless, y Muted, Nu soul, Dilla y Vinilo (las mismas muestras con filtro y saturación). Se bajan la primera vez que los eliges y después funcionan sin conexión.</li><li><b>Presets sintetizados</b> (sin imitar un instrumento real): Sub 808, Sub largo, Moog, Reese, Pluck, Acid, Fuzz, 808 caída, FM DX7, Wobble, Sucio.</li><li><b>OSC 1</b>, <b>OSC 2</b> (con Detune) y <b>SUB</b>, cuatro formas de onda (solo en los presets sintetizados).</li><li><b>Filtro</b>: punto de la gráfica (corte y resonancia), Env y Decay. <b>Volumen</b>: envolvente de tres puntos. Drive, Glide y Vol.</li><li><b>Raíz, octava y escala</b>: desplegables; los pads suben por la escala.</li><li><b>Kits</b>: Guardar, Cargar, Borrar.</li><li><b>Exportar</b>: duración (¼ s a 2 tiempos) y WAV, Koala, Ableton, MPC, SP-404A, SP-404MK2.</li></ul>
+<p>Sintetizador de bajo monofónico de 16 pads, con kits y exportaciones propios.</p>
+<ul><li><b>Monofónico</b>: glide entre notas pulsadas.</li><li><b>Presets</b>: Redondo, Cálido, Apagado, Sub suave, Profundo, Polvo, Terciopelo, Tape y los electrónicos (Sub 808, Sub largo, 808 caída, Analógico, Reese, Pluck, Acid, Fuzz, FM, Wobble, Sucio).</li><li><b>Calidez</b> oscurece y suma graves; <b>Tape</b> es una saturación suave de cinta; <b>Variación</b> cambia un poco volumen y afinación en cada nota.</li><li><b>OSC 1</b>, <b>OSC 2</b> (con Detune) y <b>SUB</b>, cuatro formas de onda.</li><li><b>Filtro</b>: punto de la gráfica (corte y resonancia), Env y Decay. <b>Volumen</b>: envolvente de tres puntos. Drive, Glide y Vol.</li><li><b>Raíz, octava y escala</b>: desplegables; los pads suben por la escala.</li><li><b>Kits</b>: Guardar, Cargar, Borrar.</li><li><b>Exportar</b>: duración (¼ s a 2 tiempos) y WAV, Koala, Ableton, MPC, SP-404A, SP-404MK2.</li></ul>
 </details>
 <details><summary>18. Teclas</summary>
-<p>Teclas polifónicas con muestras reales; cada pad toca el acorde de un grado de la escala. Kits y exportaciones propios.</p>
-<ul><li><b>Raíz</b>, <b>escala</b> y <b>acorde</b> (tríada, séptima, novena, add9, sus2, sus4, power).</li><li><b>Acordes</b> activa o no los acordes; <b>Raíz grave</b>; octava − / +.</li><li><b>Altura del toque</b>: más arriba en el pad, más fuerte.</li><li><b>Presets con muestras reales</b>: Rhodes (natural, suave, brillante, oscuro, sucio, nu soul), Piano vertical, Piano lo-fi y Xilófono. Dos intensidades según la fuerza del toque. <b>Sintetizados</b>: FM, Pad suave, Pad oscuro, Synth suave.</li><li>Timbre, trémolo/auto-pan, chorus y lo-fi.</li><li>Se graba en el Looper; pasa por los FX del máster.</li><li><b>Exportar</b>: igual que el Bajo.</li></ul>
+<p>Piano eléctrico polifónico; cada pad toca el acorde de un grado de la escala. Kits y exportaciones propios.</p>
+<ul><li><b>Raíz</b>, <b>escala</b> y <b>acorde</b> (tríada, séptima, novena, add9, sus2, sus4, power).</li><li><b>Acordes</b> activa o no los acordes; <b>Raíz grave</b>; octava − / +.</li><li><b>Altura del toque</b>: más arriba en el pad, más fuerte.</li><li><b>Presets</b>: Cálido, Suave, Nocturno, Velado, Polvoriento, Lento, Pad suave, Pad oscuro, Synth suave y FM.</li><li>Timbre, trémolo/auto-pan, chorus y lo-fi.</li><li>Se graba en el Looper; pasa por los FX del máster.</li><li><b>Exportar</b>: igual que el Bajo.</li></ul>
 </details>
 <details><summary>19. Mixer</summary>
 <p>Orden: FX del máster → ecualizador → compresor → volumen master.</p>
@@ -902,10 +897,12 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.36</summary>
-<ul><li><b>Instrumentos con muestras reales</b>: los bajos (Fender Jazz, Dedos, Púa, Swagbass, Contrabajo, Fretless) y las teclas (Rhodes, Piano vertical, Xilófono) usan grabaciones de verdad. Se bajan al elegirlos y quedan guardados para usar sin conexión. Los sonidos sintetizados que imitaban instrumentos reales se han quitado (Wurlitzer, Clavinet, órganos, Mellotron, coros, vibráfono, arpa, campanas, piano juguete y los bajos sintéticos de imitación); se mantienen los que no imitan nada (808, Moog, Reese, Acid, FM, pads, synths…).</li>
-<li><b>Kits incluidos en el Sampler</b> (con ★ en la lista de kits): <b>Funk Real</b> (funk, soul, Dilla, boom bap), <b>Bombo legüero</b> (chacarera, zamba), <b>808</b> y <b>909</b>. Cargar los pone en los pads; no se pueden borrar. Se guardan en el dispositivo la primera vez.</li>
-<li><b>Generador</b>: en Sonidos, cada hueco tiene <b>Elegir de un kit…</b> (con escucha al elegir) y arriba <b>Kit completo…</b>, que rellena bombo, caja y los dos hats de una vez; <b>Sugerido por el estilo</b> elige el kit que mejor encaja (chacarera y zamba → bombo legüero, Dilla y boom bap → Funk Real, trap → 808…).</li></ul>
+<details><summary>29. Novedades de la 1.37</summary>
+<ul><li><b>Vuelta a la síntesis</b>: sin muestras de instrumentos. Los bajos y las teclas tienen nombres genéricos y suenan más redondos, apagados y con más grave.</li>
+<li><b>Bajo</b>: nuevos mandos <b>Calidez</b>, <b>Tape</b> (saturación suave) y <b>Variación</b> por nota.</li>
+<li><b>Generador → Sonidos → Kits sintetizados</b>: 14 kits creados dentro de la app (808, 909, boom bap lo-fi, funk seco, electro, dub, trip hop, neo soul, drill/trap oscuro, garage/drum and bass, percusión, dos latinos y chiptune), con Tono, Largo y Brillo; «Sugerido por el estilo» elige uno según el estilo. También puedes cargar tus propios sonidos.</li>
+<li><b>Grupo Breaks</b> en los estilos de batería: Amen (clásico, half-time, jungle, picado), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut y Ashley's Roachclip. Son recreaciones aproximadas por reglas, con el tempo y el swing de origen; no son las grabaciones. Usa tus sonidos o un kit sintetizado.</li>
+<li>La exportación MIDI del generador sigue en Generador → Exportar → MIDI.</li></ul>
 </details>
 <details><summary>30. Novedades de la 1.35</summary>
 <ul><li><b>Mixer</b>: vuelve a verse la barra de nivel de Bajo y Teclas cuando suenan desde el Generador.</li>
@@ -931,15 +928,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>35. Créditos de los sonidos</summary>
-<ul><li><b>Funk Real</b>: basado en el pack <i>Deep Fried Breaks</i> (licencia del autor de la app).</li>
-<li><b>Bombo legüero</b>: Esteban Gil Pereiro, <a href='https://www.estebangil.net' target='_blank' rel='noopener'>www.estebangil.net</a> (polyphone.io; dar crédito, sin más restricciones).</li>
-<li><b>Bajo Dedos y Púa</b>: «Bass Guitar YR» de Andrea Biasior, proyecto FreePats (CC0). <b>Piano vertical</b>: «Upright Piano KW» de Gonzalo y Roberto, FreePats (CC0). <b>Xilófono</b>: FreePats con muestras de la Versilian Community Sample Library (CC0).</li>
-<li><b>Swagbass</b>: D. Smolken, Karoryfer Lecolds (libre de derechos). <b>Contrabajo</b>: «Blue Acoustic Bass», Solar Studios (dar crédito). <b>Fender Jazz</b>: vianelectone (dominio público). <b>Fretless</b>: «Funky Fretless Bass», Todd Eaton (dominio público). <b>Rhodes</b>: «jRhodes3b», Jeff Learman (dominio público).</li>
-<li><b>808 y 909</b>: sintetizados para esta app.</li></ul>
-</details>
-<details><summary>36. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.36</b></p>
+<details><summary>35. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.37</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1004,12 +994,12 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <ul><li><b>Tracks 1–4</b> share the length. Rec records on the selected track. <b>Mute</b>, <b>Clear</b>, <b>Solo</b> and volume (0–150 %) act on the selected track.</li><li><b>Metro</b>, BPM and <b>Count</b> (4 clicks before arming).</li><li><b>Tempo</b>: calculated when the loop closes (reliable, approximate or unreliable); <b>÷2</b> and <b>×2</b> correct it.</li><li><b>Export</b>: Track N, Mix or Each track, to a pad or to WAV (zip if several). Groups, loops and effects are respected.</li><li>The loop is not saved with kits; it is saved with projects.</li></ul>
 </details>
 <details><summary>17. Bass</summary>
-<p>Monophonic bass with 16 pads, with real bass samples and synthesized sounds, its own kits and exports.</p>
-<ul><li><b>Monophonic</b>: glide between held notes.</li><li><b>Presets with real samples</b>: Fender Jazz, Fingers, Pick, Swagbass, Upright bass, Fretless, plus Muted, Nu soul, Dilla and Vinyl (the same samples with filter and saturation). They download the first time you pick them and then work offline.</li><li><b>Synthesized presets</b> (not imitating a real instrument): Sub 808, Long sub, Moog, Reese, Pluck, Acid, Fuzz, 808 drop, FM DX7, Wobble, Dirty.</li><li><b>OSC 1</b>, <b>OSC 2</b> (with Detune) and <b>SUB</b>, four waveforms (synthesized presets only).</li><li><b>Filter</b>: graph point (cutoff and resonance), Env and Decay. <b>Volume</b>: three-point envelope. Drive, Glide and Vol.</li><li><b>Root, octave and scale</b>: dropdowns; pads climb the scale.</li><li><b>Kits</b>: Save, Load, Delete.</li><li><b>Export</b>: length (¼ s to 2 beats) and WAV, Koala, Ableton, MPC, SP-404A, SP-404MK2.</li></ul>
+<p>Monophonic bass synth with 16 pads, with its own kits and exports.</p>
+<ul><li><b>Monophonic</b>: glide between held notes.</li><li><b>Presets</b>: Round, Warm, Muted, Soft sub, Deep, Dust, Velvet, Tape and the electronic ones (Sub 808, Long sub, 808 fall, Analog, Reese, Pluck, Acid, Fuzz, FM, Wobble, Dirty).</li><li><b>Warmth</b> darkens and adds low end; <b>Tape</b> is a soft tape-style saturation; <b>Variation</b> slightly changes volume and pitch on every note.</li><li><b>OSC 1</b>, <b>OSC 2</b> (with Detune) and <b>SUB</b>, four waveforms.</li><li><b>Filter</b>: graph point (cutoff and resonance), Env and Decay. <b>Volume</b>: three-point envelope. Drive, Glide and Vol.</li><li><b>Root, octave and scale</b>: dropdowns; pads climb the scale.</li><li><b>Kits</b>: Save, Load, Delete.</li><li><b>Export</b>: length (¼ s to 2 beats) and WAV, Koala, Ableton, MPC, SP-404A, SP-404MK2.</li></ul>
 </details>
 <details><summary>18. Keys</summary>
-<p>Polyphonic keys with real samples; each pad plays the chord of a scale degree. Own kits and exports.</p>
-<ul><li><b>Root</b>, <b>scale</b> and <b>chord</b> (triad, seventh, ninth, add9, sus2, sus4, power).</li><li><b>Chords</b> turns chords on or off; <b>Low root</b>; octave − / +.</li><li><b>Touch height</b>: higher on the pad, louder.</li><li><b>Presets with real samples</b>: Rhodes (natural, soft, bright, dark, dirty, nu soul), Upright piano, Lo-fi piano and Xylophone. Two intensities depending on how hard you touch. <b>Synthesized</b>: FM, Soft pad, Dark pad, Soft synth.</li><li>Tone, tremolo/auto-pan, chorus and lo-fi.</li><li>Can be recorded in the Looper; goes through the master FX.</li><li><b>Export</b>: same as Bass.</li></ul>
+<p>Polyphonic electric piano; each pad plays the chord of a scale degree. Own kits and exports.</p>
+<ul><li><b>Root</b>, <b>scale</b> and <b>chord</b> (triad, seventh, ninth, add9, sus2, sus4, power).</li><li><b>Chords</b> turns chords on or off; <b>Low root</b>; octave − / +.</li><li><b>Touch height</b>: higher on the pad, louder.</li><li><b>Presets</b>: Warm, Soft, Night, Veiled, Dusty, Slow, Soft pad, Dark pad, Soft synth and FM.</li><li>Tone, tremolo/auto-pan, chorus and lo-fi.</li><li>Can be recorded in the Looper; goes through the master FX.</li><li><b>Export</b>: same as Bass.</li></ul>
 </details>
 <details><summary>19. Mixer</summary>
 <p>Order: master FX → equalizer → compressor → master volume.</p>
@@ -1052,10 +1042,12 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.36</summary>
-<ul><li><b>Instruments with real samples</b>: the basses (Fender Jazz, Fingers, Pick, Swagbass, Upright, Fretless) and the keys (Rhodes, Upright piano, Xylophone) use real recordings. They download when you pick them and are kept for offline use. Synthesized sounds that imitated real instruments were removed (Wurlitzer, Clavinet, organs, Mellotron, choir, vibraphone, harp, bells, toy piano and the imitation synth basses); the ones that imitate nothing stay (808, Moog, Reese, Acid, FM, pads, synths…).</li>
-<li><b>Included kits in the Sampler</b> (marked ★ in the kit list): <b>Funk Real</b> (funk, soul, Dilla, boom bap), <b>Bombo legüero</b> (chacarera, zamba), <b>808</b> and <b>909</b>. Loading puts them on the pads; they cannot be deleted. They are stored on the device the first time.</li>
-<li><b>Generator</b>: in Sounds, every slot has <b>Pick from a kit…</b> (with a preview when picked) and, on top, <b>Full kit…</b>, which fills kick, snare and both hats at once; <b>Suggested for the style</b> picks the best fit (chacarera and zamba → bombo legüero, Dilla and boom bap → Funk Real, trap → 808…).</li></ul>
+<details><summary>29. What is new in 1.37</summary>
+<ul><li><b>Back to synthesis</b>: no instrument samples. Basses and keys have generic names and sound rounder, more muted and with more low end.</li>
+<li><b>Bass</b>: new knobs <b>Warmth</b>, <b>Tape</b> (soft saturation) and per-note <b>Variation</b>.</li>
+<li><b>Generator → Sounds → Synthesized kits</b>: 14 kits created inside the app (808, 909, lo-fi boom bap, dry funk, electro, dub, trip hop, neo soul, dark drill/trap, garage/drum and bass, percussion, two Latin kits and chiptune), with Pitch, Length and Brightness; «Suggested for the style» picks one. You can also load your own sounds.</li>
+<li><b>Breaks group</b> in the drum styles: Amen (classic, half-time, jungle, chopped), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut and Ashley's Roachclip. They are approximate rule-based re-creations with the original tempo and swing, not the recordings. Use your sounds or a synthesized kit.</li>
+<li>The generator MIDI export is still in Generator → Export → MIDI.</li></ul>
 </details>
 <details><summary>30. What is new in 1.35</summary>
 <ul><li><b>Mixer</b>: the Bass and Keys level bars show again when they play from the Generator.</li>
@@ -1081,15 +1073,8 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>35. Sound credits</summary>
-<ul><li><b>Funk Real</b>: based on the <i>Deep Fried Breaks</i> pack (licensed to the app's author).</li>
-<li><b>Bombo legüero</b>: Esteban Gil Pereiro, <a href='https://www.estebangil.net' target='_blank' rel='noopener'>www.estebangil.net</a> (polyphone.io; give credit, no further restrictions).</li>
-<li><b>Fingers and Pick bass</b>: «Bass Guitar YR» by Andrea Biasior, FreePats project (CC0). <b>Upright piano</b>: «Upright Piano KW» by Gonzalo and Roberto, FreePats (CC0). <b>Xylophone</b>: FreePats with samples from the Versilian Community Sample Library (CC0).</li>
-<li><b>Swagbass</b>: D. Smolken, Karoryfer Lecolds (royalty-free). <b>Upright bass</b>: «Blue Acoustic Bass», Solar Studios (give credit). <b>Fender Jazz</b>: vianelectone (public domain). <b>Fretless</b>: «Funky Fretless Bass», Todd Eaton (public domain). <b>Rhodes</b>: «jRhodes3b», Jeff Learman (public domain).</li>
-<li><b>808 and 909</b>: synthesized for this app.</li></ul>
-</details>
-<details><summary>36. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.36</b></p>
+<details><summary>35. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.37</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2191,7 +2176,6 @@ async function kitList(pick){
   try{
     const keys=await tx('readonly',s=>s.getAllKeys());
     el.replaceChildren(...keys.filter(k=>!/^(bass|keys|gen|proj):/.test(String(k))).map(k=>new Option(k,k)));
-    await kitIncluded(el);
     if(pick)el.value=pick;
   }catch{status('Los kits no están disponibles en este navegador')}
 }
@@ -2232,7 +2216,6 @@ const lastGet=k=>{try{return localStorage.getItem(k)}catch{return null}};
 const lastSet=(k,n)=>{try{if(n)localStorage.setItem(k,n);else localStorage.removeItem(k)}catch{}};
 async function loadKit(name,quiet){
   if(!name){status('No hay kits guardados');return false}
-  if(/^inc:/.test(name))return loadIncluded(name.slice(4),quiet);
   try{
     const data=await tx('readonly',s=>s.get(name)),mk=(au,sr)=>{
       const b=ctx.createBuffer(au.length,au[0].length,sr);au.forEach((x,c)=>b.copyToChannel(x,c));return b;
@@ -2247,7 +2230,6 @@ async function loadKit(name,quiet){
 $('#kload').onclick=()=>loadKit($('#kits').value);
 $('#kdel').onclick=async()=>{
   const name=$('#kits').value;
-  if(/^inc:/.test(name)){status('Los kits incluidos no se pueden borrar');return}
   if(!name||!confirm('¿Borrar el kit "'+name+'"?'))return;
   try{await tx('readwrite',s=>s.delete(name));await kitList();if(lastGet(LASTK)===name)lastSet(LASTK,null);status('Kit borrado')}
   catch{status('No se pudo borrar el kit')}
@@ -2704,7 +2686,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.36';
+const APP_VERSION='1.37';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -2738,33 +2720,39 @@ const noteName=m=>NOTE_N[((m%12)+12)%12]+(Math.floor(m/12)-1);
 const BSCALES=ALLSC;
 let bSelR=()=>{},bSelS=()=>{};
 const BS={root:4,scale:1,oct:1,dur:'0.5'};   // nota raíz, escala, octava y duración de las notas al exportar
-const BDEF={smp:'',w1:'sawtooth',l1:.8,w2:'sawtooth',l2:0,det:8,ws:'sine',ls:.6,cut:900,res:3,fenv:.4,fdec:.25,a:.003,d:.25,s:.7,r:.15,drv:0,gl:0,vol:.8,pd:0,pdt:.06,fm:0,fmr:1,fmd:.3,lfo:0,lfr:2,lfd:0};
+const BDEF={warm:0,tape:0,vr:0,w1:'sawtooth',l1:.8,w2:'sawtooth',l2:0,det:8,ws:'sine',ls:.6,cut:900,res:3,fenv:.4,fdec:.25,a:.003,d:.25,s:.7,r:.15,drv:0,gl:0,vol:.8,pd:0,pdt:.06,fm:0,fmr:1,fmd:.3,lfo:0,lfr:2,lfd:0};
 const BP={...BDEF};
-const BS_=(id,o)=>({smp:id,l1:0,l2:0,ls:0,cut:14000,res:0,fenv:0,fdec:.2,a:.002,d:.5,s:1,r:.14,drv:0,gl:.02,vol:1,...o});
 const BPRE=[
-  ['Fender Jazz',BS_('fjazz',{cut:9000,r:.16,gl:0})],
-  ['Dedos',BS_('yrfinger',{})],
-  ['Púa',BS_('yrpick',{gl:0})],
-  ['Swagbass',BS_('swag',{r:.16})],
-  ['Contrabajo',BS_('blueac',{r:.18,gl:0,vol:.95,fold:1})],
-  ['Fretless',BS_('fret',{a:.004,r:.2,gl:.09,vol:.9,fold:1})],
-  ['Muted',BS_('yrfinger',{cut:700,res:0,fenv:.2,fdec:.06,d:.25,s:.05,r:.06,gl:0})],
-  ['Nu soul',BS_('fjazz',{cut:900,res:0,fenv:.15,fdec:.2,d:1.2,s:.7,r:.3,drv:.03,gl:.03})],
-  ['Dilla',BS_('swag',{cut:600,res:0,fenv:.2,fdec:.25,d:1.2,s:.7,r:.35,drv:.03,gl:.05})],
-  ['Vinilo',BS_('yrfinger',{cut:520,res:0,fenv:.12,fdec:.15,d:.8,s:.6,r:.2,drv:.03,gl:.02})],
+  ['Redondo',{w1:'triangle',l1:.9,l2:0,ws:'sine',ls:.5,cut:560,res:.5,fenv:.12,fdec:.15,a:.006,d:.7,s:.55,r:.18,drv:0,tape:.25,warm:.3,vr:.3,gl:.02,vol:.95}],
+  ['Cálido',{w1:'sine',l1:1,w2:'triangle',l2:.3,det:4,ws:'sine',ls:.4,cut:680,res:.6,fenv:.18,fdec:.2,a:.008,d:.9,s:.6,r:.25,drv:0,tape:.3,warm:.4,vr:.3,gl:.03,vol:.95}],
+  ['Apagado',{w1:'triangle',l1:.8,w2:'sine',l2:.3,det:0,ws:'sine',ls:.3,cut:330,res:.3,fenv:.3,fdec:.07,a:.003,d:.22,s:.05,r:.07,drv:0,tape:.2,warm:.2,vr:.3,gl:0,vol:1}],
+  ['Sub suave',{w1:'sine',l1:1,l2:0,ws:'sine',ls:.5,cut:420,res:0,fenv:0,a:.01,d:.5,s:.8,r:.25,drv:0,tape:.15,warm:.5,vr:.2,gl:.03,vol:.95}],
+  ['Profundo',{w1:'sine',l1:1,l2:0,ws:'sine',ls:.8,cut:280,res:0,fenv:.1,fdec:.3,a:.012,d:1.2,s:.7,r:.4,drv:0,tape:.3,warm:.6,vr:.2,gl:.04,vol:.95}],
+  ['Polvo',{w1:'triangle',l1:.9,l2:0,ws:'sine',ls:.5,cut:400,res:.4,fenv:.2,fdec:.12,a:.005,d:.5,s:.4,r:.2,drv:0,tape:.55,warm:.35,vr:.6,gl:.02,vol:.9}],
+  ['Terciopelo',{w1:'sine',l1:1,w2:'triangle',l2:.4,det:2,ws:'sine',ls:.5,cut:500,res:.8,fenv:.25,fdec:.35,a:.02,d:1.1,s:.7,r:.35,drv:0,tape:.25,warm:.4,vr:.3,gl:.05,vol:.95}],
+  ['Tape',{w1:'triangle',l1:.9,w2:'sawtooth',l2:.15,det:6,ws:'sine',ls:.5,cut:460,res:1,fenv:.2,fdec:.2,a:.008,d:.8,s:.5,r:.2,drv:0,tape:.8,warm:.3,vr:.5,gl:.02,vol:.85}],
   ['Sub 808',{w1:'sine',l1:1,l2:0,ls:0,cut:12000,res:0,fenv:0,a:.002,d:1.2,s:.55,r:.3,drv:.12,gl:.05}],
   ['Sub largo',{w1:'sine',l1:.9,l2:0,ws:'sine',ls:.5,cut:6000,res:0,fenv:0,a:.01,d:.3,s:1,r:.5,drv:0,gl:.02}],
-  ['Moog',{w1:'sawtooth',l1:.8,w2:'sawtooth',l2:.6,det:6,ws:'sine',ls:.6,cut:650,res:5,fenv:.5,fdec:.3,a:.004,d:.35,s:.6,r:.2,drv:.1,gl:.03}],
+  ['808 caída',{w1:'sine',l1:1,l2:0,ws:'sine',ls:0,cut:12000,res:0,fenv:0,a:.001,d:1.4,s:.5,r:.35,drv:.2,gl:0,pd:7,pdt:.07}],
+  ['Analógico',{w1:'sawtooth',l1:.8,w2:'sawtooth',l2:.6,det:6,ws:'sine',ls:.6,cut:650,res:5,fenv:.5,fdec:.3,a:.004,d:.35,s:.6,r:.2,drv:.1,gl:.03}],
   ['Reese',{w1:'sawtooth',l1:.8,w2:'sawtooth',l2:.8,det:24,ws:'sine',ls:.4,cut:520,res:2,fenv:.12,fdec:.5,a:.01,d:.4,s:1,r:.3,drv:.2,gl:.04}],
   ['Pluck',{w1:'square',l1:.8,l2:0,ws:'sine',ls:.5,cut:380,res:6,fenv:.8,fdec:.14,a:.002,d:.2,s:0,r:.1,drv:.1,gl:0}],
   ['Acid',{w1:'sawtooth',l1:.9,l2:0,ls:0,cut:480,res:14,fenv:.7,fdec:.2,a:.003,d:.25,s:.3,r:.08,drv:.3,gl:.06}],
   ['Fuzz',{w1:'square',l1:.7,w2:'sawtooth',l2:.6,det:12,ws:'square',ls:.3,cut:2500,res:3,fenv:.2,fdec:.2,a:.003,d:.3,s:.8,r:.15,drv:.8,gl:.02}],
-  ['808 caída',{w1:'sine',l1:1,l2:0,ws:'sine',ls:0,cut:12000,res:0,fenv:0,a:.001,d:1.4,s:.5,r:.35,drv:.2,gl:0,pd:7,pdt:.07}],
-  ['FM DX7',{w1:'sine',l1:1,l2:0,ws:'sine',ls:.3,cut:9000,res:0,fenv:0,a:.002,d:.5,s:.2,r:.1,drv:.1,gl:0,fm:2.2,fmr:1,fmd:.15}],
+  ['FM',{w1:'sine',l1:1,l2:0,ws:'sine',ls:.3,cut:9000,res:0,fenv:0,a:.002,d:.5,s:.2,r:.1,drv:.1,gl:0,fm:2.2,fmr:1,fmd:.15}],
   ['Wobble',{w1:'sawtooth',l1:.8,w2:'sawtooth',l2:.6,det:14,ws:'sine',ls:.6,cut:300,res:7,fenv:0,a:.005,d:.3,s:1,r:.15,drv:.4,gl:.03,lfo:2.2,lfd:2}],
-  ['Sucio',{w1:'sawtooth',l1:.8,w2:'square',l2:.5,det:18,ws:'sine',ls:.5,cut:1200,res:7,fenv:.35,fdec:.18,a:.002,d:.3,s:.7,r:.12,drv:1,gl:.03}]];
+  ['Sucio',{w1:'sawtooth',l1:.8,w2:'square',l2:.5,det:18,ws:'sine',ls:.5,cut:1200,res:7,fenv:.35,fdec:.18,a:.002,d:.3,s:.7,r:.12,drv:1,gl:.03}]
+];
 const bHz=m=>440*Math.pow(2,(m-69)/12);
 const bMidi=k=>{const sc=BSCALES[BS.scale],s=levelSemis(sc.iv)[k];return 12*(BS.oct+1)+BS.root+s};
+const tCurves=new Map();
+function tCurve(a){
+  const key=Math.round(a*20);let c=tCurves.get(key);
+  if(!c){const k=1+key/20*2.4,b=.09*key/20,n=2049,cv=new Float32Array(n),lo=Math.tanh(k*(-1+b)),hi=Math.tanh(k*(1+b));
+    for(let i=0;i<n;i++){const x=i/(n-1)*2-1;cv[i]=2*(Math.tanh(k*(x+b))-lo)/(hi-lo)-1}
+    tCurves.set(key,c=cv)}
+  return c;
+}
 const bCurves=new Map();
 function bCurve(a){
   const key=Math.round(a*40);let c=bCurves.get(key);
@@ -2805,20 +2793,20 @@ function bKS(sr,f,K){
 }
 /* una voz: osciladores -> filtro con envolvente -> distorsión -> envolvente de volumen */
 function bVoice(c,dest,P,m,t){
+  const VR=P.vr>0?(Math.random()*2-1)*P.vr:0,VC=VR*5,VA=1+VR*.09;
+  if(P.warm>0)P={...P,cut:P.cut*(1-.55*P.warm),ls:Math.min(1,P.ls+.4*P.warm),l1:P.l1};
   const f=bHz(m),oscs=[],mix=c.createGain(),fl=c.createBiquadFilter(),amp=c.createGain();
   const add=(type,hz,lv,det)=>{
     if(!(lv>0))return;
     const o=c.createOscillator(),g=c.createGain();
-    o.type=type;if(P.pd>0){o.frequency.setValueAtTime(hz*Math.pow(2,P.pd/12),t);o.frequency.exponentialRampToValueAtTime(hz,t+Math.max(.01,P.pdt))}else o.frequency.setValueAtTime(hz,t);if(det)o.detune.value=det;g.gain.value=lv;
+    o.type=type;if(P.pd>0){o.frequency.setValueAtTime(hz*Math.pow(2,P.pd/12),t);o.frequency.exponentialRampToValueAtTime(hz,t+Math.max(.01,P.pdt))}else o.frequency.setValueAtTime(hz,t);o.detune.value=(det||0)+VC;g.gain.value=lv;
     o.connect(g);g.connect(mix);o.start(t);oscs.push({o,k:hz/f});
   };
   add(P.w1,f,P.l1,0);add(P.w2,f,P.l2,P.det);add(P.ws,f/2,P.ls,0);
   let ksrc=null;
-  if(P.smp){const SM=smpGet('bass',P.smp);if(!SM){smpUse('bass',P.smp);return {m,rel:true,slide(){},release(){},kill(){}}}
-    const lo7=SM.notes[0].m-7,fm=x=>{if(P.fold)while(x<lo7)x+=12;return x};ksrc=c.createBufferSource();const pk=smpPick(SM,fm(m));ksrc.buffer=pk.n.b;ksrc.playbackRate.value=pk.rate;ksrc._m=pk.n.m;ksrc._fm=fm;ksrc.connect(mix);ksrc.start(t)}
   if(P.ks){ksrc=c.createBufferSource();ksrc.buffer=bKS(c.sampleRate,f,P.ks);const kg=c.createGain();kg.gain.value=P.ks.lv||1;ksrc.connect(kg);kg.connect(mix);ksrc.start(t)}
   if(!oscs.length&&!ksrc)add('sine',f,.0001,0);
-  mix.gain.value=ksrc?(P.smp?1:.9):.7/Math.max(1,P.l1+P.l2+P.ls);
+  mix.gain.value=ksrc?.9:.7/Math.max(1,P.l1+P.l2+P.ls);
   fl.type='lowpass';fl.Q.value=P.res;
   const peak=Math.min(18000,P.cut*Math.pow(2,P.fenv*5));
   fl.frequency.setValueAtTime(P.cut,t);
@@ -2829,12 +2817,13 @@ function bVoice(c,dest,P,m,t){
   if(P.fm>0){const mo=c.createOscillator(),mg=c.createGain(),dev=f*P.fmr*P.fm;mo.type='sine';mo.frequency.setValueAtTime(f*P.fmr,t);mg.gain.setValueAtTime(dev,t);mg.gain.setTargetAtTime(dev*.12,t+.002,Math.max(.02,P.fmd)/3);mo.connect(mg);for(const x of oscs)mg.connect(x.o.frequency);mo.start(t);mods.push(mo);fmo=mo}
   let last=fl;
   if(P.drv>.01){const sh=c.createWaveShaper();sh.curve=bCurve(P.drv);sh.oversample='2x';fl.connect(sh);last=sh}
+  if(P.tape>.01){const sh2=c.createWaveShaper();sh2.curve=tCurve(P.tape);sh2.oversample='2x';last.connect(sh2);last=sh2}
   last.connect(amp);amp.connect(dest);
   const A=Math.max(.001,P.a);
-  amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(P.vol*.8,t+A);amp.gain.setTargetAtTime(Math.max(0,P.s)*P.vol*.8,t+A,Math.max(.01,P.d)/3);
+  amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(P.vol*.8*VA,t+A);amp.gain.setTargetAtTime(Math.max(0,P.s)*P.vol*.8*VA,t+A,Math.max(.01,P.d)/3);
   const v={m,rel:false,
     slide(m2,t2,gl){
-      v.m=m2;if(ksrc)ksrc.playbackRate.setTargetAtTime(ksrc._m?Math.pow(2,(ksrc._fm(m2)-ksrc._m)/12):bHz(m2)/f,t2,gl>.002?gl/3:.001);
+      v.m=m2;if(ksrc)ksrc.playbackRate.setTargetAtTime(bHz(m2)/f,t2,gl>.002?gl/3:.001);
       if(fmo)fmo.frequency.setTargetAtTime(bHz(m2)*P.fmr,t2,gl>.002?gl/3:.001);
       for(const x of oscs){
         const hz=bHz(m2)*x.k;
@@ -2860,14 +2849,14 @@ function mkBass(c,dest,P){
     on(idx,t,m){
       const i=st.findIndex(x=>x.idx===idx);if(i>=0)st.splice(i,1);
       st.push({idx,m});
-      if(cur&&!cur.rel&&(!P.smp||P.gl>=.06))cur.slide(m,t,P.gl);
-      else{if(cur)P.smp?cur.release(t):cur.kill(t);cur=bVoice(c,dest,P,m,t)}
+      if(cur&&!cur.rel)cur.slide(m,t,P.gl);
+      else{if(cur)cur.kill(t);cur=bVoice(c,dest,P,m,t)}
     },
     off(idx,t){
       const i=st.findIndex(x=>x.idx===idx);if(i<0)return;
       st.splice(i,1);
       if(!cur||cur.rel)return;
-      if(st.length){if(!P.smp||P.gl>=.06)cur.slide(st[st.length-1].m,t,P.gl);else{cur.release(t);cur=bVoice(c,dest,P,st[st.length-1].m,t)}}else cur.release(t);
+      if(st.length)cur.slide(st[st.length-1].m,t,P.gl);else cur.release(t);
     },
     releaseAll(t){st.length=0;if(cur&&!cur.rel)cur.release(t)},
     silence(t){st.length=0;if(cur){cur.kill(t);cur=null}}
@@ -2925,7 +2914,7 @@ function bFit(cv){
 const bKnobs=[];
 const KDEF={
   l1:['Nivel',0,1,0,'%'],l2:['Nivel',0,1,0,'%'],ls:['Nivel',0,1,0,'%'],det:['Detune',0,50,0,'c'],
-  fenv:['Env',0,1,0,'%'],fdec:['Decay',.03,1.5,1,'s'],drv:['Drive',0,1,0,'%'],gl:['Glide',0,.3,0,'ms'],vol:['Vol',0,1,0,'%']};
+  fenv:['Env',0,1,0,'%'],warm:['Calidez',0,1,0,'%'],tape:['Tape',0,1,0,'%'],vr:['Variación',0,1,0,'%'],fdec:['Decay',.03,1.5,1,'s'],drv:['Drive',0,1,0,'%'],gl:['Glide',0,.3,0,'ms'],vol:['Vol',0,1,0,'%']};
 function bFmt(u,v){return u==='%'?Math.round(v*100)+'%':u==='c'?Math.round(v)+' ¢':u==='ms'?Math.round(v*1000)+' ms':v<1?Math.round(v*1000)+' ms':v.toFixed(2)+' s'}
 function mkKnob(parent,key){
   const [lab,mn,mx,lg,u]=KDEF[key],box=document.createElement('div');box.className='knob';
@@ -3057,7 +3046,6 @@ function drawScope(){
 }
 function bassDraw(){
   if(!$('.unit').classList.contains('bass'))return;
-  const oc=$('#bosc').closest('.bsec');if(oc)oc.hidden=!!BP.smp;
   drawFlt();drawEnv();
   bKnobs.forEach(f=>f());
   bWaveBtns.forEach(f=>f());
@@ -3068,9 +3056,9 @@ function bassDraw(){
   mkWave(osc,'w1','OSC 1','l1');mkWave(osc,'w2','OSC 2','l2');mkWave(osc,'ws','SUB −1 oct','ls');
   const kf=$('#bkf'),ka=$('#bka');
   mkKnob(kf,'fenv');mkKnob(kf,'fdec');
-  mkKnob(ka,'drv');mkKnob(ka,'gl');mkKnob(ka,'vol');
+  mkKnob(ka,'warm');mkKnob(ka,'tape');mkKnob(ka,'drv');mkKnob(ka,'gl');mkKnob(ka,'vr');mkKnob(ka,'vol');
   const pre=$('#bpre');
-  BPRE.forEach(([n,v])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{Object.assign(BP,BDEF,v);if(bassP)bassP.silence(ctx.currentTime);bassDraw();status('Sonido: '+n);if(BP.smp)smpUse('bass',BP.smp)};pre.appendChild(b)});
+  BPRE.forEach(([n,v])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{Object.assign(BP,BDEF,v);if(bassP)bassP.silence(ctx.currentTime);bassDraw();status('Sonido: '+n)};pre.appendChild(b)});
   bSelR=rootSelect($('#broot'),()=>BS.root,i=>{BS.root=i;bScaleUI()});
   bSelS=scaleSelect($('#bscales'),()=>BS.scale,i=>{BS.scale=i;bScaleUI()});
   $('#boctm').onclick=()=>{BS.oct=Math.max(0,BS.oct-1);bScaleUI()};
@@ -3106,7 +3094,7 @@ async function bLoadKit(name,quiet){
   try{
     const d=await tx('readonly',s=>s.get(BK+name));
     if(!d||!d.P){if(!quiet)status('Kit no válido');return false}
-    Object.assign(BP,BDEF,d.P);if(BP.smp)smpUse('bass',BP.smp);
+    Object.assign(BP,BDEF,d.P);
     if(d.S){BS.root=d.S.root|0;BS.scale=Math.min(BSCALES.length-1,d.S.scale|0);BS.oct=Math.min(4,Math.max(0,d.S.oct|0));BS.dur=String(d.S.dur||'0.5')}
     if(bassP)bassP.silence(ctx.currentTime);
     bScaleUI();bassDraw();lastSet(LASTB,name);status((quiet?'Último kit de bajo abierto: ':'Kit de bajo cargado: ')+name);return true;
@@ -3126,7 +3114,6 @@ function bDurSec(){
   return parseFloat(v)||.5;
 }
 async function bakeBass(fix){
-  await smpReady();
   const items=[],dur=bDurSec(),P={...BP},sr=ctx.sampleRate,len=Math.ceil((dur+P.r*1.6+.1)*sr);
   for(let k=0;k<16;k++){
     const off=new OfflineAudioContext(1,len,sr),pl2=mkBass(off,off.destination,P),m=bMidi(k);
@@ -3160,26 +3147,20 @@ const KLEG=['Mayor','Menor','Dórica','Frigia','Lidia','Mixolidia','Locria','Men
 const ksMig=S=>S&&S.sv!==2&&typeof S.scale==='number'?{...S,scale:SCI[KLEG[Math.min(8,Math.max(0,S.scale|0))]],sv:2}:S;
 const KCHORDS=[['Tríada',[0,2,4]],['7ª',[0,2,4,6]],['9ª',[0,2,4,6,8]],['Add9',[0,2,4,8]],['Sus2',[0,1,4]],['Sus4',[0,3,4]],['Power',[0,4,7]]];
 const KS={sv:2,root:0,scale:SCI['Mayor'],chord:1,oct:3,chordOn:true,low:false,touch:true,dur:'1'};
-const KDF={smp:'',sg:1,wave:'sine',mr:1,idx:.35,idec:.45,tl:.3,tr:14,tdec:.07,a:.003,d:1.8,s:.12,r:.3,cut:9000,res:0,drv:.1,
+const KDF={wave:'sine',mr:1,idx:.35,idec:.45,tl:.3,tr:14,tdec:.07,a:.003,d:1.8,s:.12,r:.3,cut:9000,res:0,drv:.1,
   trem:4.5,tdep:.3,tmode:1,crate:.8,cdep:.5,cmix:.35,vol:1,lofi:0,grade:1};
 const KP={...KDF};
-Object.assign(KP,{smp:'jrhodes',a:.003,d:2,s:1,r:.4,cut:16000,res:0,drv:0,trem:4.5,tdep:0,tmode:1,crate:.7,cdep:0,cmix:0,vol:3.3});   // sonido por defecto: Rhodes real
-const KBASE_={jrhodes:3.3,piano:3.8,xylo:3.8};   // el nivel de las muestras es menor que el de las voces FM; la saturación (bCurve) sube mucho los toques flojos, así que se compensa
-const KS_=(id,o)=>{const g=1+Math.round((o.drv||0)*40)*1.1;return {smp:id,a:.003,d:2,s:1,r:.35,cut:16000,res:0,drv:0,trem:4.5,tdep:0,tmode:1,crate:.7,cdep:0,cmix:0,...o,vol:KBASE_[id]*(o.vol||1)/Math.pow(g,.85)}};
 const KPRE=[
-  ['Rhodes',KS_('jrhodes',{r:.4})],
-  ['Rhodes suave',KS_('jrhodes',{cut:5200,drv:.02,trem:4.5,tdep:.22,r:.45})],
-  ['Rhodes brillante',KS_('jrhodes',{cut:16000,drv:.05,trem:5.5,tdep:.15,cdep:.4,cmix:.25,r:.3,vol:.9})],
-  ['Rhodes oscuro',KS_('jrhodes',{cut:2600,drv:.02,trem:3.5,tdep:.35,r:.5})],
-  ['Rhodes sucio',KS_('jrhodes',{cut:3200,drv:.2,trem:3.5,tdep:.25,tmode:0,cdep:.6,cmix:.4,r:.4,vol:.75})],
-  ['Rhodes nu soul',KS_('jrhodes',{cut:4200,drv:.04,trem:2.2,tdep:.45,cdep:.7,cmix:.45,r:.5,vol:.85})],
-  ['Piano vertical',KS_('piano',{r:.3})],
-  ['Piano lo-fi',KS_('piano',{cut:2200,drv:.06,cdep:.2,cmix:.15,r:.25})],
-  ['Xilófono',KS_('xylo',{r:.25})],
-  ['FM',{wave:'sine',mr:1,idx:.55,idec:.22,tl:.4,tr:3.5,tdec:.12,a:.002,d:1.6,s:0,r:.3,cut:12000,drv:.05,trem:4,tdep:0,tmode:1,crate:.6,cdep:.4,cmix:.25,vol:1}],
+  ['Cálido',{wave:'sine',mr:1,idx:.3,idec:.5,tl:.28,tr:14,tdec:.07,a:.004,d:2,s:.12,r:.35,cut:4500,drv:0.03,trem:4.5,tdep:.3,tmode:1,crate:.7,cdep:.5,cmix:.3,vol:0.95}],
+  ['Suave',{wave:'sine',mr:1,idx:0.22,idec:.7,tl:.12,tr:7,tdec:.05,a:.006,d:2.4,s:.2,r:.45,cut:3600,drv:.05,trem:3.5,tdep:.4,tmode:1,crate:.5,cdep:.6,cmix:.4,vol:1.05}],
+  ['Nocturno',{wave:'sine',mr:1,idx:.22,idec:.6,tl:.15,tr:10,tdec:.06,a:.008,d:2.6,s:.22,r:.5,cut:2400,res:0,drv:.12,trem:1.8,tdep:0.5,tmode:1,crate:.5,cdep:0.75,cmix:.45,vol:1.1}],
+  ['Velado',{wave:'sine',mr:1,idx:0.14,idec:.7,tl:.12,tr:7,tdec:.05,a:.006,d:2.4,s:.2,r:.45,cut:1800,drv:0.03,trem:3.5,tdep:.4,tmode:0,crate:.5,cdep:0.8,cmix:0.55,vol:1.15}],
+  ['Polvoriento',{wave:'sine',mr:1,idx:.3,idec:.5,tl:.2,tr:14,tdec:.07,a:.005,d:2,s:.15,r:.35,cut:2600,res:0,drv:0.12,trem:3.5,tdep:.25,tmode:0,crate:0.3,cdep:.6,cmix:0.5,vol:1}],
+  ['Lento',{wave:'sine',mr:1,idx:0.12,idec:.7,tl:.12,tr:7,tdec:.05,a:0.06,d:2.8,s:0.35,r:0.7,cut:2200,drv:.05,trem:2.4,tdep:0.3,tmode:0,crate:.5,cdep:.6,cmix:.4,vol:1.15}],
   ['Pad suave',{wave:'sawtooth',mr:1,idx:.08,idec:2,tl:0,tr:2,tdec:.1,a:.45,d:1.5,s:.85,r:1,cut:1800,res:1,drv:0,trem:3,tdep:.15,tmode:1,crate:.4,cdep:.8,cmix:.5,vol:1.5}],
   ['Pad oscuro',{wave:'sawtooth',mr:1,idx:.06,idec:2,tl:0,tr:2,tdec:.1,a:.9,d:2,s:.9,r:1.8,cut:700,res:1.5,drv:.1,trem:2,tdep:.2,tmode:1,crate:.3,cdep:1,cmix:.7,vol:1.6}],
-  ['Synth suave',{wave:'sawtooth',mr:1,idx:.04,idec:2,tl:0,tr:2,tdec:.1,a:.01,d:.6,s:.6,r:.2,cut:2400,res:2,drv:.05,trem:4,tdep:0,tmode:0,crate:.8,cdep:.4,cmix:.25,vol:1.1}]];
+  ['Synth suave',{wave:'sawtooth',mr:1,idx:.04,idec:2,tl:0,tr:2,tdec:.1,a:.01,d:.6,s:.6,r:.2,cut:2400,res:2,drv:.05,trem:4,tdep:0,tmode:0,crate:.8,cdep:.4,cmix:.25,vol:1.1}],
+  ['FM',{wave:'sine',mr:1,idx:.55,idec:.22,tl:.4,tr:3.5,tdec:.12,a:.002,d:1.6,s:0,r:.3,cut:12000,drv:.05,trem:4,tdep:0,tmode:1,crate:.6,cdep:.4,cmix:.25,vol:1}]];
 const kDeg=(iv,d)=>iv[d%iv.length]+12*Math.floor(d/iv.length);
 const kCd=(iv,o)=>{const n=iv.length;return o===7?n:n<=7?o:Math.round(o*n/7)};   // grado de la escala para cada salto de acorde
 const kBase=()=>12*(KS.oct+1)+KS.root;
@@ -3232,7 +3213,6 @@ function kBus(c,dest,P){
 }
 /* una nota: FM (portadora + modulador) + «campanita» de la púa; dura según la envolvente y se acorta en las notas agudas */
 function kVoice(c,dest,P,m,t,vel,pk){
-  if(P.smp)return kSmp(c,dest,P,m,t,vel,pk);
   const f=bHz(m),kt=Math.min(1.7,Math.max(.45,Math.pow(262/f,.35))),amp=c.createGain(),car=c.createOscillator(),mo=c.createOscillator(),mg=c.createGain(),oscs=[car,mo];
   car.type=P.wave;car.frequency.value=f;mo.type='sine';mo.frequency.value=f*P.mr;
   const dev=P.idx*4*f*P.mr*(.3+.7*vel),idc=Math.max(.02,P.idec*kt);
@@ -3376,12 +3356,10 @@ function kBtns(el,items,get,set){
 }
 const kSync=[];
 function kScaleUI(){kSync.forEach(f=>f());$('#knote').textContent=NOTE_N[KS.root]+' '+ALLSC[KS.scale].name+' · '+(KS.chordOn?KCHORDS[KS.chord][0]:'notas sueltas')+' · octava '+KS.oct;$('#kchords').classList.toggle('dim',!KS.chordOn);$('#koctv').textContent='Octava '+KS.oct;kLabels()}
-function kDraw(){if(!$('.unit').classList.contains('keys'))return;
-  const kw=$('#kwave');if(kw){kw.hidden=!!KP.smp;if(kw.previousElementSibling)kw.previousElementSibling.hidden=!!KP.smp}
-  $('#keyspanel').dataset.smp=KP.smp?'1':'';kKnobs.forEach(f=>f());kSync.forEach(f=>f())}
+function kDraw(){if(!$('.unit').classList.contains('keys'))return;kKnobs.forEach(f=>f());kSync.forEach(f=>f())}
 (function(){
   const pre=$('#kpre');
-  KPRE.forEach(([n,v])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{Object.assign(KP,KDF,v,{lofi:KP.lofi,grade:KP.grade});if(keysP)keysP.silence(ctx.currentTime);kApply();kDraw();status('Sonido: '+n);if(KP.smp)smpUse('keys',KP.smp)};pre.appendChild(b)});
+  KPRE.forEach(([n,v])=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{Object.assign(KP,KDF,v,{lofi:KP.lofi,grade:KP.grade});if(keysP)keysP.silence(ctx.currentTime);kApply();kDraw();status('Sonido: '+n)};pre.appendChild(b)});
   kSync.push(kBtns($('#kwave'),['sine','triangle','sawtooth','square'].map(w=>({sine:'Seno',triangle:'Triang.',sawtooth:'Sierra',square:'Cuadr.'}[w])),i=>['sine','triangle','sawtooth','square'][i]===KP.wave,i=>{KP.wave=['sine','triangle','sawtooth','square'][i];kDraw()}));
   ['idx','idec','tl','drv'].forEach(k=>kKnob($('#kk1'),k));
   ['a','d','s','r'].forEach(k=>kKnob($('#kk2'),k));
@@ -3424,7 +3402,7 @@ async function kLoadKit(name,quiet){
   try{
     const d=await tx('readonly',s=>s.get(KK+name));
     if(!d||!d.P){if(!quiet)status('Kit no válido');return false}
-    Object.assign(KP,KDF,d.P);if(KP.smp)smpUse('keys',KP.smp);
+    Object.assign(KP,KDF,d.P);
     if(d.S){KS.root=Math.min(11,Math.max(0,d.S.root|0));{const S2=ksMig(d.S);KS.scale=Math.min(KSCALES.length-1,Math.max(0,S2.scale|0))}KS.chord=Math.min(KCHORDS.length-1,Math.max(0,d.S.chord|0));KS.oct=Math.min(5,Math.max(0,d.S.oct|0));KS.chordOn=d.S.chordOn!==false;KS.low=!!d.S.low;KS.touch=d.S.touch!==false;KS.dur=String(d.S.dur||'1')}
     if(keysP)keysP.silence(ctx.currentTime);
     kApply();kScaleUI();kDraw();lastSet(LASTKY,name);status((quiet?'Último kit de teclas abierto: ':'Kit de teclas cargado: ')+name);return true;
@@ -3448,7 +3426,6 @@ function kLofiBuf(b){      // mismo proceso que el lo-fi de los pads del sampler
   const d=lofi(b.getChannelData(0),b.sampleRate,m,1),o=ctx.createBuffer(1,d.length,b.sampleRate);o.copyToChannel(d,0);return o;
 }
 async function bakeKeys(fix){
-  await smpReady();
   const items=[],dur=kDurSec(),P={...KP},sr=ctx.sampleRate,len=Math.ceil((dur+P.r*1.7+.2)*sr);
   for(let k=0;k<16;k++){
     const off=new OfflineAudioContext(1,len,sr),pl2=mkKeys(off,off.destination,P),nt=kNotes(k);
@@ -3765,7 +3742,6 @@ const lpBpmTxt=()=>{const b=lpBpm();return b?(Math.round(b*10)/10).toFixed(1).re
 
 /* ---------- exportar el bucle: render exacto sin conexión ---------- */
 async function lpRender(trk){
-  await smpReady();
   const sr=ctx.sampleRate,L=lp.len,n=Math.max(1,Math.round(L*sr));
   const off=new OfflineAudioContext(1,2*n,sr);               // dos vueltas: la segunda incluye las colas de la primera, así el bucle encaja
   const st=new Map(),bR={...BP},bo=mkBass(off,off.destination,bR),bm=Array.from({length:16},(_,k)=>bMidi(k)),ko=mkKeys(off,off.destination,{...KP}),kn=Array.from({length:16},(_,k)=>kNotes(k));
@@ -4347,8 +4323,8 @@ async function pjApply(d){
     const bufs=d.samp.sources.map(s=>mk(s.audio,s.sr));
     applyKit(d.samp.pads.map(x=>x&&{...norm(x),buf:bufs[x.src]}));
   }
-  if(d.bass){Object.assign(BP,BDEF,d.bass.P);if(BP.smp)smpUse('bass',BP.smp);Object.assign(BS,d.bass.S);if(bassP)bassP.silence(ctx.currentTime);bScaleUI();bassDraw()}
-  if(d.keys){Object.assign(KP,KDF,d.keys.P);if(KP.smp)smpUse('keys',KP.smp);Object.assign(KS,ksMig(d.keys.S));if(keysP)keysP.silence(ctx.currentTime);kApply();kScaleUI();kDraw()}
+  if(d.bass){Object.assign(BP,BDEF,d.bass.P);Object.assign(BS,d.bass.S);if(bassP)bassP.silence(ctx.currentTime);bScaleUI();bassDraw()}
+  if(d.keys){Object.assign(KP,KDF,d.keys.P);Object.assign(KS,ksMig(d.keys.S));if(keysP)keysP.silence(ctx.currentTime);kApply();kScaleUI();kDraw()}
   if(d.mx){Object.assign(MX,MXD(),d.mx);mxApply();mxUI()}
   if(d.lp){
     lpClear();
@@ -4469,9 +4445,9 @@ function uXApply(str){
   let o;try{o=JSON.parse(str)}catch{return}
   if(str===uXCur())return;
   const cur=uXCur()?JSON.parse(uXCur()):{};
-  if(o.bp&&JSON.stringify(o.bp)!==JSON.stringify(cur.bp)){Object.assign(BP,BDEF,o.bp);if(BP.smp)smpUse('bass',BP.smp);if(bassP)bassP.silence(ctx.currentTime);bassDraw()}
+  if(o.bp&&JSON.stringify(o.bp)!==JSON.stringify(cur.bp)){Object.assign(BP,BDEF,o.bp);if(bassP)bassP.silence(ctx.currentTime);bassDraw()}
   if(o.bs&&JSON.stringify(o.bs)!==JSON.stringify(cur.bs)){Object.assign(BS,o.bs);bScaleUI()}
-  if(o.kp&&JSON.stringify(o.kp)!==JSON.stringify(cur.kp)){Object.assign(KP,KDF,o.kp);if(KP.smp)smpUse('keys',KP.smp);if(keysP)keysP.silence(ctx.currentTime);kApply();kDraw()}
+  if(o.kp&&JSON.stringify(o.kp)!==JSON.stringify(cur.kp)){Object.assign(KP,KDF,o.kp);if(keysP)keysP.silence(ctx.currentTime);kApply();kDraw()}
   if(o.ks&&JSON.stringify(o.ks)!==JSON.stringify(cur.ks)){Object.assign(KS,o.ks);kScaleUI();kDraw()}
   if(o.mx&&JSON.stringify(o.mx)!==JSON.stringify(cur.mx)){Object.assign(MX,MXD(),o.mx);mxApply();mxUI()}
 }
@@ -4726,83 +4702,6 @@ function fxDubSend(down,t){
     fxSet(d.dl.delayTime,tt,t,.16);fxSet(d.fb.gain,v.fb,t,.03);fxSet(d.send.gain,.7,t,.02);
   }else if(fxDub){fxSet(fxDub.send.gain,0,t,.03);fxSet(fxDub.fb.gain,.6,t,.1)}
 }
-/* ---------- 1.36: kits incluidos e instrumentos con muestras reales (ficheros kit_*.bin, inst_*.bin y kits_index.json junto a index.html) ---------- */
-const KITV='137';
-let kIdxP=null;
-const kIdx=()=>kIdxP||(kIdxP=fetch('kits_index.json?v='+KITV).then(r=>{if(!r.ok)throw new Error('falta kits_index.json en el servidor ('+r.status+')');return r.json()}).catch(e=>{kIdxP=null;throw e}));
-/* cada kit o instrumento es un solo fichero plano (kit_*.bin, inst_*.bin) con los audios uno tras otro; el índice da [inicio,largo] de cada uno */
-const kPk=new Map();
-const kPack=n=>{let p=kPk.get(n);if(!p){p=fetch(n+'?v='+KITV).then(r=>{if(!r.ok)throw new Error('falta '+n+' en el servidor ('+r.status+')');return r.arrayBuffer()}).then(ab=>{if(new TextDecoder().decode(new Uint8Array(ab,0,8))!=='SHPACK01')throw new Error(n+' no es válido (copia antigua o dañada: borra los datos del sitio y vuelve a abrir)');setTimeout(()=>kPk.delete(n),4000);return ab}).catch(e=>{kPk.delete(n);throw e});kPk.set(n,p)}return p};
-const kDec=async(pack,e)=>{const ab=await kPack(pack);return ctx.decodeAudioData(ab.slice(e[0],e[0]+e[1]))};
-/* instrumentos con muestras (bajos y teclas): se bajan al elegirlos y quedan guardados para usar sin conexión */
-const SMP=new Map();   // 'bass:fjazz' -> {ok,t,meta,notes:[{m,b,b2}],p}
-function smpTrim(){
-  const keep=['bass:'+BP.smp,'keys:'+KP.smp],ok=[...SMP.entries()].filter(([k,s])=>s.ok&&!keep.includes(k)).sort((a,b)=>a[1].t-b[1].t);
-  while(SMP.size>4&&ok.length)SMP.delete(ok.shift()[0]);
-}
-function smpLoad(kind,id){
-  if(!id)return Promise.resolve(null);
-  const key=kind+':'+id;let S=SMP.get(key);
-  if(S){S.t=Date.now();return S.p}
-  S={ok:false,t:Date.now()};SMP.set(key,S);
-  S.p=kIdx().then(async ix=>{
-    const meta=(ix[kind]||[]).find(x=>x.id===id);if(!meta)throw new Error('sin '+id);
-    S.meta=meta;
-    S.notes=await Promise.all(meta.notes.map(async n=>({m:n.m,b:await kDec(meta.pack,n.f),b2:n.f2?await kDec(meta.pack,n.f2):null})));
-    S.ok=true;S.t=Date.now();smpTrim();return S;
-  }).catch(e=>{SMP.delete(key);throw e});
-  return S.p;
-}
-const smpGet=(kind,id)=>{const S=id&&SMP.get(kind+':'+id);if(S&&S.ok){S.t=Date.now();return S}return null};
-async function smpUse(kind,id){
-  if(!id||smpGet(kind,id))return true;
-  status('Cargando sonido…');
-  try{await smpLoad(kind,id);status('Sonido listo');return true}
-  catch{status('No se pudo cargar el sonido (¿sin conexión?)');return false}
-}
-const smpReady=()=>Promise.all([BP.smp&&smpLoad('bass',BP.smp),KP.smp&&smpLoad('keys',KP.smp)].filter(Boolean)).catch(()=>{});
-/* nota más cercana: subir el tono de una muestra empeora el timbre antes que bajarlo, así que se prefiere la de arriba */
-function smpPick(S,m){
-  let best=null,bc=1e9;
-  for(const n of S.notes){const d=m-n.m,c=d>0?d*1.35:-d;if(c<bc){bc=c;best=n}}
-  return {n:best,rate:Math.pow(2,(m-best.m)/12)};
-}
-/* una nota de teclas con muestras: dos intensidades que se mezclan según la fuerza del toque */
-function kSmp(c,dest,P,m,t,vel,pk){
-  const S=smpGet('keys',P.smp);
-  if(!S){smpUse('keys',P.smp);return {rel:true,release(){},kill(){}}}
-  const {n,rate}=smpPick(S,m),amp=c.createGain(),srcs=[];
-  const hv=n.b2?Math.min(1,Math.max(0,(vel-.2)/.65)):0;
-  const mk=(b,g)=>{if(g<.01)return;const s=c.createBufferSource(),gg=c.createGain();s.buffer=b;s.playbackRate.value=rate;gg.gain.value=g;s.connect(gg);gg.connect(amp);s.start(t);srcs.push(s)};
-  if(n.b2){mk(n.b,Math.cos(hv*Math.PI/2));mk(n.b2,Math.sin(hv*Math.PI/2))}else mk(n.b,1);
-  const A=Math.max(.001,P.a);
-  amp.gain.setValueAtTime(0,t);amp.gain.linearRampToValueAtTime(pk*(P.sg||1),t+A);
-  if(P.s<1)amp.gain.setTargetAtTime(pk*(P.sg||1)*Math.max(0,P.s),t+A,Math.max(.05,P.d)/3);
-  amp.connect(dest);
-  const stopAll=e=>{for(const s of srcs)try{s.stop(e)}catch{}};
-  return {rel:false,
-    release(t2){this.rel=true;const R=Math.max(.02,P.r);kHold(amp.gain,t2);amp.gain.setTargetAtTime(0,t2,R/4);stopAll(t2+R*1.6+.1)},
-    kill(t2){this.rel=true;kHold(amp.gain,t2);amp.gain.setTargetAtTime(0,t2,.006);stopAll(t2+.06)}};
-}
-/* ---- kits de batería incluidos ---- */
-async function loadIncluded(id,quiet){
-  try{
-    status('Cargando kit…');
-    const ix=await kIdx(),k=ix.kits.find(x=>x.id===id);if(!k)return false;
-    const bufs=await Promise.all(k.files.map(f=>kDec(k.pack,f)));
-    applyKit(bufs.slice(0,16).map((b,i)=>({buf:b,name:k.pads[i],s:0,e:1,ch:0})));lastSet(LASTK,'inc:'+id);
-    status((quiet?'Kit abierto: ':'Kit cargado: ')+k.name);return true;
-  }catch{status('No se pudo cargar el kit (¿sin conexión?)');return false}
-}
-async function kitIncluded(el){
-  try{
-    const ix=await kIdx(),v=el.value;
-    ix.kits.forEach(k=>{if(![...el.options].some(o=>o.value==='inc:'+k.id))el.appendChild(new Option('★ '+k.name,'inc:'+k.id))});
-    if(v)el.value=v;
-  }catch{}
-}
-/* ---- precarga tranquila del sonido de teclas por defecto (Rhodes real) cuando la app está en reposo ---- */
-if(typeof requestIdleCallback==='function')requestIdleCallback(()=>{if(KP.smp&&navigator.onLine!==false)smpLoad('keys',KP.smp).catch(()=>{})},{timeout:8000});
 /* ---------- GENERADOR: estilos (aproximaciones inspiradas en el carácter general, no copias) ----------
    Cada patrón es una cadena por compás: dígito 0-9 = probabilidad del golpe (9 = siempre, valores bajos = notas fantasma);
    'paso:valor,…' para compases de longitud irregular. Bajo: '.' silencio, 0-9/a-f = grado de la escala (0 = raíz, 7 = octava).
@@ -4901,6 +4800,23 @@ const GTS={
   '6/8':{spb:12,nn:6,dd:3,mk:[0,6]},'7/8':{spb:14,nn:7,dd:3,mk:[0,4,8]},'9/8':{spb:18,nn:9,dd:3,mk:[0,6,12]},'12/8':{spb:24,nn:12,dd:3,mk:[0,6,12,18]}};
 const GTSL={'12/8':'12/8 · 12 tiempos'};
 
+
+const GBK='Breaks';
+/* Recreaciones aproximadas por reglas de breaks clásicos (no son las grabaciones): tempo y swing de origen; nb = compases del patrón */
+gs(GBK,'brk_amen','Amen break · clásico (136)',{nb:4,bpm:136,sw:12,j:.05,k:'9090 0000 0090 0000 9090 0000 0090 0000 9090 0000 0090 0000 0090 0000 9090 0000',s:'0000 9003 0900 9000 0000 9003 0900 9000 0000 9003 0900 9000 0000 9003 0900 9300',h:'9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000',b:'0... .... .... ....',bl:4});
+gs(GBK,'brk_amen_half','Amen break · half-time (68)',{nb:4,bpm:68,sw:14,j:.06,k:'9090 0000 0090 0000 9090 0000 0090 0000 9090 0000 0090 0000 0090 0000 9090 0000',s:'0000 9003 0900 9000 0000 9003 0900 9000 0000 9003 0900 9000 0000 9003 0900 9300',h:'9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000',b:'0... .... .... ....',bl:8});
+gs(GBK,'brk_amen_jungle','Amen break · jungle (170)',{nb:4,bpm:170,sw:6,j:.04,k:'9090 0000 0090 0000 9090 0000 0090 0000 9090 0000 0090 0000 0090 0000 9090 0000',s:'0000 9003 0900 9000 0000 9003 0900 9000 0000 9003 0900 9000 0000 9003 0900 9300',h:'9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000',b:'0... .... 0... ..5.',bl:4});
+gs(GBK,'brk_amen_chop','Amen break · picado',{nb:4,bpm:160,sw:0,j:.03,k:'9090 0000 0090 0000 9000 9000 0090 0000 9090 0000 9090 0000 9000 0090 9090 9000',s:'0000 9003 0900 9000 0000 9003 9000 9000 0000 9003 0900 9300 0099 9999 9900 9999',h:'9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000',b:'0... .... 0... ..5.',bl:3});
+gs(GBK,'brk_funkydrummer','Funky Drummer (103)',{nb:2,bpm:103,sw:26,j:.08,ds:.1,k:'9000 0050 0090 0300 9000 0000 0090 0050',s:'0030 9030 3090 3030 0030 9030 3090 3330',h:'9595 9595 9595 9595 9595 9595 9595 9595',o:'0000 0000 0000 0050 0000 0000 0000 0000',b:'0..3 ..0. .5.0 ..3.',bl:1});
+gs(GBK,'brk_funkypresident','Funky President (100)',{nb:2,bpm:100,sw:22,j:.08,k:'9000 0090 0090 0000 9000 0090 0900 0050',s:'0000 9020 0200 9020 0000 9020 0200 9030',h:'9595 9595 9595 9595 9595 9595 9595 9595',o:'0000 0000 0000 0050 0000 0000 0000 0000',b:'0..3 ..0. .5.0 ..3.',bl:1});
+gs(GBK,'brk_impeach','Impeach the President (98)',{nb:2,bpm:98,sw:18,j:.07,k:'9000 0060 0090 0000 9000 0090 0600 0000',s:'0000 9000 0000 9010 0000 9000 0010 9000',h:'9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0030 0000 0000 0000 0000',b:'0... ..0. 0.5. ....',bl:3});
+gs(GBK,'brk_apache','Apache (117)',{nb:2,bpm:117,sw:10,j:.06,k:'9000 0090 0900 0000 9000 0090 0000 9000',s:'0000 9000 0000 9000 0000 9000 0020 9000',h:'9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0050 0000 0000 0000 0000',b:'0... ..0. 0... ..5.',bl:2});
+gs(GBK,'brk_think','Think (102)',{nb:2,bpm:102,sw:20,j:.07,k:'9000 0090 0090 0000 9000 0090 0000 0090',s:'0000 9000 0020 9000 0000 9000 0020 9030',h:'9595 9595 9595 9595 9595 9595 9595 9595',o:'0000 0000 0000 0000 0000 0000 0000 0050',b:'0..0 ..3. 0.5. ....',bl:2});
+gs(GBK,'brk_hotpants','Hot Pants (107)',{nb:2,bpm:107,sw:24,j:.08,k:'9000 0090 0000 0900 9000 0000 0090 0050',s:'0000 9020 0020 9020 0000 9020 0020 9030',h:'9595 9595 9595 9595 9595 9595 9595 9595',o:'0000 0000 0000 0050 0000 0000 0000 0000',b:'0..0 ..3. ..5. 0...',bl:1});
+gs(GBK,'brk_levee','When the Levee Breaks (74)',{nb:2,bpm:74,sw:22,j:.06,k:'9090 0000 0090 0050 9000 0090 0000 0090',s:'0000 9000 0000 9020 0000 9000 0020 9000',h:'9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0000 0000 0000 0000 0000',b:'0... .... 0... ....',bl:8});
+gs(GBK,'brk_synthsub','Synthetic Substitution (96)',{nb:2,bpm:96,sw:16,j:.06,k:'9000 0090 0090 0000 9000 0090 0000 0900',s:'0000 9000 0010 9000 0000 9000 0010 9020',h:'9090 9090 9090 9090 9090 9090 9090 9090',o:'0000 0000 0000 0050 0000 0000 0000 0000',b:'0... ..0. 0... ..5.',bl:2});
+gs(GBK,'brk_cissy','Cissy Strut (100)',{nb:2,bpm:100,sw:32,j:.09,k:'9000 0090 0090 0000 9000 0000 0090 0090',s:'0000 9040 0030 9040 0000 9040 0030 9040',h:'9595 9595 9595 9595 9595 9595 9595 9595',o:'0000 0000 0000 0000 0000 0000 0000 0050',b:'0..3 ..0. .5.0 ..3.',bl:1});
+gs(GBK,'brk_ashley','Ashley\'s Roachclip (108)',{nb:2,bpm:108,sw:20,j:.07,k:'9000 0090 0900 0000 9000 0090 0000 9000',s:'0000 9000 0000 9020 0000 9000 0020 9000',h:'9595 9595 9595 9595 9595 9595 9595 9595',o:'0000 0000 0000 0050 0000 0000 0000 0000',b:'0..0 ..3. 0.5. ....',bl:2});
 /* progresiones y ritmos de acompañamiento de las teclas */
 const GPROG=[['I–IV–V–IV','0,3,4,3'],['I–V–vi–IV','0,4,5,3'],['ii–V–I','1,4,0,0'],['i–VI–III–VII','0,5,2,6'],['i–iv–v–i','0,3,4,0'],['vi–IV–I–V','5,3,0,4'],['i–VII–VI–VII','0,6,5,6'],['I–vi–ii–V','0,5,1,4'],['Un solo acorde','0'],['Libre (azar)','free']].map(([n,d])=>({id:n,n,d:d==='free'?null:d.split(',').map(Number)}));
 const GCOMP={boombap:['9000 0060 9000 0030',3],peterock:['9000 0060 9000 0030',3],qtip:['9000 0060 9000 0030',3],premier:['9000 0000 9000 0000',6],
@@ -4995,16 +4911,16 @@ function gGenDrums(){
   const st=gSt(),spb=gSpb(),bars=G.bars,tot=spb*bars,rng=gRng(G.seed),f=G.dens/50,out={};
   const add={k:.05,s:.04,h:.2,o:.04};
   GDRUM.forEach((L,li)=>{
-    const id=L.id,P=gParse(st[id],spb).map(d=>d/9),a=new Array(tot).fill(0);
+    const id=L.id,nb=Math.max(1,st.nb||1),P=gParse(st[id],spb*nb).map(d=>d/9),a=new Array(tot).fill(0);
     for(let b=0;b<bars;b++)for(let i=0;i<spb;i++){
-      let p=P[i];
+      const pi=(b%nb)*spb+i;let p=P[pi];
       if(p>0)p=p>=.7?Math.min(1,p*(f<1?.35+.65*f:1)):Math.min(1,p*f*f);
       else if(f>1)p=add[id]*(f-1);
       if(b>0&&p>0&&p<.95)p=Math.max(0,Math.min(1,p+(rng()-.5)*(G.vari/100)*.9));
       if(rng()<G.chaos/100*.2)p=p>0?0:.9;
       const g=b*spb+i;
       if(p>0&&rng()<p){
-        let v=Math.round(40+Math.max(P[i],.35)*80+(i%4===0?6:0)+(rng()-.5)*G.hum*.4);
+        let v=Math.round(40+Math.max(P[pi],.35)*80+(i%4===0?6:0)+(rng()-.5)*G.hum*.4);
         a[g]=Math.max(20,Math.min(127,v));
       }else if(id==='s'&&G.hum>0&&p===0&&rng()<G.hum/100*.06)a[g]=28+Math.round(rng()*16);   // nota fantasma
     }
@@ -5514,59 +5430,8 @@ function gCards(){
     const lf=gEl('label','gl1','Lo-fi'),sl=gEl('select');
     gOpt(sl,[[-1,'Como el común'],[0,'Sin efecto'],[1,'SP-1200'],[2,'SP-202'],[3,'MPC60']],S.lofi);
     sl.onchange=()=>{S.lofi=+sl.value;S.pk='';gSave()};lf.append(sl);
-    const kp=gEl('select','gkpick');kp.setAttribute('aria-label','Elegir un sonido de un kit para '+L.n);gKitPick(kp,i);
-    card.append(hd,bt,kp,sg,lf);host.append(card);
+    card.append(hd,bt,sg,lf);host.append(card);
   });
-  gKitRow();
-}
-/* ---- kits incluidos: un sonido para un hueco, o el kit completo (bombo, caja y los dos hats) ---- */
-let GKI=null;
-kIdx().then(ix=>{GKI=ix.kits;gCards()}).catch(()=>{});
-function gKitPick(sel,i){
-  sel.replaceChildren(new Option('Elegir de un kit…',''));
-  (GKI||[]).forEach(k=>{
-    const og=document.createElement('optgroup');og.label=k.name;
-    k.pads.forEach((n,j)=>og.appendChild(new Option(n,k.id+'|'+j)));
-    sel.appendChild(og);
-  });
-  sel.hidden=!GKI||!GKI.length;
-  sel.onchange=async()=>{
-    const v=sel.value;sel.value='';if(!v)return;
-    const [id,j]=v.split('|'),k=GKI.find(x=>x.id===id);
-    try{
-      gKMsg('Cargando sonido…');
-      const b=await kDec(k.pack,k.files[+j]);
-      gSetSlot(i,b,k.pads[+j]);gKMsg(GDRUM[i].n+': '+k.pads[+j]+' ('+k.name+')');
-      if(typeof gHit==='function'){ctx.resume();gHit(gLive(),i,ctx.currentTime,115)}
-    }catch(e){gKMsg('No se pudo cargar el sonido: '+((e&&e.message)||'error'))}
-  };
-}
-const gKMsg=t=>{const h=$('#gkhint');if(h)h.textContent=t;status(t)};
-function gSugKit(){
-  if(!GKI)return null;
-  const s=gSt(),t=((s.id||'')+' '+(s.n||'')+' '+(s.g||'')).toLowerCase();
-  return GKI.find(k=>(k.suggest||[]).some(w=>t.includes(w)))||null;
-}
-async function gKitFull(id){
-  const k=id==='sug'?gSugKit():GKI.find(x=>x.id===id);
-  if(!k){gKMsg('Ningún kit incluido encaja con este estilo');return}
-  try{
-    gKMsg('Cargando kit…');
-    const g=k.gen,idx=[g.kick,g.snare,g.hatC,g.hatO],bufs=await Promise.all(idx.map(j=>kDec(k.pack,k.files[j])));
-    bufs.forEach((b,i)=>gSetSlot(i,b,k.pads[idx[i]]));
-    gKMsg('Kit completo: '+k.name);
-  }catch(e){gKMsg('No se pudo cargar el kit: '+((e&&e.message)||'error'))}
-}
-function gKitRow(){
-  const host=$('#gkitrow');if(!host)return;host.replaceChildren();
-  if(!GKI||!GKI.length){host.hidden=true;return}
-  host.hidden=false;
-  const sel=gEl('select');sel.setAttribute('aria-label','Kit completo');
-  sel.append(new Option('Kit completo…',''),new Option('Sugerido por el estilo','sug'));
-  GKI.forEach(k=>sel.appendChild(new Option(k.name,k.id)));
-  sel.onchange=()=>{const v=sel.value;sel.value='';if(v)gKitFull(v)};
-  const sg=gSugKit(),hint=gEl('span','gkhint',sg?'Para este estilo: '+sg.name:'');hint.id='gkhint';
-  host.append(sel,hint);
 }
 const pl_=i=>typeof pl==='function'?pl(i):i+1;
 /* ---- sincronizar todo ---- */
@@ -5577,8 +5442,7 @@ function gUI(){
   const pb=$('#gplay');pb.textContent=G.play?'Parar':'Reproducir';pb.classList.toggle('on',G.play);
   $('#gbpm').value=G.bpm;$('#gts').value=G.ts;$('#gbars').value=G.bars;
   $('#guseD').classList.toggle('on',G.useD);$('#guseB').classList.toggle('on',G.useB);$('#guseK').classList.toggle('on',G.useK);
-  $('#gstyle').value=G.style;{const h=$('#gkhint');if(h){const sg=gSugKit();h.textContent=sg?'Para este estilo: '+sg.name:''}}
-  $('#gseed').value=G.seed;$('#gfix').checked=G.fix;$('#gtempost').checked=G.tempoStyle;$('#gfill').value=G.fill;$('#gsb').value=G.sb;
+  $('#gstyle').value=G.style;$('#gseed').value=G.seed;$('#gfix').checked=G.fix;$('#gtempost').checked=G.tempoStyle;$('#gfill').value=G.fill;$('#gsb').value=G.sb;
   $('#gbown').checked=G.bOwn;$('#gbstyle').value=G.bstyle;$('#gbstyle').hidden=!G.bOwn;
   $('#gkown').checked=G.kOwn;$('#gkstyle').value=G.kstyle;$('#gkstyle').hidden=!G.kOwn;
   $('#gbtsown').checked=G.bTsOwn;$('#gbts').value=G.bTs;$('#gbts').hidden=!G.bTsOwn;$('#gfollow').value=G.follow;
@@ -5602,7 +5466,7 @@ function gFillStyles(){
 }
 function gDraw(){gUI();gGrid();gCards()}
 function gRegen(what){gGenerate(what);gGrid();gUI();gSave()}
-function gApplyStyle(){gStyleDefaults(gSt());G.page=0;gGenerate('all');if(G.bOwn)G.bas=gGenBass();gGrid();gUI();gSave()}
+function gApplyStyle(){gStyleDefaults(gSt());G.page=0;{const nb=gSt().nb||1;if(nb>G.bars){G.bars=nb;gResizeLocked()}}gGenerate('all');if(G.bOwn)G.bas=gGenBass();gGrid();gUI();gSave()}
 function gInit(){
   gFillStyles();
   gOpt($('#gkprog'),GPROG.map(p=>[p.id,p.n]),G.kprog);
@@ -5845,7 +5709,7 @@ function gFxRefresh(){gFxBassUI();gFxKeysUI();gFxUI($('#gbfx'),BFX,()=>{bfxLive(
 /* ---------- idioma: español (por defecto) e inglés. El texto fuente es el español; el diccionario EN lo traduce ---------- */
 const LANG_KEY='sampledhead.lang';
 let LANG='es';try{if(localStorage.getItem(LANG_KEY)==='en')LANG='en'}catch{}
-const I18N={"x": {"Nuevo": "New", "Grabar": "Record", "Importar": "Import", "Más": "More", "Bajo": "Bass", "Teclas": "Keys", "↶ Deshacer": "↶ Undo", "↷ Rehacer": "↷ Redo", "Todo": "All", "Región": "Region", "🔓 Ini": "🔓 Start", "🔓 Fin": "🔓 End", "Dividir": "Split", "Asignar": "Assign", "Tono": "Pitch", "Grupo 1": "Group 1", "Grupo 2": "Group 2", "Vaciar": "Clear", "Duplicar": "Duplicate", "Rec para empezar": "Rec to start", "— BPM": "— BPM", "Se detecta al cerrar el bucle": "Detected when the loop closes", "Borrar": "Delete", "Cuenta": "Count", "Afinador": "Tuner", "Pad vacío": "Empty pad", "Afinar": "Tune", "Todos": "All", "Ninguno": "None", "FILTRO": "FILTER", "LIBRE": "FREE", "Actúan sobre todo lo que suena.": "They act on everything that plays.", "Sonido": "Sound", "Osciladores": "Oscillators", "Filtro · arrastra el punto": "Filter · drag the point", "Volumen · arrastra los puntos": "Volume · drag the points", "Nota raíz, escala y octava": "Root note, scale and octave", "Kits de bajo": "Bass kits", "Guardar": "Save", "Cargar": "Load", "Duración de cada nota al exportar (igual para las 16):": "Length of each note when exporting (same for all 16):", "1 tiempo": "1 beat", "2 tiempos": "2 beats", "Los tiempos usan el tempo del Looper (120 BPM si no hay).": "Beats follow the Looper tempo (120 BPM if none).", "Perillas MIDI · grupo activo": "MIDI knobs · active group", "Mixer · volumen de cada parte": "Mixer · volume of each part", "Doble toque en un fader: 0 dB. Solo afecta a lo que suena en directo.": "Double tap a fader: 0 dB. Only affects live sound.", "Ecualizador de 8 bandas · master": "8-band equalizer · master", "Ecualizador activado": "Equalizer on", "Restablecer mixer": "Reset mixer", "Compresor · master": "Compressor · master", "Reducción de ganancia:": "Gain reduction:", "desactivado": "off", "Compresor activado": "Compressor on", "Onda de la nota": "Note waveform", "Nota raíz, escala y acorde": "Root note, scale and chord", "Cada pad toca el acorde de un grado de la escala.": "Each pad plays the chord of a scale degree.", "Timbre · arrastra los mandos hacia arriba o abajo": "Tone · drag the knobs up or down", "Trémolo / auto-pan": "Tremolo / auto-pan", "Lo-fi de sampler clásico": "Classic sampler lo-fi", "Kits de teclas": "Keys kits", "Duración de cada acorde al exportar (igual para los 16):": "Length of each chord when exporting (same for all 16):", "Pista": "Track", "Mezcla": "Mix", "Cada pista": "Each track", "Exportar a pad": "Export to pad", "Exportar a WAV": "Export to WAV", "Efectos": "Effects", "Estándar": "Standard", "Reson.": "Reso.", "Aplicar al grupo": "Apply to group", "Aplicar a todos los pads": "Apply to all pads", "Cerrar": "Close", "Copia el pad en los 16 pads del siguiente banco vacío, uno por nota de la escala.": "Copies the pad into the 16 pads of the next empty bank, one per scale note.", "Crear": "Create", "Conecta el aparato por USB y pulsa «Activar MIDI».": "Connect the device by USB and press “Enable MIDI”.", "Activar MIDI": "Enable MIDI", "Perillas relativas (encoders sin tope)": "Relative knobs (endless encoders)", "Sensib.": "Sens.", "Limpiar": "Clear", "Aprender": "Learn", "Pulsar un control de la lista y luego tocarlo en el aparato.": "Press a control in the list, then touch it on the device.", "Quitar este mapeo": "Remove this mapping", "Pads: 16 pads de la pestaña visible. Fuera del Mixer: perillas 1 y 2 = X e Y del efecto, 3 elige el efecto. En el Mixer: grupo activo (Volúmenes · Compresor · EQ).": "Pads: 16 pads of the visible tab. Outside the Mixer: knobs 1 and 2 = X and Y of the effect, 3 chooses the effect. In the Mixer: active group (Volumes · Compressor · EQ).", "Borrar lo aprendido": "Clear learned", "Proyectos": "Projects", "Un proyecto guarda pads, bajo, teclas, mixer y looper.": "A project stores pads, bass, keys, mixer and looper.", "Autoguardar y recuperar la sesión al abrir": "Autosave and restore the session on opening", "Copia de seguridad": "Backup", "Incluir kits y proyectos": "Include kits and projects", "Guardar copia": "Save backup", "Restaurar…": "Restore…", "Cargar desde enlace directo": "Load from direct link", "Exportar a Koala": "Export to Koala", "Exportar a Ableton": "Export to Ableton", "Exportar a MPC Sample": "Export to MPC Sample", "Exportar a Ableton Move": "Export to Ableton Move", "Exportar a SP-404A / SX": "Export to SP-404A / SX", "Exportar a SP-404MK2": "Export to SP-404MK2", "Exportar kit (.zip)": "Export kit (.zip)", "Importar kit": "Import kit", "Aplicación": "App", "MIDI…": "MIDI…", "Proyectos…": "Projects…", "Instalar app": "Install app", "Ajustar al cruce por cero al marcar": "Snap to zero crossing when marking", "Ajustes": "Settings", "Idioma": "Language", "Guía de uso": "User guide", "Kits": "Kits", "Nuevo: vaciar los 64 pads": "New: clear the 64 pads", "Más opciones": "More options", "Pestañas": "Tabs", "Nivel de salida": "Output level", "Deshacer": "Undo", "Rehacer": "Redo", "Forma de onda: arrastra para marcar la región del pad; pellizca para ampliar": "Waveform: drag to mark the pad region; pinch to zoom", "Desplazar la forma de onda": "Scroll the waveform", "Canal izquierdo": "Left channel", "Canal derecho": "Right channel", "Alejar": "Zoom out", "Acercar": "Zoom in", "Bloquear marca de inicio": "Lock start marker", "Bloquear inicio": "Lock start", "Bloquear marca final": "Lock end marker", "Bloquear final": "Lock end", "Auto chop: dividir la región del pad en partes iguales o por golpes": "Auto chop: split the pad region into equal parts or by hits", "Dividir la región en 16, 8, 4 o 2 partes": "Split the region into 16, 8, 4 or 2 parts", "Asignar los fragmentos a los pads del banco": "Assign the slices to the bank pads", "Loop: repetir el sample": "Loop: repeat the sample", "Modo de reproducción: One shot o Gate": "Playback mode: One shot or Gate", "Grupo 1: los pads de este grupo se cortan entre sí": "Group 1: pads in this group cut each other", "Grupo 2: los pads de este grupo se cortan entre sí": "Group 2: pads in this group cut each other", "Exportar la región como WAV mono": "Export the region as mono WAV", "Efectos del pad": "Pad effects", "16 Levels: escala con el pad seleccionado": "16 Levels: scale with the selected pad", "Dividir el tempo entre 2": "Halve the tempo", "Multiplicar el tempo por 2": "Double the tempo", "Pistas del looper": "Looper tracks", "Pista 1": "Track 1", "Pista 2": "Track 2", "Pista 3": "Track 3", "Pista 4": "Track 4", "Silenciar la pista seleccionada": "Mute the selected track", "Borrar la pista seleccionada": "Clear the selected track", "Solo: oír solo la pista seleccionada": "Solo: hear only the selected track", "Volumen de la pista seleccionada": "Volume of the selected track", "Metrónomo": "Metronome", "BPM del metrónomo cuando el looper aún no tiene tempo": "Metronome BPM while the looper has no tempo yet", "Cuenta atrás de un compás antes de grabar": "One-bar count-in before recording", "Rec: armar la grabación; después, activar o desactivar el overdub": "Rec: arm recording; then toggle overdub", "Play: reproducir el bucle desde el principio": "Play: play the loop from the start", "Stop: parar el bucle": "Stop: stop the loop", "Deshacer la última capa grabada": "Undo the last recorded layer", "Loop: marcar el final del bucle": "Loop: mark the end of the loop", "Bancos de pads": "Pad banks", "Banco A": "Bank A", "Banco B": "Bank B", "Banco C": "Bank C", "Banco D": "Bank D", "Banco Bajo: los pads del sintetizador de bajo": "Bass bank: the bass synth pads", "Banco Teclas: los pads de acordes del piano eléctrico": "Keys bank: the electric piano chord pads", "Pads del bajo": "Bass pads", "Pads de acordes": "Chord pads", "Afinador: nota del sonido del pad seleccionado": "Tuner: note of the selected pad's sound", "Afinar: llevar el sonido del pad a la nota más cercana": "Tune: move the pad's sound to the nearest note", "Lleva el sonido a la nota más cercana": "Moves the sound to the nearest note", "Resample: elegir qué pads se graban y grabar el resultado en un pad": "Resample: choose which pads are recorded and record the result into a pad", "Empezar a grabar el resample": "Start recording the resample", "Parar la grabación o salir del resample": "Stop recording or leave resample", "Deshacer el último cambio": "Undo the last change", "Deshacer (Ctrl+Z)": "Undo (Ctrl+Z)", "Rehacer el cambio deshecho": "Redo the undone change", "Rehacer (Ctrl+Mayús+Z)": "Redo (Ctrl+Shift+Z)", "Pad del filtro del máster. Mantener pulsado y mover.": "Master filter pad. Hold and move.", "Pad de reducción de bits del máster. Mantener pulsado y mover.": "Master bit reduction pad. Hold and move.", "Pad de Beat repeat del máster. Mantener pulsado y mover.": "Master Beat repeat pad. Hold and move.", "Pad de reverb del máster. Mantener pulsado y mover.": "Master reverb pad. Hold and move.", "Pad de delay del máster. Mantener pulsado y mover.": "Master delay pad. Hold and move.", "Mantener filtro activo al soltar": "Keep filter on after release", "Mantener bit activo al soltar": "Keep bit on after release", "Mantener repeat activo al soltar": "Keep repeat on after release", "Mantener reverb activo al soltar": "Keep reverb on after release", "Mantener delay activo al soltar": "Keep delay on after release", "Osciloscopio del bajo": "Bass oscilloscope", "Filtro: arrastra para cambiar el corte y la resonancia": "Filter: drag to change cutoff and resonance", "Envolvente: ataque, caída, sostenido y relajación": "Envelope: attack, decay, sustain and release", "Bajar una octava": "Down one octave", "Subir una octava": "Up one octave", "Kits de bajo guardados": "Saved bass kits", "Respuesta del ecualizador": "Equalizer response", "Activar o desactivar el ecualizador": "Turn the equalizer on or off", "Activar o desactivar el compresor": "Turn the compressor on or off", "Kits de teclas guardados": "Saved keys kits", "Qué exportar": "What to export", "Exportar el bucle a un pad libre": "Export the loop to a free pad", "Exportar el bucle a un archivo WAV": "Export the loop to a WAV file", "Calidad de muestreo del SP-202": "SP-202 sample quality", "Frecuencia de corte del filtro paso bajo": "Low-pass filter cutoff", "Resonancia del filtro": "Filter resonance", "Envío de reverb de este pad": "This pad's reverb send", "Envío de delay de este pad": "This pad's delay send", "Aplicar los efectos a los pads del mismo grupo": "Apply the effects to pads of the same group", "Perfil del aparato": "Device profile", "Sensibilidad de las perillas relativas": "Relative knob sensitivity", "Proyectos guardados": "Saved projects", "Enlace al audio": "Audio link", "Kits guardados": "Saved kits", "Español": "Español", "English": "English", "Filtro": "Filter", "Preset del bajo": "Bass preset", "Preset de las teclas": "Keys preset", "Duración al exportar": "Length when exporting", "Preset de EQ": "EQ preset", "Preset de compresor": "Compressor preset", "Calidad de muestreo": "Sample quality", "Compresor": "Compressor", "Este pad no tiene grupo": "This pad has no group", "Efectos aplicados a todos los pads": "Effects applied to all pads", "Sin pads vacíos: vaciar uno primero": "No empty pads: clear one first", "Ya está vacío": "Already empty", "Pads vacíos · Deshacer disponible": "Pads cleared · Undo available", "No se pudo procesar la grabación": "Could not process the recording", "Grabando…": "Recording…", "Stop para terminar la grabación": "Stop to end the recording", "Resample cancelado": "Resample cancelled", "Resample: tocar los pads a grabar y pulsar Rec": "Resample: tap the pads to record and press Rec", "Ese pad está vacío": "That pad is empty", "No hay pads vacíos para el resample": "No empty pads for the resample", "No se pudo iniciar el resample": "Could not start the resample", "No se grabó nada: los pads elegidos no sonaron": "Nothing recorded: the chosen pads did not play", "Resample terminado": "Resample finished", "Ningún pad elegido": "No pad chosen", "Chop desactivado": "Chop off", "Seleccionar un pad con sample": "Select a pad with a sample", "Chop: elegir región y pulsar Dividir": "Chop: choose a region and press Split", "Sin golpes claros: 16 partes iguales": "No clear hits: 16 equal parts", "Marcas bloqueadas": "Markers locked", "Arrastrar sobre la onda para marcar la región": "Drag on the waveform to mark the region", "No se pudo exportar": "Could not export", "Los kits no están disponibles en este navegador": "Kits are not available in this browser", "No se pudo guardar el kit": "Could not save the kit", "No hay kits guardados": "No saved kits", "No se pudo cargar el kit": "Could not load the kit", "Kit borrado": "Kit deleted", "No se pudo borrar el kit": "Could not delete the kit", "No hay samples que exportar": "No samples to export", "Exportando…": "Exporting…", "No se pudo exportar el kit": "Could not export the kit", "Importando…": "Importing…", "Kit importado": "Kit imported", "No se pudo importar ese archivo": "Could not import that file", "El SP-404A admite 120 samples por importación": "The SP-404A accepts 120 samples per import", "Tocar el pad de destino": "Tap the target pad", "Cancelado": "Cancelled", "Terminar el resample antes de duplicar": "Finish the resample before duplicating", "Este pad está vacío": "This pad is empty", "El enlace no es válido": "The link is not valid", "Sin acceso directo al audio: descargarlo e importarlo": "No direct audio access: download and import it", "Descargando…": "Downloading…", "No se pudo cargar: el enlace no es directo o el servidor no lo permite": "Could not load: the link is not direct or the server does not allow it", "No se detecta una nota clara en este pad": "No clear note detected in this pad", "Parar la grabación antes de deshacer": "Stop recording before undoing", "Volumen: 100 %": "Volume: 100 %", "Tono: 0": "Pitch: 0", "Versión nueva: cerrar y abrir la app": "New version: close and reopen the app", "Kit no válido": "Invalid kit", "Mixer restablecido": "Mixer reset", "Bucle demasiado corto": "Loop too short", "No hay nada que deshacer": "Nothing to undo", "Grabación cancelada": "Recording cancelled", "Looper vacío": "Looper empty", "Tempo fuera de rango": "Tempo out of range", "Grabar un bucle primero": "Record a loop first", "No hay pads vacíos para exportar": "No empty pads to export", "No se pudo exportar el bucle": "Could not export the loop", "Cerrar la primera grabación (Loop) antes de cambiar de pista": "Close the first recording (Loop) before changing track", "Rec armado: tocar un pad": "Rec armed: tap a pad", "Rec armado": "Rec armed", "Loop para cerrar el bucle": "Loop to close the loop", "Terminar el resample antes de cambiar de pestaña": "Finish the resample before changing tab", "Exportando para Move…": "Exporting for Move…", "No se pudo exportar a Move": "Could not export to Move", "Grabando… (Rec cierra el bucle)": "Recording… (Rec closes the loop)", "Proyecto guardado": "Project saved", "No se pudo guardar el proyecto": "Could not save the project", "Sesión anterior recuperada": "Previous session restored", "Listo": "Ready", "Generador": "Generator", "Gen": "Gen", "Batería": "Drums", "Reproducir": "Play", "Parar": "Stop", "Bajar el tempo": "Lower tempo", "Subir el tempo": "Raise tempo", "Compás": "Time signature", "Compases": "Bars", "Batería suena": "Drums on", "Bajo suena": "Bass on", "Estilo": "Style", "Generar": "Generate", "Dado": "Dice", "Semilla ": "Seed ", " Fijar": " Lock", "Rellenos": "Fills", "Sin rellenos": "No fills", "Cada 2 compases": "Every 2 bars", "Cada 4 compases": "Every 4 bars", "Swing sobre": "Swing on", "Semicorcheas": "16th notes", "Corcheas": "8th notes", "Estilo del bajo propio": "Own bass style", "Compás del bajo propio": "Own bass time signature", "Relación con el bombo": "Relation to the kick", "Libre": "Free", "Seguir el bombo": "Follow the kick", "Evitar el bombo": "Avoid the kick", "Patrón · toca los pasos": "Pattern · tap the steps", "Sonidos": "Sounds", "Efectos de la batería · común": "Drum effects · common", "Lo-fi": "Lo-fi", "Sin efecto": "No effect", "Calidad SP-202": "SP-202 quality", "Efectos del bajo": "Bass effects", "Silenciar bajo": "Mute bass", "Sidechain": "Sidechain", "Exportar": "Export", "Contenido": "Content", "Batería y bajo": "Drums and bass", "Solo batería": "Drums only", "Solo bajo": "Bass only", "Duración": "Length", "1 vuelta": "1 loop", "2 vueltas": "2 loops", "4 vueltas": "4 loops", "Ciclo completo": "Full cycle", "A pad y WAV": "To pad and WAV", "Todo en uno": "All in one", "Cada sonido por separado": "Each sound separately", "A pad": "To pad", "Looper": "Looper", "WAV": "WAV", "MIDI": "MIDI", "Bombo": "Kick", "Caja": "Snare", "Hat cerrado": "Closed hat", "Hat abierto": "Open hat", "Sin sonido": "No sound", "Del pad": "From pad", "Volumen": "Volume", "Largo": "Length", "Corte": "Cutoff", "Como el común": "Same as common", "Densidad": "Density", "Variación": "Variation", "Azar": "Chaos", "Swing": "Swing", "Dinámica humana": "Human dynamics", "Bajada": "Dip", "Recuperación": "Release", "Curva": "Curve", "Exponencial": "Exponential", "Lineal": "Linear", "Golpes del bombo que la disparan": "Kick hits that trigger it", "Solo el primer tiempo de cada compás": "Only the first beat of each bar", "Solo los fuertes": "Only the strong ones", "Filtro paso bajo": "Low-pass filter", "Resonancia": "Resonance", "Wah": "Wah", "Modo": "Mode", "Pedal": "Pedal", "Automático": "Automatic", "Con el tempo": "With the tempo", "Velocidad": "Rate", "Veces por tiempo": "Times per beat", "1 cada 4 tiempos": "1 every 4 beats", "1 cada 2 tiempos": "1 every 2 beats", "1 por tiempo": "1 per beat", "2 por tiempo": "2 per beat", "Profundidad": "Depth", "Phaser": "Phaser", "Flanger": "Flanger", "Realimentación": "Feedback", "Trémolo": "Tremolo", "Chorus": "Chorus", "Bloquear ": "Lock ", "Silenciar": "Mute", "Solo": "Solo", "Compás 1": "Bar 1", "Compás 2": "Bar 2", "Compás 3": "Bar 3", "Compás 4": "Bar 4", "12/8 · 12 tiempos": "12/8 · 12 beats", "Genéricos": "Generic", "Productores": "Producers", "Bateristas": "Drummers", "Bajistas": "Bassists", "Mis estilos": "My styles", "Boom bap": "Boom bap", "Funk": "Funk", "Acid": "Acid", "Motorik": "Motorik", "Post-punk": "Post-punk", "Reggae": "Reggae", "Jazz": "Jazz", "Bebop": "Bebop", "Drum and bass": "Drum and bass", "Trap": "Trap", "UK garage": "UK garage", "Trip hop": "Trip hop", "Rock años 60": "60s rock", "Rock años 70": "70s rock", "Soul": "Soul", "Afrobeat (Fela Kuti)": "Afrobeat (Fela Kuti)", "Cumbia": "Cumbia", "Son cubano": "Cuban son", "Chacarera": "Chacarera", "Zamba (samba argentina)": "Zamba (Argentine samba)", "Milonga pampeana": "Pampean milonga", "Flamenco (12 tiempos)": "Flamenco (12 beats)", "Blues 4/4 (shuffle)": "Blues 4/4 (shuffle)", "Blues 12 tiempos": "12-beat blues", "Cargar un sonido en cada hueco para oír la batería.": "Load a sound in each slot to hear the drums.", "Toque en un paso: normal, acento, fantasma, vacío.": "Tap a step: normal, accent, ghost, empty.", "Toque una celda para poner o quitar una nota. Las notas usan la raíz y la escala de la pestaña Bajo.": "Tap a cell to add or remove a note. Notes use the root and scale of the Bass tab.", "Batería y bajo miden lo mismo.": "Drums and bass are the same length.", "Teclas suena": "Keys on", "Silenciar teclas": "Mute keys", "Efectos de las teclas": "Keys effects", "Progresión": "Progression", "Acordes por compás": "Chords per bar", "El bajo sigue a las teclas": "Bass follows the keys", "Sidechain en las teclas": "Sidechain on the keys", "Sonido, raíz, escala y tipo de acorde: los de la pestaña Teclas.": "Sound, root, scale and chord type: those of the Keys tab.", "Tempo del estilo": "Style tempo", "Batería, bajo y teclas": "Drums, bass and keys", "Solo teclas": "Keys only", "Un solo acorde": "Single chord", "Libre (azar)": "Free (random)", "Teclistas": "Keyboardists", "Vinilo": "Vinyl", "VINILO": "VINYL", "Crujido": "Crackle", "Siseo": "Hiss", "Wow y flutter": "Wow and flutter", "Recorte de agudos": "Treble cut", "Saturación": "Saturation", "Toque una celda para poner o quitar un acorde. Usa la raíz, la escala y el acorde de la pestaña Teclas.": "Tap a cell to add or remove a chord. It uses the root, scale and chord of the Keys tab.", "Vinilo sintetizado: crujido, siseo, wow y recorte de agudos": "Synthesized vinyl: crackle, hiss, wow and treble cut", "Contrabajo": "Upright bass", "Púa": "Pick", "808 caída": "808 drop", "Nu soul": "Nu soul", "Rhodes sucio": "Dirty Rhodes", "Piano juguete": "Toy piano", "Vibráfono": "Vibraphone", "Órgano iglesia": "Church organ", "Pad oscuro": "Dark pad", "Coros aah": "Aah choir", "Synth suave": "Soft synth", "Campanas": "Bells", "Arpa": "Harp", "Estilo de las teclas propio": "Own keys style", "Estilo de las teclas": "Keys style", "Gen bat.": "Gen drums", "RADIO": "RADIO", "DUB DELAY": "DUB DELAY", "Fender Jazz": "Fender Jazz", "Dedos": "Fingers", "Swagbass": "Swagbass", "Fretless": "Fretless", "Muted": "Muted", "Dilla": "Dilla", "Rhodes": "Rhodes", "Rhodes suave": "Soft Rhodes", "Rhodes brillante": "Bright Rhodes", "Rhodes oscuro": "Dark Rhodes", "Rhodes nu soul": "Nu soul Rhodes", "Piano vertical": "Upright piano", "Piano lo-fi": "Lo-fi piano", "Xilófono": "Xylophone", "FM": "FM", "Pad suave": "Soft pad", "Cargando sonido…": "Loading sound…", "Sonido listo": "Sound ready", "No se pudo cargar el sonido (¿sin conexión?)": "Could not load the sound (offline?)", "Cargando kit…": "Loading kit…", "No se pudo cargar el kit (¿sin conexión?)": "Could not load the kit (offline?)", "Los kits incluidos no se pueden borrar": "Included kits cannot be deleted", "Elegir de un kit…": "Pick from a kit…", "Kit completo…": "Full kit…", "Sugerido por el estilo": "Suggested for the style", "Ningún kit incluido encaja con este estilo": "No included kit fits this style", "Funk Real": "Funk Real", "Bombo legüero": "Bombo legüero", "808": "808", "909": "909", "Parche": "Drumhead", "Parche tapado": "Muted drumhead", "Resonante": "Resonant", "Resonante corto": "Short resonant", "Aro": "Rim", "Bombo 1": "Kick 1", "Bombo 2": "Kick 2", "Bombo 3": "Kick 3", "Bombo 4": "Kick 4", "Caja 1": "Snare 1", "Caja 2": "Snare 2", "Caja 3": "Snare 3", "Caja 4": "Snare 4", "Rim 1": "Rim 1", "Rim 2": "Rim 2", "Rim 3": "Rim 3", "Rim 4": "Rim 4", "Hat cerrado 1": "Closed hat 1", "Hat cerrado 2": "Closed hat 2", "Hat cerrado 3": "Closed hat 3", "Bombo corto": "Short kick", "Clap": "Clap", "Rim": "Rim", "Hat pedal": "Pedal hat", "Tom grave": "Low tom", "Tom medio": "Mid tom", "Tom agudo": "High tom", "Crash": "Crash", "Cowbell": "Cowbell", "Conga": "Conga", "Shaker": "Shaker"}, "f": {"Efectos aplicados al grupo ": "Effects applied to group ", "Sin acceso al micrófono: ": "No microphone access: ", "Grabando → pad ": "Recording → pad ", "Resample en pad ": "Resample into pad ", "Chop por golpes · ": "Chop by hits · ", "Chop · ": "Chop · ", "Chop: ": "Chop: ", "Región ": "Region ", "Exportado: ": "Exported: ", "Kit guardado: ": "Kit saved: ", "Duplicado en pad ": "Duplicated into pad ", "Afinado a ": "Tuned to ", "Kit de bajo guardado: ": "Bass kit saved: ", "Sonido: ": "Sound: ", "Kit de teclas guardado: ": "Keys kit saved: ", "La pista ": "Track ", "Última capa de la pista ": "Last layer of track ", "No hay más pads vacíos (se exportaron ": "No more empty pads (exported ", "Exportadas ": "Exported ", "Efecto: ": "Effect: ", "Perillas del mixer: ": "Mixer knobs: ", "MIDI aprendido: ": "MIDI learned: ", "Proyecto cargado: ": "Project loaded: ", "Cuenta… ": "Count… ", "Marca bloqueada": "Marker locked", "Marca desbloqueada": "Marker unlocked", "Pad vacío": "Empty pad", "Deshecho: ": "Undone: ", "Rehecho: ": "Redone: ", " pads elegidos": " pads chosen", " pad elegido": " pad chosen", "Grabando ": "Recording ", "Tocar los pads a grabar": "Tap the pads to record", "Resample para empezar": "Resample to start", "Mover o pulsar «": "Move or press «", "» en el aparato": "» on the device", "Otra pulsación cancela.": "Another press cancels.", "MIDI web no disponible en este navegador (ni en iPad). Usar Chrome en Android o en ordenador.": "Web MIDI is not available in this browser (nor on iPad). Use Chrome on Android or a computer.", "SampledHead -> SP-404A  ·  Kit: ": "SampledHead -> SP-404A  ·  Kit: ", "SampledHead -> SP-404MK2  ·  Kit: ": "SampledHead -> SP-404MK2  ·  Kit: ", "1. Copiar ROLAND/IMPORT de este zip a ROLAND/IMPORT de la tarjeta SD (formateada por el SP-404A).": "1. Copy ROLAND/IMPORT from this zip to ROLAND/IMPORT on the SD card (formatted by the SP-404A).", "2. Insertar la tarjeta y encender. [SELECT] debe estar apagado.": "2. Insert the card and power on. [SELECT] must be off.", "3. [SHIFT] + pad 3 (IMPORT).": "3. [SHIFT] + pad 3 (IMPORT).", "4. Botón BANK A y pad 1.": "4. BANK A button and pad 1.", "5. [REC]. Los archivos se reparten por nombre desde ese pad, 12 por banco. Esperar a que el punto de la pantalla deje de parpadear.": "5. [REC]. Files are spread by name from that pad, 12 per bank. Wait until the dot on the display stops blinking.", "Los pads de destino se sobrescriben; los bancos protegidos se saltan. Los archivos importados se borran de IMPORT.": "Target pads are overwritten; protected banks are skipped. Imported files are removed from IMPORT.", "Reparto desde el banco A, pad 1:": "Layout from bank A, pad 1:", " (pad original ": " (original pad ", "1. Copiar la carpeta ": "1. Copy the folder ", " de este zip a IMPORT en la tarjeta SD.": " from this zip to IMPORT on the SD card.", "2. Insertar la tarjeta. [SHIFT] + pad 14 (IMPORT/EXPORT).": "2. Insert the card. [SHIFT] + pad 14 (IMPORT/EXPORT).", "3. Elegir IMPORT > IMPORT from SD-CARD > SAMPLE.": "3. Choose IMPORT > IMPORT from SD-CARD > SAMPLE.", "4. Pad de destino (1-16) del banco elegido.": "4. Target pad (1-16) of the chosen bank.", "5. [VALUE] entra en ": "5. [VALUE] enters ", " y en la carpeta del banco; elegir el sample y [VALUE]. [SHIFT] + [VALUE] marca varios.": " and the bank folder; choose the sample and [VALUE]. [SHIFT] + [VALUE] marks several.", "Cada archivo lleva el número de su pad (01-16); cada banco tiene su carpeta (A–D).": "Each file carries its pad number (01-16); each bank has its folder (A–D).", "Archivos:": "Files:", "=== TARJETA LISTA (carpeta SP-404SX) ===": "=== READY CARD (SP-404SX folder) ===", "El zip incluye también una tarjeta lista: SP-404SX/SMPL con los WAV (44,1 kHz, 16 bits, mono) y PAD_INFO.BIN con los ajustes de los 120 pads.": "The zip also includes a ready card: SP-404SX/SMPL with the WAVs (44.1 kHz, 16-bit, mono) and PAD_INFO.BIN with the settings of the 120 pads.", "Verificado solo con una tarjeta de SP-404SX. En la SP-404A, si la tarjeta formateada tiene otra carpeta (por ejemplo ROLAND/SP-404A), copiar ahí el contenido de SMPL.": "Verified only with an SP-404SX card. On the SP-404A, if the formatted card has another folder (e.g. ROLAND/SP-404A), copy the SMPL contents there.", "1. Copia de seguridad de la tarjeta.": "1. Back up the card.", "2. Copiar SMPL (con PAD_INFO.BIN) a la carpeta correspondiente, sustituyendo los archivos.": "2. Copy SMPL (with PAD_INFO.BIN) to the matching folder, replacing the files.", "3. Los pads sin uso quedan vacíos.": "3. Unused pads stay empty.", "Reparto seguido: pads 1–12 al banco A, 13–24 al B, etc. (12 pads por banco).": "Sequential layout: pads 1–12 to bank A, 13–24 to B, etc. (12 pads per bank).", "Pads que se exportan:": "Exported pads:", "  pad ": "  pad ", "  ->  banco ": "  ->  bank ", ", pad ": ", pad ", "Pentatónica mayor": "Major pentatonic", "Pentatónica menor": "Minor pentatonic", "Blues (menor)": "Blues (minor)", "Blues mayor": "Major blues", "Pentatónica Yo": "Yo pentatonic", "Pentatónica Kumoi": "Kumoi pentatonic", "Pentatónica egipcia": "Egyptian pentatonic", "Mayor (Jónica)": "Major (Ionian)", "Menor natural (Eólica)": "Natural minor (Aeolian)", "Dórica (salsa, cumbia)": "Dorian (salsa, cumbia)", "Mixolidia (salsa)": "Mixolydian (salsa)", "Lidia dominante (bossa)": "Lydian dominant (bossa)", "Menor armónica (tango)": "Harmonic minor (tango)", "Menor melódica (tango)": "Melodic minor (tango)", "Eólica (menor natural)": "Aeolian (natural minor)", "Jónica (mayor)": "Ionian (major)", "Frigia dominante (flamenca)": "Phrygian dominant (flamenco)", "Española de 8 notas": "Spanish 8-note", "Japonesa (Hirajoshi)": "Japanese (Hirajoshi)", "Árabe (doble armónica)": "Arabic (double harmonic)", "Húngara menor": "Hungarian minor", "Napolitana mayor": "Neapolitan major", "Napolitana menor": "Neapolitan minor", "Bati menor (Etiopía)": "Bati minor (Ethiopia)", "Ambassel mayor (Etiopía)": "Ambassel major (Ethiopia)", "Ambassel menor": "Ambassel minor", "Tizita mayor": "Tizita major", "Tizita menor": "Tizita minor", "Bati mayor": "Bati major", "Disminuida tono-semitono": "Diminished whole-half", "Disminuida semitono-tono": "Diminished half-whole", "Alterada (superlocria)": "Altered (super Locrian)", "Lidia aumentada": "Lydian augmented", "Bebop dominante": "Bebop dominant", "Bebop mayor": "Bebop major", "Bebop dórica": "Bebop Dorian", "Lidia dominante": "Lydian dominant", "Menor armónica": "Harmonic minor", "Menor melódica": "Melodic minor", "Mixolidia b6": "Mixolydian b6", "Tonos enteros": "Whole tone", "Cromática": "Chromatic", "Persa": "Persian", "Prometeo": "Prometheus", "Pent. mayor": "Maj. pent.", "Pent. menor": "Min. pent.", "Pent. egipcia": "Egyptian pent.", "Pent. Yo": "Yo pent.", "Pent. Kumoi": "Kumoi pent.", "Men. armón.": "Harm. min.", "Men. melód.": "Mel. min.", "Bebop dom.": "Bebop dom.", "Lidia dom.": "Lydian dom.", "Dism. T-S": "Dim. W-H", "Dism. S-T": "Dim. H-W", "Lidia aument.": "Lydian aug.", "Frigia dom.": "Phryg. dom.", "Española 8": "Spanish 8", "Húngara men.": "Hung. minor", "Napolitana may.": "Neap. major", "Napolitana men.": "Neap. minor", "Japonesa": "Japanese", "Árabe": "Arabic", "Bati menor": "Bati minor", "Dórica": "Dorian", "Frigia": "Phrygian", "Lidia": "Lydian", "Mixolidia": "Mixolydian", "Locria": "Locrian", "Mayor": "Major", "Menor": "Minor", "Alterada": "Altered", "Blues y pentatónicas": "Blues and pentatonics", "Modos mayores y menores": "Major and minor modes", "África (aproximadas)": "Africa (approximate)", "Celtas": "Celtic", "India (ragas aproximados)": "India (approximate ragas)", "Latinas": "Latin", "Oriente y otras": "East and others", "Octava ": "Octave ", "octava ": "octave ", "7ª": "7th", "9ª": "9th", "raíz": "root", "Nivel": "Level", "Escala": "Scale", "Nota raíz": "Root note", "Volúmenes": "Volumes", "Volumen Sampler": "Sampler volume", "Volumen Bajo": "Bass volume", "Volumen Teclas": "Keys volume", "Volumen ": "Volume ", "Silenciar Sampler": "Mute Sampler", "Silenciar Bajo": "Mute Bass", "Silenciar Teclas": "Mute Keys", "Plano": "Flat", "Graves +": "Bass +", "Brillo": "Bright", "Cálido": "Warm", "Sin graves": "No bass", "Suave": "Soft", "Fuerte": "Hard", "Limitador": "Limiter", "Umbral": "Threshold", "Ataque": "Attack", "Relajación": "Release", "Relaj.": "Rel.", "Ganancia": "Gain", "Rhodes suave": "Soft Rhodes", "Rhodes brillante": "Bright Rhodes", "Rhodes oscuro": "Dark Rhodes", "Órgano": "Organ", "Pad suave": "Soft pad", "Sub largo": "Long sub", "Sucio": "Dirty", "Seno": "Sine", "Triang.": "Tri.", "Sierra": "Saw", "Cuadr.": "Sq.", "Tríada": "Triad", "Acordes": "Chords", "Raíz grave": "Low root", "Altura del toque": "Touch height", "Caída brillo": "Bright decay", "Campana": "Bell", "Caída": "Decay", "Sostenido": "Sustain", "Corte": "Cutoff", "Trémolo": "Tremolo", "Velocidad": "Speed", "Profund.": "Depth", "Sin efecto lo-fi": "No lo-fi effect", "Efectos · ": "Effects · ", "(vacío)": "(empty)", "Aplicar al grupo": "Apply to group", "este pad no tiene grupo": "this pad has no group", "Asignar a ": "Assign to ", "Genérico": "Generic", "Pads: notas 12-91 (modo B), cada banco A-D toca su banco. Ctrl 1-3 = CC 16-18; Ctrl 4-6 = CC 80-82.": "Pads: notes 12-91 (mode B), each bank A-D plays its own bank. Ctrl 1-3 = CC 16-18; Ctrl 4-6 = CC 80-82.", "Pads: mitad izquierda (notas 68-71, 76-79, 84-87, 92-95). Perillas CC 71-78 relativas; volumen CC 79; rueda CC 14. Pistas 1-4 = CC 43-40.": "Pads: left half (notes 68-71, 76-79, 84-87, 92-95). Relative knobs CC 71-78; volume CC 79; wheel CC 14. Tracks 1-4 = CC 43-40.", "Pads: banco B (notas 52-67). Play y Stop (CC 64) alternan. Perillas y Rec no envían MIDI.": "Pads: bank B (notes 52-67). Play and Stop (CC 64) toggle. Knobs and Rec send no MIDI.", "Pads desde la nota 36; perillas CC 16-18 absolutas.": "Pads from note 36; absolute knobs CC 16-18.", "Perillas": "Knobs", "Perilla ": "Knob ", "Rueda (grupo)": "Wheel (group)", "Transporte": "Transport", "Rec looper": "Looper Rec", "Grabar sample": "Record sample", "Cerrar loop": "Close loop", "Bancos": "Banks", "Borrar pista": "Clear track", "Grupo +": "Group +", "Grupo −": "Group −", "Hold del efecto elegido": "Hold of the chosen effect", "Pestañas": "Tabs", "Banco A": "Bank A", "Banco B": "Bank B", "Banco C": "Bank C", "Banco D": "Bank D", "Pista 1": "Track 1", "Pista 2": "Track 2", "Pista 3": "Track 3", "Pista 4": "Track 4", "Metrónomo": "Metronome", "Rehacer": "Redo", "Deshacer": "Undo", "Conectado: ": "Connected: ", "No se pudo activar MIDI: ": "Could not enable MIDI: ", "permiso denegado": "permission denied", "Sin aparatos MIDI. Conectar uno por USB.": "No MIDI devices. Connect one by USB.", " (el pad 1 define las otras 15 notas)": " (pad 1 sets the other 15 notes)", "  → aprendido: ": "  → learned: ", "  → para «": "  → for «", "» hace falta ": "» needs ", "una nota": "a note", "un CC (perilla)": "a CC (knob)", "pestaña ": "tab ", "banco ": "bank ", "pista ": "track ", "grabar sample": "record sample", "grupo ": "group ", "borrar pista": "clear track", "metrónomo": "metronome", "rehacer": "redo", "deshacer": "undo", "rec looper": "looper rec", "loop cerrado": "loop closed", "efecto ": "effect ", "beat repeat no disponible": "beat repeat unavailable", "sin función fuera del Mixer": "no function outside the Mixer", "sin función": "no function", "Tiempo real ": "Realtime ", "Nota ": "Note ", " suelta · canal ": " release · channel ", " · canal ": " · channel ", " · banco ": " · bank ", "  (¿relativo?)": "  (relative?)", "(sin asignar)": "(unassigned)", "  (sin asignar)": "  (unassigned)", "Volumen sin cambios": "Volume unchanged", "Amalgama: el ciclo completo dura ": "Polymeter: the full cycle lasts ", " compases de la batería.": " drum bars.", "Estilo guardado: ": "Style saved: ", "Estilo borrado": "Style deleted", "Nombre del estilo": "Style name", "Cargado en ": "Loaded into ", "No se pudo leer el audio": "Could not read the audio", "El pad seleccionado está vacío": "The selected pad is empty", "Sin sonido en este hueco": "No sound in this slot", "Oír ": "Play ", "Nada que exportar: cargar sonidos o generar un bajo": "Nothing to export: load sounds or generate a bass line", "Hacen falta ": "You need ", " pads vacíos (hay ": " empty pads (there are ", "Exportando…": "Exporting…", "No se pudo exportar": "Export failed", "Exportado al pad ": "Exported to pad ", "Exportados ": "Exported ", " pads a partir del ": " pads starting at ", " WAV en un zip": " WAVs in a zip", "Enviado al Looper · ": "Sent to Looper · ", "El Looper tiene contenido: se sustituirá. ¿Continuar?": "The Looper has content: it will be replaced. Continue?", "Nada que exportar": "Nothing to export", "crujido ": "crackle ", "banda ": "band ", "estática ": "static ", "realim. ": "feedback ", "Kit cargado: ": "Kit loaded: ", "Kit abierto: ": "Kit opened: ", "Kit completo: ": "Full kit: ", "Para este estilo: ": "For this style: ", "Elegir un sonido de un kit para ": "Pick a sound from a kit for ", "No se pudo cargar el kit: ": "Could not load the kit: ", "No se pudo cargar el sonido: ": "Could not load the sound: ", "falta ": "missing ", " en el servidor (": " on the server (", " no es válido (copia antigua o dañada: borra los datos del sitio y vuelve a abrir)": " is not valid (old or damaged copy: clear the site data and reopen)"}};
+const I18N={"x": {"Nuevo": "New", "Grabar": "Record", "Importar": "Import", "Más": "More", "Bajo": "Bass", "Teclas": "Keys", "↶ Deshacer": "↶ Undo", "↷ Rehacer": "↷ Redo", "Todo": "All", "Región": "Region", "🔓 Ini": "🔓 Start", "🔓 Fin": "🔓 End", "Dividir": "Split", "Asignar": "Assign", "Tono": "Pitch", "Grupo 1": "Group 1", "Grupo 2": "Group 2", "Vaciar": "Clear", "Duplicar": "Duplicate", "Rec para empezar": "Rec to start", "— BPM": "— BPM", "Se detecta al cerrar el bucle": "Detected when the loop closes", "Borrar": "Delete", "Cuenta": "Count", "Afinador": "Tuner", "Pad vacío": "Empty pad", "Afinar": "Tune", "Todos": "All", "Ninguno": "None", "FILTRO": "FILTER", "LIBRE": "FREE", "Actúan sobre todo lo que suena.": "They act on everything that plays.", "Sonido": "Sound", "Osciladores": "Oscillators", "Filtro · arrastra el punto": "Filter · drag the point", "Volumen · arrastra los puntos": "Volume · drag the points", "Nota raíz, escala y octava": "Root note, scale and octave", "Kits de bajo": "Bass kits", "Guardar": "Save", "Cargar": "Load", "Duración de cada nota al exportar (igual para las 16):": "Length of each note when exporting (same for all 16):", "1 tiempo": "1 beat", "2 tiempos": "2 beats", "Los tiempos usan el tempo del Looper (120 BPM si no hay).": "Beats follow the Looper tempo (120 BPM if none).", "Perillas MIDI · grupo activo": "MIDI knobs · active group", "Mixer · volumen de cada parte": "Mixer · volume of each part", "Doble toque en un fader: 0 dB. Solo afecta a lo que suena en directo.": "Double tap a fader: 0 dB. Only affects live sound.", "Ecualizador de 8 bandas · master": "8-band equalizer · master", "Ecualizador activado": "Equalizer on", "Restablecer mixer": "Reset mixer", "Compresor · master": "Compressor · master", "Reducción de ganancia:": "Gain reduction:", "desactivado": "off", "Compresor activado": "Compressor on", "Onda de la nota": "Note waveform", "Nota raíz, escala y acorde": "Root note, scale and chord", "Cada pad toca el acorde de un grado de la escala.": "Each pad plays the chord of a scale degree.", "Timbre · arrastra los mandos hacia arriba o abajo": "Tone · drag the knobs up or down", "Trémolo / auto-pan": "Tremolo / auto-pan", "Lo-fi de sampler clásico": "Classic sampler lo-fi", "Kits de teclas": "Keys kits", "Duración de cada acorde al exportar (igual para los 16):": "Length of each chord when exporting (same for all 16):", "Pista": "Track", "Mezcla": "Mix", "Cada pista": "Each track", "Exportar a pad": "Export to pad", "Exportar a WAV": "Export to WAV", "Efectos": "Effects", "Estándar": "Standard", "Reson.": "Reso.", "Aplicar al grupo": "Apply to group", "Aplicar a todos los pads": "Apply to all pads", "Cerrar": "Close", "Copia el pad en los 16 pads del siguiente banco vacío, uno por nota de la escala.": "Copies the pad into the 16 pads of the next empty bank, one per scale note.", "Crear": "Create", "Conecta el aparato por USB y pulsa «Activar MIDI».": "Connect the device by USB and press “Enable MIDI”.", "Activar MIDI": "Enable MIDI", "Perillas relativas (encoders sin tope)": "Relative knobs (endless encoders)", "Sensib.": "Sens.", "Limpiar": "Clear", "Aprender": "Learn", "Pulsar un control de la lista y luego tocarlo en el aparato.": "Press a control in the list, then touch it on the device.", "Quitar este mapeo": "Remove this mapping", "Pads: 16 pads de la pestaña visible. Fuera del Mixer: perillas 1 y 2 = X e Y del efecto, 3 elige el efecto. En el Mixer: grupo activo (Volúmenes · Compresor · EQ).": "Pads: 16 pads of the visible tab. Outside the Mixer: knobs 1 and 2 = X and Y of the effect, 3 chooses the effect. In the Mixer: active group (Volumes · Compressor · EQ).", "Borrar lo aprendido": "Clear learned", "Proyectos": "Projects", "Un proyecto guarda pads, bajo, teclas, mixer y looper.": "A project stores pads, bass, keys, mixer and looper.", "Autoguardar y recuperar la sesión al abrir": "Autosave and restore the session on opening", "Copia de seguridad": "Backup", "Incluir kits y proyectos": "Include kits and projects", "Guardar copia": "Save backup", "Restaurar…": "Restore…", "Cargar desde enlace directo": "Load from direct link", "Exportar a Koala": "Export to Koala", "Exportar a Ableton": "Export to Ableton", "Exportar a MPC Sample": "Export to MPC Sample", "Exportar a Ableton Move": "Export to Ableton Move", "Exportar a SP-404A / SX": "Export to SP-404A / SX", "Exportar a SP-404MK2": "Export to SP-404MK2", "Exportar kit (.zip)": "Export kit (.zip)", "Importar kit": "Import kit", "Aplicación": "App", "MIDI…": "MIDI…", "Proyectos…": "Projects…", "Instalar app": "Install app", "Ajustar al cruce por cero al marcar": "Snap to zero crossing when marking", "Ajustes": "Settings", "Idioma": "Language", "Guía de uso": "User guide", "Kits": "Kits", "Nuevo: vaciar los 64 pads": "New: clear the 64 pads", "Más opciones": "More options", "Pestañas": "Tabs", "Nivel de salida": "Output level", "Deshacer": "Undo", "Rehacer": "Redo", "Forma de onda: arrastra para marcar la región del pad; pellizca para ampliar": "Waveform: drag to mark the pad region; pinch to zoom", "Desplazar la forma de onda": "Scroll the waveform", "Canal izquierdo": "Left channel", "Canal derecho": "Right channel", "Alejar": "Zoom out", "Acercar": "Zoom in", "Bloquear marca de inicio": "Lock start marker", "Bloquear inicio": "Lock start", "Bloquear marca final": "Lock end marker", "Bloquear final": "Lock end", "Auto chop: dividir la región del pad en partes iguales o por golpes": "Auto chop: split the pad region into equal parts or by hits", "Dividir la región en 16, 8, 4 o 2 partes": "Split the region into 16, 8, 4 or 2 parts", "Asignar los fragmentos a los pads del banco": "Assign the slices to the bank pads", "Loop: repetir el sample": "Loop: repeat the sample", "Modo de reproducción: One shot o Gate": "Playback mode: One shot or Gate", "Grupo 1: los pads de este grupo se cortan entre sí": "Group 1: pads in this group cut each other", "Grupo 2: los pads de este grupo se cortan entre sí": "Group 2: pads in this group cut each other", "Exportar la región como WAV mono": "Export the region as mono WAV", "Efectos del pad": "Pad effects", "16 Levels: escala con el pad seleccionado": "16 Levels: scale with the selected pad", "Dividir el tempo entre 2": "Halve the tempo", "Multiplicar el tempo por 2": "Double the tempo", "Pistas del looper": "Looper tracks", "Pista 1": "Track 1", "Pista 2": "Track 2", "Pista 3": "Track 3", "Pista 4": "Track 4", "Silenciar la pista seleccionada": "Mute the selected track", "Borrar la pista seleccionada": "Clear the selected track", "Solo: oír solo la pista seleccionada": "Solo: hear only the selected track", "Volumen de la pista seleccionada": "Volume of the selected track", "Metrónomo": "Metronome", "BPM del metrónomo cuando el looper aún no tiene tempo": "Metronome BPM while the looper has no tempo yet", "Cuenta atrás de un compás antes de grabar": "One-bar count-in before recording", "Rec: armar la grabación; después, activar o desactivar el overdub": "Rec: arm recording; then toggle overdub", "Play: reproducir el bucle desde el principio": "Play: play the loop from the start", "Stop: parar el bucle": "Stop: stop the loop", "Deshacer la última capa grabada": "Undo the last recorded layer", "Loop: marcar el final del bucle": "Loop: mark the end of the loop", "Bancos de pads": "Pad banks", "Banco A": "Bank A", "Banco B": "Bank B", "Banco C": "Bank C", "Banco D": "Bank D", "Banco Bajo: los pads del sintetizador de bajo": "Bass bank: the bass synth pads", "Banco Teclas: los pads de acordes del piano eléctrico": "Keys bank: the electric piano chord pads", "Pads del bajo": "Bass pads", "Pads de acordes": "Chord pads", "Afinador: nota del sonido del pad seleccionado": "Tuner: note of the selected pad's sound", "Afinar: llevar el sonido del pad a la nota más cercana": "Tune: move the pad's sound to the nearest note", "Lleva el sonido a la nota más cercana": "Moves the sound to the nearest note", "Resample: elegir qué pads se graban y grabar el resultado en un pad": "Resample: choose which pads are recorded and record the result into a pad", "Empezar a grabar el resample": "Start recording the resample", "Parar la grabación o salir del resample": "Stop recording or leave resample", "Deshacer el último cambio": "Undo the last change", "Deshacer (Ctrl+Z)": "Undo (Ctrl+Z)", "Rehacer el cambio deshecho": "Redo the undone change", "Rehacer (Ctrl+Mayús+Z)": "Redo (Ctrl+Shift+Z)", "Pad del filtro del máster. Mantener pulsado y mover.": "Master filter pad. Hold and move.", "Pad de reducción de bits del máster. Mantener pulsado y mover.": "Master bit reduction pad. Hold and move.", "Pad de Beat repeat del máster. Mantener pulsado y mover.": "Master Beat repeat pad. Hold and move.", "Pad de reverb del máster. Mantener pulsado y mover.": "Master reverb pad. Hold and move.", "Pad de delay del máster. Mantener pulsado y mover.": "Master delay pad. Hold and move.", "Mantener filtro activo al soltar": "Keep filter on after release", "Mantener bit activo al soltar": "Keep bit on after release", "Mantener repeat activo al soltar": "Keep repeat on after release", "Mantener reverb activo al soltar": "Keep reverb on after release", "Mantener delay activo al soltar": "Keep delay on after release", "Osciloscopio del bajo": "Bass oscilloscope", "Filtro: arrastra para cambiar el corte y la resonancia": "Filter: drag to change cutoff and resonance", "Envolvente: ataque, caída, sostenido y relajación": "Envelope: attack, decay, sustain and release", "Bajar una octava": "Down one octave", "Subir una octava": "Up one octave", "Kits de bajo guardados": "Saved bass kits", "Respuesta del ecualizador": "Equalizer response", "Activar o desactivar el ecualizador": "Turn the equalizer on or off", "Activar o desactivar el compresor": "Turn the compressor on or off", "Kits de teclas guardados": "Saved keys kits", "Qué exportar": "What to export", "Exportar el bucle a un pad libre": "Export the loop to a free pad", "Exportar el bucle a un archivo WAV": "Export the loop to a WAV file", "Calidad de muestreo del SP-202": "SP-202 sample quality", "Frecuencia de corte del filtro paso bajo": "Low-pass filter cutoff", "Resonancia del filtro": "Filter resonance", "Envío de reverb de este pad": "This pad's reverb send", "Envío de delay de este pad": "This pad's delay send", "Aplicar los efectos a los pads del mismo grupo": "Apply the effects to pads of the same group", "Perfil del aparato": "Device profile", "Sensibilidad de las perillas relativas": "Relative knob sensitivity", "Proyectos guardados": "Saved projects", "Enlace al audio": "Audio link", "Kits guardados": "Saved kits", "Español": "Español", "English": "English", "Filtro": "Filter", "Preset del bajo": "Bass preset", "Preset de las teclas": "Keys preset", "Duración al exportar": "Length when exporting", "Preset de EQ": "EQ preset", "Preset de compresor": "Compressor preset", "Calidad de muestreo": "Sample quality", "Compresor": "Compressor", "Este pad no tiene grupo": "This pad has no group", "Efectos aplicados a todos los pads": "Effects applied to all pads", "Sin pads vacíos: vaciar uno primero": "No empty pads: clear one first", "Ya está vacío": "Already empty", "Pads vacíos · Deshacer disponible": "Pads cleared · Undo available", "No se pudo procesar la grabación": "Could not process the recording", "Grabando…": "Recording…", "Stop para terminar la grabación": "Stop to end the recording", "Resample cancelado": "Resample cancelled", "Resample: tocar los pads a grabar y pulsar Rec": "Resample: tap the pads to record and press Rec", "Ese pad está vacío": "That pad is empty", "No hay pads vacíos para el resample": "No empty pads for the resample", "No se pudo iniciar el resample": "Could not start the resample", "No se grabó nada: los pads elegidos no sonaron": "Nothing recorded: the chosen pads did not play", "Resample terminado": "Resample finished", "Ningún pad elegido": "No pad chosen", "Chop desactivado": "Chop off", "Seleccionar un pad con sample": "Select a pad with a sample", "Chop: elegir región y pulsar Dividir": "Chop: choose a region and press Split", "Sin golpes claros: 16 partes iguales": "No clear hits: 16 equal parts", "Marcas bloqueadas": "Markers locked", "Arrastrar sobre la onda para marcar la región": "Drag on the waveform to mark the region", "No se pudo exportar": "Could not export", "Los kits no están disponibles en este navegador": "Kits are not available in this browser", "No se pudo guardar el kit": "Could not save the kit", "No hay kits guardados": "No saved kits", "No se pudo cargar el kit": "Could not load the kit", "Kit borrado": "Kit deleted", "No se pudo borrar el kit": "Could not delete the kit", "No hay samples que exportar": "No samples to export", "Exportando…": "Exporting…", "No se pudo exportar el kit": "Could not export the kit", "Importando…": "Importing…", "Kit importado": "Kit imported", "No se pudo importar ese archivo": "Could not import that file", "El SP-404A admite 120 samples por importación": "The SP-404A accepts 120 samples per import", "Tocar el pad de destino": "Tap the target pad", "Cancelado": "Cancelled", "Terminar el resample antes de duplicar": "Finish the resample before duplicating", "Este pad está vacío": "This pad is empty", "El enlace no es válido": "The link is not valid", "Sin acceso directo al audio: descargarlo e importarlo": "No direct audio access: download and import it", "Descargando…": "Downloading…", "No se pudo cargar: el enlace no es directo o el servidor no lo permite": "Could not load: the link is not direct or the server does not allow it", "No se detecta una nota clara en este pad": "No clear note detected in this pad", "Parar la grabación antes de deshacer": "Stop recording before undoing", "Volumen: 100 %": "Volume: 100 %", "Tono: 0": "Pitch: 0", "Versión nueva: cerrar y abrir la app": "New version: close and reopen the app", "Kit no válido": "Invalid kit", "Mixer restablecido": "Mixer reset", "Bucle demasiado corto": "Loop too short", "No hay nada que deshacer": "Nothing to undo", "Grabación cancelada": "Recording cancelled", "Looper vacío": "Looper empty", "Tempo fuera de rango": "Tempo out of range", "Grabar un bucle primero": "Record a loop first", "No hay pads vacíos para exportar": "No empty pads to export", "No se pudo exportar el bucle": "Could not export the loop", "Cerrar la primera grabación (Loop) antes de cambiar de pista": "Close the first recording (Loop) before changing track", "Rec armado: tocar un pad": "Rec armed: tap a pad", "Rec armado": "Rec armed", "Loop para cerrar el bucle": "Loop to close the loop", "Terminar el resample antes de cambiar de pestaña": "Finish the resample before changing tab", "Exportando para Move…": "Exporting for Move…", "No se pudo exportar a Move": "Could not export to Move", "Grabando… (Rec cierra el bucle)": "Recording… (Rec closes the loop)", "Proyecto guardado": "Project saved", "No se pudo guardar el proyecto": "Could not save the project", "Sesión anterior recuperada": "Previous session restored", "Listo": "Ready", "Generador": "Generator", "Gen": "Gen", "Batería": "Drums", "Reproducir": "Play", "Parar": "Stop", "Bajar el tempo": "Lower tempo", "Subir el tempo": "Raise tempo", "Compás": "Time signature", "Compases": "Bars", "Batería suena": "Drums on", "Bajo suena": "Bass on", "Estilo": "Style", "Generar": "Generate", "Dado": "Dice", "Semilla ": "Seed ", " Fijar": " Lock", "Rellenos": "Fills", "Sin rellenos": "No fills", "Cada 2 compases": "Every 2 bars", "Cada 4 compases": "Every 4 bars", "Swing sobre": "Swing on", "Semicorcheas": "16th notes", "Corcheas": "8th notes", "Estilo del bajo propio": "Own bass style", "Compás del bajo propio": "Own bass time signature", "Relación con el bombo": "Relation to the kick", "Libre": "Free", "Seguir el bombo": "Follow the kick", "Evitar el bombo": "Avoid the kick", "Patrón · toca los pasos": "Pattern · tap the steps", "Sonidos": "Sounds", "Efectos de la batería · común": "Drum effects · common", "Lo-fi": "Lo-fi", "Sin efecto": "No effect", "Calidad SP-202": "SP-202 quality", "Efectos del bajo": "Bass effects", "Silenciar bajo": "Mute bass", "Sidechain": "Sidechain", "Exportar": "Export", "Contenido": "Content", "Batería y bajo": "Drums and bass", "Solo batería": "Drums only", "Solo bajo": "Bass only", "Duración": "Length", "1 vuelta": "1 loop", "2 vueltas": "2 loops", "4 vueltas": "4 loops", "Ciclo completo": "Full cycle", "A pad y WAV": "To pad and WAV", "Todo en uno": "All in one", "Cada sonido por separado": "Each sound separately", "A pad": "To pad", "Looper": "Looper", "WAV": "WAV", "MIDI": "MIDI", "Bombo": "Kick", "Caja": "Snare", "Hat cerrado": "Closed hat", "Hat abierto": "Open hat", "Sin sonido": "No sound", "Del pad": "From pad", "Volumen": "Volume", "Largo": "Length", "Corte": "Cutoff", "Como el común": "Same as common", "Densidad": "Density", "Variación": "Variation", "Azar": "Chaos", "Swing": "Swing", "Dinámica humana": "Human dynamics", "Bajada": "Dip", "Recuperación": "Release", "Curva": "Curve", "Exponencial": "Exponential", "Lineal": "Linear", "Golpes del bombo que la disparan": "Kick hits that trigger it", "Solo el primer tiempo de cada compás": "Only the first beat of each bar", "Solo los fuertes": "Only the strong ones", "Filtro paso bajo": "Low-pass filter", "Resonancia": "Resonance", "Wah": "Wah", "Modo": "Mode", "Pedal": "Pedal", "Automático": "Automatic", "Con el tempo": "With the tempo", "Velocidad": "Rate", "Veces por tiempo": "Times per beat", "1 cada 4 tiempos": "1 every 4 beats", "1 cada 2 tiempos": "1 every 2 beats", "1 por tiempo": "1 per beat", "2 por tiempo": "2 per beat", "Profundidad": "Depth", "Phaser": "Phaser", "Flanger": "Flanger", "Realimentación": "Feedback", "Trémolo": "Tremolo", "Chorus": "Chorus", "Bloquear ": "Lock ", "Silenciar": "Mute", "Solo": "Solo", "Compás 1": "Bar 1", "Compás 2": "Bar 2", "Compás 3": "Bar 3", "Compás 4": "Bar 4", "12/8 · 12 tiempos": "12/8 · 12 beats", "Genéricos": "Generic", "Productores": "Producers", "Bateristas": "Drummers", "Bajistas": "Bassists", "Mis estilos": "My styles", "Boom bap": "Boom bap", "Funk": "Funk", "Acid": "Acid", "Motorik": "Motorik", "Post-punk": "Post-punk", "Reggae": "Reggae", "Jazz": "Jazz", "Bebop": "Bebop", "Drum and bass": "Drum and bass", "Trap": "Trap", "UK garage": "UK garage", "Trip hop": "Trip hop", "Rock años 60": "60s rock", "Rock años 70": "70s rock", "Soul": "Soul", "Afrobeat (Fela Kuti)": "Afrobeat (Fela Kuti)", "Cumbia": "Cumbia", "Son cubano": "Cuban son", "Chacarera": "Chacarera", "Zamba (samba argentina)": "Zamba (Argentine samba)", "Milonga pampeana": "Pampean milonga", "Flamenco (12 tiempos)": "Flamenco (12 beats)", "Blues 4/4 (shuffle)": "Blues 4/4 (shuffle)", "Blues 12 tiempos": "12-beat blues", "Cargar un sonido en cada hueco para oír la batería.": "Load a sound in each slot to hear the drums.", "Toque en un paso: normal, acento, fantasma, vacío.": "Tap a step: normal, accent, ghost, empty.", "Toque una celda para poner o quitar una nota. Las notas usan la raíz y la escala de la pestaña Bajo.": "Tap a cell to add or remove a note. Notes use the root and scale of the Bass tab.", "Batería y bajo miden lo mismo.": "Drums and bass are the same length.", "Teclas suena": "Keys on", "Silenciar teclas": "Mute keys", "Efectos de las teclas": "Keys effects", "Progresión": "Progression", "Acordes por compás": "Chords per bar", "El bajo sigue a las teclas": "Bass follows the keys", "Sidechain en las teclas": "Sidechain on the keys", "Sonido, raíz, escala y tipo de acorde: los de la pestaña Teclas.": "Sound, root, scale and chord type: those of the Keys tab.", "Tempo del estilo": "Style tempo", "Batería, bajo y teclas": "Drums, bass and keys", "Solo teclas": "Keys only", "Un solo acorde": "Single chord", "Libre (azar)": "Free (random)", "Teclistas": "Keyboardists", "Vinilo": "Vinyl", "VINILO": "VINYL", "Crujido": "Crackle", "Siseo": "Hiss", "Wow y flutter": "Wow and flutter", "Recorte de agudos": "Treble cut", "Saturación": "Saturation", "Toque una celda para poner o quitar un acorde. Usa la raíz, la escala y el acorde de la pestaña Teclas.": "Tap a cell to add or remove a chord. It uses the root, scale and chord of the Keys tab.", "Vinilo sintetizado: crujido, siseo, wow y recorte de agudos": "Synthesized vinyl: crackle, hiss, wow and treble cut", "Contrabajo": "Upright bass", "Púa": "Pick", "808 caída": "808 drop", "Nu soul": "Nu soul", "Rhodes sucio": "Dirty Rhodes", "Piano juguete": "Toy piano", "Vibráfono": "Vibraphone", "Órgano iglesia": "Church organ", "Pad oscuro": "Dark pad", "Coros aah": "Aah choir", "Synth suave": "Soft synth", "Campanas": "Bells", "Arpa": "Harp", "Estilo de las teclas propio": "Own keys style", "Estilo de las teclas": "Keys style", "Gen bat.": "Gen drums", "RADIO": "RADIO", "DUB DELAY": "DUB DELAY"}, "f": {"Efectos aplicados al grupo ": "Effects applied to group ", "Sin acceso al micrófono: ": "No microphone access: ", "Grabando → pad ": "Recording → pad ", "Resample en pad ": "Resample into pad ", "Chop por golpes · ": "Chop by hits · ", "Chop · ": "Chop · ", "Chop: ": "Chop: ", "Región ": "Region ", "Exportado: ": "Exported: ", "Kit guardado: ": "Kit saved: ", "Duplicado en pad ": "Duplicated into pad ", "Afinado a ": "Tuned to ", "Kit de bajo guardado: ": "Bass kit saved: ", "Sonido: ": "Sound: ", "Kit de teclas guardado: ": "Keys kit saved: ", "La pista ": "Track ", "Última capa de la pista ": "Last layer of track ", "No hay más pads vacíos (se exportaron ": "No more empty pads (exported ", "Exportadas ": "Exported ", "Efecto: ": "Effect: ", "Perillas del mixer: ": "Mixer knobs: ", "MIDI aprendido: ": "MIDI learned: ", "Proyecto cargado: ": "Project loaded: ", "Cuenta… ": "Count… ", "Marca bloqueada": "Marker locked", "Marca desbloqueada": "Marker unlocked", "Pad vacío": "Empty pad", "Deshecho: ": "Undone: ", "Rehecho: ": "Redone: ", " pads elegidos": " pads chosen", " pad elegido": " pad chosen", "Grabando ": "Recording ", "Tocar los pads a grabar": "Tap the pads to record", "Resample para empezar": "Resample to start", "Mover o pulsar «": "Move or press «", "» en el aparato": "» on the device", "Otra pulsación cancela.": "Another press cancels.", "MIDI web no disponible en este navegador (ni en iPad). Usar Chrome en Android o en ordenador.": "Web MIDI is not available in this browser (nor on iPad). Use Chrome on Android or a computer.", "SampledHead -> SP-404A  ·  Kit: ": "SampledHead -> SP-404A  ·  Kit: ", "SampledHead -> SP-404MK2  ·  Kit: ": "SampledHead -> SP-404MK2  ·  Kit: ", "1. Copiar ROLAND/IMPORT de este zip a ROLAND/IMPORT de la tarjeta SD (formateada por el SP-404A).": "1. Copy ROLAND/IMPORT from this zip to ROLAND/IMPORT on the SD card (formatted by the SP-404A).", "2. Insertar la tarjeta y encender. [SELECT] debe estar apagado.": "2. Insert the card and power on. [SELECT] must be off.", "3. [SHIFT] + pad 3 (IMPORT).": "3. [SHIFT] + pad 3 (IMPORT).", "4. Botón BANK A y pad 1.": "4. BANK A button and pad 1.", "5. [REC]. Los archivos se reparten por nombre desde ese pad, 12 por banco. Esperar a que el punto de la pantalla deje de parpadear.": "5. [REC]. Files are spread by name from that pad, 12 per bank. Wait until the dot on the display stops blinking.", "Los pads de destino se sobrescriben; los bancos protegidos se saltan. Los archivos importados se borran de IMPORT.": "Target pads are overwritten; protected banks are skipped. Imported files are removed from IMPORT.", "Reparto desde el banco A, pad 1:": "Layout from bank A, pad 1:", " (pad original ": " (original pad ", "1. Copiar la carpeta ": "1. Copy the folder ", " de este zip a IMPORT en la tarjeta SD.": " from this zip to IMPORT on the SD card.", "2. Insertar la tarjeta. [SHIFT] + pad 14 (IMPORT/EXPORT).": "2. Insert the card. [SHIFT] + pad 14 (IMPORT/EXPORT).", "3. Elegir IMPORT > IMPORT from SD-CARD > SAMPLE.": "3. Choose IMPORT > IMPORT from SD-CARD > SAMPLE.", "4. Pad de destino (1-16) del banco elegido.": "4. Target pad (1-16) of the chosen bank.", "5. [VALUE] entra en ": "5. [VALUE] enters ", " y en la carpeta del banco; elegir el sample y [VALUE]. [SHIFT] + [VALUE] marca varios.": " and the bank folder; choose the sample and [VALUE]. [SHIFT] + [VALUE] marks several.", "Cada archivo lleva el número de su pad (01-16); cada banco tiene su carpeta (A–D).": "Each file carries its pad number (01-16); each bank has its folder (A–D).", "Archivos:": "Files:", "=== TARJETA LISTA (carpeta SP-404SX) ===": "=== READY CARD (SP-404SX folder) ===", "El zip incluye también una tarjeta lista: SP-404SX/SMPL con los WAV (44,1 kHz, 16 bits, mono) y PAD_INFO.BIN con los ajustes de los 120 pads.": "The zip also includes a ready card: SP-404SX/SMPL with the WAVs (44.1 kHz, 16-bit, mono) and PAD_INFO.BIN with the settings of the 120 pads.", "Verificado solo con una tarjeta de SP-404SX. En la SP-404A, si la tarjeta formateada tiene otra carpeta (por ejemplo ROLAND/SP-404A), copiar ahí el contenido de SMPL.": "Verified only with an SP-404SX card. On the SP-404A, if the formatted card has another folder (e.g. ROLAND/SP-404A), copy the SMPL contents there.", "1. Copia de seguridad de la tarjeta.": "1. Back up the card.", "2. Copiar SMPL (con PAD_INFO.BIN) a la carpeta correspondiente, sustituyendo los archivos.": "2. Copy SMPL (with PAD_INFO.BIN) to the matching folder, replacing the files.", "3. Los pads sin uso quedan vacíos.": "3. Unused pads stay empty.", "Reparto seguido: pads 1–12 al banco A, 13–24 al B, etc. (12 pads por banco).": "Sequential layout: pads 1–12 to bank A, 13–24 to B, etc. (12 pads per bank).", "Pads que se exportan:": "Exported pads:", "  pad ": "  pad ", "  ->  banco ": "  ->  bank ", ", pad ": ", pad ", "Pentatónica mayor": "Major pentatonic", "Pentatónica menor": "Minor pentatonic", "Blues (menor)": "Blues (minor)", "Blues mayor": "Major blues", "Pentatónica Yo": "Yo pentatonic", "Pentatónica Kumoi": "Kumoi pentatonic", "Pentatónica egipcia": "Egyptian pentatonic", "Mayor (Jónica)": "Major (Ionian)", "Menor natural (Eólica)": "Natural minor (Aeolian)", "Dórica (salsa, cumbia)": "Dorian (salsa, cumbia)", "Mixolidia (salsa)": "Mixolydian (salsa)", "Lidia dominante (bossa)": "Lydian dominant (bossa)", "Menor armónica (tango)": "Harmonic minor (tango)", "Menor melódica (tango)": "Melodic minor (tango)", "Eólica (menor natural)": "Aeolian (natural minor)", "Jónica (mayor)": "Ionian (major)", "Frigia dominante (flamenca)": "Phrygian dominant (flamenco)", "Española de 8 notas": "Spanish 8-note", "Japonesa (Hirajoshi)": "Japanese (Hirajoshi)", "Árabe (doble armónica)": "Arabic (double harmonic)", "Húngara menor": "Hungarian minor", "Napolitana mayor": "Neapolitan major", "Napolitana menor": "Neapolitan minor", "Bati menor (Etiopía)": "Bati minor (Ethiopia)", "Ambassel mayor (Etiopía)": "Ambassel major (Ethiopia)", "Ambassel menor": "Ambassel minor", "Tizita mayor": "Tizita major", "Tizita menor": "Tizita minor", "Bati mayor": "Bati major", "Disminuida tono-semitono": "Diminished whole-half", "Disminuida semitono-tono": "Diminished half-whole", "Alterada (superlocria)": "Altered (super Locrian)", "Lidia aumentada": "Lydian augmented", "Bebop dominante": "Bebop dominant", "Bebop mayor": "Bebop major", "Bebop dórica": "Bebop Dorian", "Lidia dominante": "Lydian dominant", "Menor armónica": "Harmonic minor", "Menor melódica": "Melodic minor", "Mixolidia b6": "Mixolydian b6", "Tonos enteros": "Whole tone", "Cromática": "Chromatic", "Persa": "Persian", "Prometeo": "Prometheus", "Pent. mayor": "Maj. pent.", "Pent. menor": "Min. pent.", "Pent. egipcia": "Egyptian pent.", "Pent. Yo": "Yo pent.", "Pent. Kumoi": "Kumoi pent.", "Men. armón.": "Harm. min.", "Men. melód.": "Mel. min.", "Bebop dom.": "Bebop dom.", "Lidia dom.": "Lydian dom.", "Dism. T-S": "Dim. W-H", "Dism. S-T": "Dim. H-W", "Lidia aument.": "Lydian aug.", "Frigia dom.": "Phryg. dom.", "Española 8": "Spanish 8", "Húngara men.": "Hung. minor", "Napolitana may.": "Neap. major", "Napolitana men.": "Neap. minor", "Japonesa": "Japanese", "Árabe": "Arabic", "Bati menor": "Bati minor", "Dórica": "Dorian", "Frigia": "Phrygian", "Lidia": "Lydian", "Mixolidia": "Mixolydian", "Locria": "Locrian", "Mayor": "Major", "Menor": "Minor", "Alterada": "Altered", "Blues y pentatónicas": "Blues and pentatonics", "Modos mayores y menores": "Major and minor modes", "África (aproximadas)": "Africa (approximate)", "Celtas": "Celtic", "India (ragas aproximados)": "India (approximate ragas)", "Latinas": "Latin", "Oriente y otras": "East and others", "Octava ": "Octave ", "octava ": "octave ", "7ª": "7th", "9ª": "9th", "raíz": "root", "Nivel": "Level", "Escala": "Scale", "Nota raíz": "Root note", "Volúmenes": "Volumes", "Volumen Sampler": "Sampler volume", "Volumen Bajo": "Bass volume", "Volumen Teclas": "Keys volume", "Volumen ": "Volume ", "Silenciar Sampler": "Mute Sampler", "Silenciar Bajo": "Mute Bass", "Silenciar Teclas": "Mute Keys", "Plano": "Flat", "Graves +": "Bass +", "Brillo": "Bright", "Cálido": "Warm", "Sin graves": "No bass", "Suave": "Soft", "Fuerte": "Hard", "Limitador": "Limiter", "Umbral": "Threshold", "Ataque": "Attack", "Relajación": "Release", "Relaj.": "Rel.", "Ganancia": "Gain", "Rhodes suave": "Soft Rhodes", "Rhodes brillante": "Bright Rhodes", "Rhodes oscuro": "Dark Rhodes", "Órgano": "Organ", "Pad suave": "Soft pad", "Sub largo": "Long sub", "Sucio": "Dirty", "Seno": "Sine", "Triang.": "Tri.", "Sierra": "Saw", "Cuadr.": "Sq.", "Tríada": "Triad", "Acordes": "Chords", "Raíz grave": "Low root", "Altura del toque": "Touch height", "Caída brillo": "Bright decay", "Campana": "Bell", "Caída": "Decay", "Sostenido": "Sustain", "Corte": "Cutoff", "Trémolo": "Tremolo", "Velocidad": "Speed", "Profund.": "Depth", "Sin efecto lo-fi": "No lo-fi effect", "Efectos · ": "Effects · ", "(vacío)": "(empty)", "Aplicar al grupo": "Apply to group", "este pad no tiene grupo": "this pad has no group", "Asignar a ": "Assign to ", "Genérico": "Generic", "Pads: notas 12-91 (modo B), cada banco A-D toca su banco. Ctrl 1-3 = CC 16-18; Ctrl 4-6 = CC 80-82.": "Pads: notes 12-91 (mode B), each bank A-D plays its own bank. Ctrl 1-3 = CC 16-18; Ctrl 4-6 = CC 80-82.", "Pads: mitad izquierda (notas 68-71, 76-79, 84-87, 92-95). Perillas CC 71-78 relativas; volumen CC 79; rueda CC 14. Pistas 1-4 = CC 43-40.": "Pads: left half (notes 68-71, 76-79, 84-87, 92-95). Relative knobs CC 71-78; volume CC 79; wheel CC 14. Tracks 1-4 = CC 43-40.", "Pads: banco B (notas 52-67). Play y Stop (CC 64) alternan. Perillas y Rec no envían MIDI.": "Pads: bank B (notes 52-67). Play and Stop (CC 64) toggle. Knobs and Rec send no MIDI.", "Pads desde la nota 36; perillas CC 16-18 absolutas.": "Pads from note 36; absolute knobs CC 16-18.", "Perillas": "Knobs", "Perilla ": "Knob ", "Rueda (grupo)": "Wheel (group)", "Transporte": "Transport", "Rec looper": "Looper Rec", "Grabar sample": "Record sample", "Cerrar loop": "Close loop", "Bancos": "Banks", "Borrar pista": "Clear track", "Grupo +": "Group +", "Grupo −": "Group −", "Hold del efecto elegido": "Hold of the chosen effect", "Pestañas": "Tabs", "Banco A": "Bank A", "Banco B": "Bank B", "Banco C": "Bank C", "Banco D": "Bank D", "Pista 1": "Track 1", "Pista 2": "Track 2", "Pista 3": "Track 3", "Pista 4": "Track 4", "Metrónomo": "Metronome", "Rehacer": "Redo", "Deshacer": "Undo", "Conectado: ": "Connected: ", "No se pudo activar MIDI: ": "Could not enable MIDI: ", "permiso denegado": "permission denied", "Sin aparatos MIDI. Conectar uno por USB.": "No MIDI devices. Connect one by USB.", " (el pad 1 define las otras 15 notas)": " (pad 1 sets the other 15 notes)", "  → aprendido: ": "  → learned: ", "  → para «": "  → for «", "» hace falta ": "» needs ", "una nota": "a note", "un CC (perilla)": "a CC (knob)", "pestaña ": "tab ", "banco ": "bank ", "pista ": "track ", "grabar sample": "record sample", "grupo ": "group ", "borrar pista": "clear track", "metrónomo": "metronome", "rehacer": "redo", "deshacer": "undo", "rec looper": "looper rec", "loop cerrado": "loop closed", "efecto ": "effect ", "beat repeat no disponible": "beat repeat unavailable", "sin función fuera del Mixer": "no function outside the Mixer", "sin función": "no function", "Tiempo real ": "Realtime ", "Nota ": "Note ", " suelta · canal ": " release · channel ", " · canal ": " · channel ", " · banco ": " · bank ", "  (¿relativo?)": "  (relative?)", "(sin asignar)": "(unassigned)", "  (sin asignar)": "  (unassigned)", "Volumen sin cambios": "Volume unchanged", "Amalgama: el ciclo completo dura ": "Polymeter: the full cycle lasts ", " compases de la batería.": " drum bars.", "Estilo guardado: ": "Style saved: ", "Estilo borrado": "Style deleted", "Nombre del estilo": "Style name", "Cargado en ": "Loaded into ", "No se pudo leer el audio": "Could not read the audio", "El pad seleccionado está vacío": "The selected pad is empty", "Sin sonido en este hueco": "No sound in this slot", "Oír ": "Play ", "Nada que exportar: cargar sonidos o generar un bajo": "Nothing to export: load sounds or generate a bass line", "Hacen falta ": "You need ", " pads vacíos (hay ": " empty pads (there are ", "Exportando…": "Exporting…", "No se pudo exportar": "Export failed", "Exportado al pad ": "Exported to pad ", "Exportados ": "Exported ", " pads a partir del ": " pads starting at ", " WAV en un zip": " WAVs in a zip", "Enviado al Looper · ": "Sent to Looper · ", "El Looper tiene contenido: se sustituirá. ¿Continuar?": "The Looper has content: it will be replaced. Continue?", "Nada que exportar": "Nothing to export", "crujido ": "crackle ", "banda ": "band ", "estática ": "static ", "realim. ": "feedback "}};
 const I18N_FK=Object.keys(I18N.f).sort((a,b)=>b.length-a.length);
 function T(s){
   if(LANG!=='en'||!s)return s;
@@ -5927,6 +5791,206 @@ $('#langes').onclick=()=>setLang('es');
 $('#langen').onclick=()=>setLang('en');
 setLang(LANG,false);
 
+/* ---------- 1.37: kits de batería sintetizados dentro del generador (sin ficheros, sin licencias) ---------- */
+const KS_SR=()=>ctx.sampleRate;
+function ksRng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+/* filtro biquad (RBJ): lp, hp o bp; estable a cualquier frecuencia */
+function ksF(x,fc,q,mode){
+  const sr=KS_SR(),w=2*Math.PI*Math.min(fc,sr*.45)/sr,cs=Math.cos(w),al=Math.sin(w)/(2*Math.max(.1,q)),o=new Float32Array(x.length);
+  let b0,b1,b2;
+  if(mode==='lp'){b0=(1-cs)/2;b1=1-cs;b2=b0}else if(mode==='hp'){b0=(1+cs)/2;b1=-(1+cs);b2=b0}else{b0=al;b1=0;b2=-al}
+  const a0=1+al,a1=-2*cs/a0,a2=(1-al)/a0;b0/=a0;b1/=a0;b2/=a0;
+  let x1=0,x2=0,y1=0,y2=0;
+  for(let i=0;i<x.length;i++){const v=x[i],y=b0*v+b1*x1+b2*x2-a1*y1-a2*y2;x2=x1;x1=v;y2=y1;y1=y;o[i]=y}
+  return o;
+}
+const ksN=(n,r)=>{const a=new Float32Array(n);for(let i=0;i<n;i++)a[i]=r()*2-1;return a};
+const ksEnv=(t,dec)=>Math.exp(-t/Math.max(.001,dec));
+function ksPost(y,o){
+  if(o.lp)y=ksF(y,o.lp,.7,'lp');
+  if(o.hold>1)for(let i=0;i<y.length;i++)if(i%o.hold)y[i]=y[i-i%o.hold];
+  if(o.bit){const q=Math.pow(2,o.bit-1);for(let i=0;i<y.length;i++)y[i]=Math.round(y[i]*q)/q}
+  return y;
+}
+/* T = {ps: factor de altura, ds: factor de largo, bs: factor de brillo} */
+const KV={
+  kick(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*Math.min(2.2,dec*4.5+.05)),y=new Float32Array(n),f0=p.f0*T.ps,f1=p.f1*T.ps;let ph=0;
+    for(let i=0;i<n;i++){const t=i/sr,f=f1+(f0-f1)*ksEnv(t,p.pd);ph+=2*Math.PI*f/sr;y[i]=Math.sin(ph)*ksEnv(t,dec)*Math.min(1,t/.0015)}
+    const k=ksF(ksN(Math.floor(sr*.012),r),3500*T.bs,.8,'bp');for(let i=0;i<k.length;i++)y[i]+=k[i]*(p.click||0)*(1-i/k.length);
+    const d=p.drive||1,nd=Math.tanh(d);for(let i=0;i<n;i++)y[i]=Math.tanh(d*y[i])/nd;
+    return y;
+  },
+  tom(p,T,r){return KV.kick({f0:p.f*1.35,f1:p.f,pd:.05,dec:p.dec||.3,click:.15,drive:1.2},T,r)},
+  snare(p,T,r){
+    const sr=KS_SR(),n=Math.floor(sr*Math.min(1.2,(p.ndec*T.ds)*4+.05)),y=new Float32Array(n),f=p.f*T.ps;let ph=0,ph2=0;
+    const nz=ksF(ksF(ksN(n,r),(p.nhp||1200)*T.bs,.7,'hp'),(p.nlp||9000)*T.bs,.7,'lp');
+    for(let i=0;i<n;i++){const t=i/sr;ph+=2*Math.PI*f*(1+.35*ksEnv(t,.012))/sr;ph2+=2*Math.PI*f*(p.r2||1.6)/sr;
+      y[i]=(Math.sin(ph)*ksEnv(t,p.fdec*T.ds)+.4*Math.sin(ph2)*ksEnv(t,p.fdec*T.ds*.6))*(p.tone??1)+nz[i]*ksEnv(t,p.ndec*T.ds)*(p.nz??1)}
+    return y;
+  },
+  clap(p,T,r){
+    const sr=KS_SR(),n=Math.floor(sr*(p.dec*T.ds*4+.06)),y=new Float32Array(n),nz=ksF(ksF(ksN(n,r),(p.fc||1500)*T.bs,1.2,'bp'),9000,.7,'lp');
+    const bursts=[0,.011,.022,.034];
+    for(let i=0;i<n;i++){const t=i/sr;let e=ksEnv(Math.max(0,t-.034),p.dec*T.ds)*(t>=.034?1:0);for(const b of bursts.slice(0,3))if(t>=b&&t<b+.009)e=Math.max(e,.9*(1-(t-b)/.009));y[i]=nz[i]*e*1.6}
+    return y;
+  },
+  rim(p,T,r){
+    const sr=KS_SR(),n=Math.floor(sr*.09),y=new Float32Array(n),nz=ksF(ksN(n,r),3200*T.bs,1,'bp');
+    for(let i=0;i<n;i++){const t=i/sr;y[i]=(Math.sin(2*Math.PI*(p.f||1700)*T.ps*t)*.6+Math.sin(2*Math.PI*(p.f||1700)*T.ps*1.9*t)*.3)*ksEnv(t,.012*T.ds)+nz[i]*.5*ksEnv(t,.01*T.ds)}
+    return y;
+  },
+  hat(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*Math.min(2,dec*5+.02)),y=new Float32Array(n),fr=[205.3,304.4,369.6,522.7,540,800].map(x=>x*(p.fs||2)*T.ps);
+    for(let i=0;i<n;i++){const t=i/sr;let s=0;for(const f of fr)s+=Math.sin(2*Math.PI*f*t)>0?1:-1;y[i]=s/6}
+    let m=ksF(ksF(y,(p.hp||7000)*T.bs,.8,'hp'),Math.min(18000,(p.lp||14000)*T.bs),.7,'lp');
+    const nz=ksF(ksN(n,r),(p.hp||7000)*T.bs,.7,'hp');
+    for(let i=0;i<n;i++){const t=i/sr;m[i]=(m[i]*(p.mt??.8)+nz[i]*(p.nz??.5))*ksEnv(t,dec)*(p.sw?Math.min(1,t/p.sw):1)}
+    return m;
+  },
+  shaker(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*(dec*4+.02)),nz=ksF(ksN(n,r),(p.hp||5500)*T.bs,.8,'hp'),y=new Float32Array(n);
+    for(let i=0;i<n;i++){const t=i/sr;y[i]=nz[i]*Math.min(1,t/(p.att||.012))*ksEnv(t,dec)}return y;
+  },
+  guiro(p,T,r){
+    const sr=KS_SR(),len=(p.len||.14)*T.ds,n=Math.floor(sr*(len+.03)),nz=ksF(ksN(n,r),(p.fc||3200)*T.bs,2,'bp'),y=new Float32Array(n);
+    for(let i=0;i<n;i++){const t=i/sr;if(t<len){const m=.5+.5*Math.sign(Math.sin(2*Math.PI*(p.rate||62)*t));y[i]=nz[i]*(.35+.65*m)*(1-.5*t/len)}}
+    return y;
+  },
+  conga(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*(dec*4.5+.04)),y=new Float32Array(n),f=p.f*T.ps;let ph=0,ph2=0;
+    const sl=ksF(ksN(n,r),(p.slap||0)>0?2600*T.bs:1400*T.bs,1.4,'bp');
+    for(let i=0;i<n;i++){const t=i/sr,fi=f*(1+.12*ksEnv(t,.02));ph+=2*Math.PI*fi/sr;ph2+=2*Math.PI*fi*2.35/sr;
+      y[i]=Math.sin(ph)*ksEnv(t,dec)+.22*Math.sin(ph2)*ksEnv(t,dec*.35)+sl[i]*(p.slap||.35)*ksEnv(t,.018*T.ds)*(1.6)}
+    return y;
+  },
+  cowbell(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*(dec*4+.02)),y=new Float32Array(n),f1=(p.f||540)*T.ps,f2=f1*1.4815;
+    for(let i=0;i<n;i++){const t=i/sr;y[i]=((Math.sin(2*Math.PI*f1*t)>0?1:-1)+(Math.sin(2*Math.PI*f2*t)>0?1:-1))*.5*(.55*ksEnv(t,.012)+.45*ksEnv(t,dec))}
+    return ksF(ksF(y,(p.fc||2600)*T.bs,2.2,'bp'),9000,.7,'lp').map(v=>v*3);
+  },
+  bell(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*Math.min(2.5,dec*4.5+.02)),y=new Float32Array(n),f=p.f*T.ps,pr=[1,2.76,5.4,8.93],am=[1,.6,.35,.2];
+    for(let i=0;i<n;i++){const t=i/sr;let s=0;for(let k=0;k<4;k++)s+=am[k]*Math.sin(2*Math.PI*f*pr[k]*t)*ksEnv(t,dec/(1+k*.9));y[i]=s*.5}
+    return y;
+  },
+  clave(p,T,r){
+    const sr=KS_SR(),n=Math.floor(sr*.14),y=new Float32Array(n),f=(p.f||2400)*T.ps;
+    for(let i=0;i<n;i++){const t=i/sr;y[i]=(Math.sin(2*Math.PI*f*t)+.3*Math.sin(2*Math.PI*f*2.4*t))*ksEnv(t,(p.dec||.03)*T.ds)}return y;
+  },
+  timbal(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*(dec*4+.04)),y=new Float32Array(n),f=p.f*T.ps,nz=ksF(ksN(n,r),4200*T.bs,1.1,'bp');let ph=0;
+    for(let i=0;i<n;i++){const t=i/sr;ph+=2*Math.PI*f*(1+.05*ksEnv(t,.01))/sr;y[i]=Math.sin(ph)*ksEnv(t,dec)*.8+Math.sin(ph*2.9)*ksEnv(t,dec*.5)*.3+nz[i]*ksEnv(t,.025*T.ds)*.9}
+    return y;
+  },
+  chip(p,T,r){
+    const sr=KS_SR(),dec=p.dec*T.ds,n=Math.floor(sr*(dec*4+.02)),y=new Float32Array(n);let ph=0,lf=1,cnt=0,sh=0x7fff;
+    for(let i=0;i<n;i++){const t=i/sr;
+      if(p.noise){cnt+=(p.nf||9000)*T.bs/sr;while(cnt>=1){cnt--;const b=(sh^(sh>>1))&1;sh=(sh>>1)|(b<<14)}lf=(sh&1)?1:-1}
+      else{ph+=(p.f1+(p.f0-p.f1)*ksEnv(t,p.pd||.05))*T.ps/sr;lf=(ph%1)<.5?1:-1}
+      y[i]=lf*ksEnv(t,dec)}
+    return y;
+  }
+};
+const KPK={kick:.95,tom:.9,snare:.9,clap:.9,rim:.8,hat:.7,shaker:.65,guiro:.7,conga:.9,cowbell:.75,bell:.8,clave:.85,timbal:.85,chip:.7};
+function ksVoice(type,p,T,seed){
+  const r=ksRng(seed);let y=KV[type](p,T,r);
+  y=ksPost(y,p.post||{});
+  let pk=1e-9;for(const v of y)pk=Math.max(pk,Math.abs(v));
+  const g=(KPK[type]||.85)/pk,n=y.length,fo=Math.min(n,Math.floor(KS_SR()*.006));
+  for(let i=0;i<n;i++)y[i]*=g*(i>n-fo?(n-i)/fo:1);
+  const b=ctx.createBuffer(1,n,KS_SR());b.copyToChannel(y,0);return b;
+}
+/* los kits: cada uno son 4 sonidos (hueco 1 a 4 del generador) con sus parámetros */
+const LF1={lp:7500,bit:12},LF2={lp:5500,hold:2,bit:10};
+const KITS=[
+ {id:'808',n:'808',d:'Bombo largo y sub, caja con cuerpo, hats metálicos.',v:[
+  ['Bombo','kick',{f0:170,f1:46,pd:.05,dec:.55,click:.12,drive:1.6}],['Caja','snare',{f:185,fdec:.09,ndec:.16,nhp:1500,nlp:8000,nz:.9}],
+  ['Hat cerrado','hat',{dec:.035,hp:7500,mt:.9,nz:.3}],['Hat abierto','hat',{dec:.28,hp:7000,mt:.9,nz:.3}]]},
+ {id:'909',n:'909',d:'Bombo seco con pegada, caja brillante, hats house.',v:[
+  ['Bombo','kick',{f0:210,f1:55,pd:.028,dec:.28,click:.5,drive:2.6}],['Caja','snare',{f:200,fdec:.07,ndec:.2,nhp:1800,nlp:11000,nz:1.1,r2:1.7}],
+  ['Hat cerrado','hat',{dec:.04,hp:8500,mt:.7,nz:.6}],['Hat abierto','hat',{dec:.32,hp:8000,mt:.7,nz:.6}]]},
+ {id:'boombap',n:'Boom bap lo-fi',d:'Bombo corto y sucio, caja gruesa, hats apagados.',v:[
+  ['Bombo','kick',{f0:130,f1:58,pd:.03,dec:.22,click:.3,drive:3.2,post:LF1}],['Caja','snare',{f:210,fdec:.1,ndec:.2,nhp:900,nlp:6500,nz:.85,post:LF1}],
+  ['Hat cerrado','hat',{dec:.03,hp:6000,lp:9000,mt:.5,nz:.7,post:LF1}],['Hat abierto','hat',{dec:.2,hp:5500,lp:9000,mt:.5,nz:.7,post:LF1}]]},
+ {id:'funk',n:'Funk seco',d:'Todo corto y seco, caja afinada alta.',v:[
+  ['Bombo','kick',{f0:120,f1:68,pd:.025,dec:.16,click:.35,drive:1.8}],['Caja','snare',{f:245,fdec:.06,ndec:.12,nhp:1800,nlp:9000,nz:.8}],
+  ['Hat cerrado','hat',{dec:.028,hp:7000,mt:.4,nz:.8}],['Hat abierto','hat',{dec:.16,hp:6500,mt:.4,nz:.8}]]},
+ {id:'electro',n:'Electro',d:'Bombo profundo, palmada, hats afilados.',v:[
+  ['Bombo','kick',{f0:190,f1:52,pd:.04,dec:.4,click:.3,drive:2.2}],['Palmada','clap',{dec:.09,fc:1700}],
+  ['Hat cerrado','hat',{dec:.03,hp:9000,mt:.8,nz:.3}],['Hat abierto','hat',{dec:.22,hp:8500,mt:.8,nz:.3}]]},
+ {id:'dub',n:'Dub',d:'Bombo hondo y suave, rim seco, hats oscuros.',v:[
+  ['Bombo','kick',{f0:100,f1:44,pd:.06,dec:.7,click:.05,drive:1.1}],['Rim','rim',{f:1500}],
+  ['Hat cerrado','hat',{dec:.05,hp:5000,lp:9000,mt:.6,nz:.5}],['Hat abierto','hat',{dec:.4,hp:4500,lp:9000,mt:.6,nz:.5}]]},
+ {id:'triphop',n:'Trip hop',d:'Bombo lento, caja honda con polvo, hats suaves.',v:[
+  ['Bombo','kick',{f0:105,f1:52,pd:.05,dec:.42,click:.1,drive:1.4,post:LF1}],['Caja','snare',{f:170,fdec:.13,ndec:.26,nhp:700,nlp:4800,nz:.8,post:LF2}],
+  ['Hat cerrado','hat',{dec:.05,hp:5000,lp:8500,mt:.4,nz:.8,post:LF1}],['Hat abierto','hat',{dec:.3,hp:4500,lp:8500,mt:.4,nz:.8,post:LF1}]]},
+ {id:'neosoul',n:'Neo soul',d:'Bombo redondo, caja suave, hats delicados.',v:[
+  ['Bombo','kick',{f0:115,f1:56,pd:.04,dec:.34,click:.12,drive:.9}],['Caja','snare',{f:195,fdec:.12,ndec:.16,nhp:900,nlp:5200,nz:.7}],
+  ['Hat cerrado','hat',{dec:.04,hp:6500,lp:11000,mt:.4,nz:.7}],['Hat abierto','hat',{dec:.24,hp:6000,lp:11000,mt:.4,nz:.7}]]},
+ {id:'drill',n:'Drill / trap oscuro',d:'Sub larguísimo, caja afilada, hats finos.',v:[
+  ['Bombo','kick',{f0:130,f1:38,pd:.09,dec:1,click:.08,drive:1.8}],['Caja','clap',{dec:.12,fc:1900}],
+  ['Hat cerrado','hat',{dec:.022,hp:9500,mt:.6,nz:.5}],['Hat abierto','hat',{dec:.18,hp:9000,mt:.6,nz:.5}]]},
+ {id:'garage',n:'Garage / drum and bass',d:'Bombo ágil, caja con chasquido, hats nítidos.',v:[
+  ['Bombo','kick',{f0:150,f1:60,pd:.02,dec:.2,click:.4,drive:2.2}],['Caja','snare',{f:250,fdec:.07,ndec:.15,nhp:2200,nlp:12000,nz:1.1,r2:1.8}],
+  ['Hat cerrado','hat',{dec:.03,hp:9000,mt:.5,nz:.7}],['Hat abierto','hat',{dec:.2,hp:8500,mt:.5,nz:.7}]]},
+ {id:'perc',n:'Percusión',d:'Tom grave, claves, shaker y cencerro.',v:[
+  ['Tom grave','tom',{f:95,dec:.3}],['Claves','clave',{f:2500,dec:.035}],['Shaker','shaker',{dec:.05,hp:5500}],['Cencerro','cowbell',{f:560,dec:.35}]]},
+ {id:'congas',n:'Latina · congas',d:'Conga grave, conga con palmada, maracas y cencerro.',v:[
+  ['Conga grave','conga',{f:165,dec:.22,slap:.15}],['Conga palmada','conga',{f:330,dec:.14,slap:.9}],['Maracas','shaker',{dec:.04,hp:6500,att:.006}],['Cencerro','cowbell',{f:600,dec:.4}]]},
+ {id:'timbales',n:'Latina · bongós y timbales',d:'Bongó, timbal, güiro y campana.',v:[
+  ['Bongó','conga',{f:300,dec:.1,slap:.6}],['Timbal','timbal',{f:640,dec:.3}],['Güiro','guiro',{len:.12,fc:3200}],['Campana','bell',{f:900,dec:.9}]]},
+ {id:'chip',n:'Chiptune / juguete',d:'Cuadradas y ruido de 8 bits.',v:[
+  ['Bombo','chip',{f0:240,f1:50,pd:.06,dec:.18}],['Caja','chip',{noise:1,nf:11000,dec:.12}],
+  ['Hat cerrado','chip',{noise:1,nf:30000,dec:.03}],['Hat abierto','chip',{noise:1,nf:30000,dec:.2}]]}
+];
+const KIT_SUG=s=>{
+  const g=KITSUG[s.id];if(g)return g;
+  if(/^brk_/.test(s.id))return 'funk';
+  return {Genéricos:'909',Productores:'boombap',Bateristas:'funk',Bajistas:'funk',Breaks:'boombap'}[s.g]||'808';
+};
+const KITSUG={boombap:'boombap',peterock:'boombap',qtip:'boombap',premier:'boombap',dilla:'boombap',madlib:'boombap',flylo:'neosoul',soulquarians:'neosoul',soul:'neosoul',funk:'funk',
+  triphop:'triphop',burial:'triphop',reggae:'dub',trap:'drill',dnb:'garage',ukg:'garage',acid:'909',motorik:'909',postpunk:'909',rock60:'funk',rock70:'funk',
+  son:'congas',cumbia:'congas',afrobeat:'congas',tonyallen:'congas',puente:'congas',cachao:'congas',chacarera:'congas',zamba:'congas',milonga:'congas',flamenco:'perc',
+  jazz:'funk',bebop:'funk',blues4:'funk',blues12:'funk'};
+const KT={ps:1,ds:1,bs:1},KSEL={id:'',tone:0,len:100,br:100};
+let ksTimer=0,ksBusy=false;
+function ksBuild(kit,audition){
+  const T={ps:Math.pow(2,KSEL.tone/12),ds:KSEL.len/100,bs:KSEL.br/100};
+  if(ksBusy)return;ksBusy=true;
+  try{
+    kit.v.forEach((x,i)=>{
+      const b=ksVoice(x[1],x[2],T,1000+i*77+kit.id.length*13);
+      const S=G.sl[i];S.buf=null;
+      const n=b.length,m=ctx.createBuffer(1,n,b.sampleRate);m.copyToChannel(b.getChannelData(0),0);
+      S.buf=m;S.name=kit.n+' · '+x[0];S.pk='';S.pb=null;gSlotStore(i);
+    });
+    gCards();gSave();
+    const h=$('#gkhint');if(h)h.textContent='Kit '+kit.n+': '+kit.d;
+    if(audition){ctx.resume();const t=ctx.currentTime+.05,a=[[0,0,115],[.32,1,110],[.64,2,100],[.8,0,115],[1.12,1,110],[1.28,3,105]];a.forEach(([dt,i,v])=>gHit(gLive(),i,t+dt,v))}
+  }finally{ksBusy=false}
+}
+function ksUI(){
+  const host=$('#gcards');if(!host||$('#gkitrow'))return;
+  const row=document.createElement('div');row.id='gkitrow';row.className='gkitrow';
+  const sel=document.createElement('select');sel.id='gkitsel';sel.setAttribute('aria-label','Kit sintetizado');
+  sel.append(new Option('Kits sintetizados…',''));KITS.forEach(k=>sel.append(new Option(k.n,k.id)));
+  const sug=document.createElement('button');sug.textContent='Sugerido por el estilo';
+  const hint=document.createElement('div');hint.id='gkhint';hint.className='gkhint';hint.textContent='Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.';
+  const sg=document.createElement('div');sg.className='gsg';sg.style.flex='1 1 100%';
+  const apply=aud=>{const k=KITS.find(x=>x.id===KSEL.id);if(k)ksBuild(k,aud)};
+  const later=()=>{clearTimeout(ksTimer);ksTimer=setTimeout(()=>apply(true),350)};
+  gSlider(sg,'Tono del kit',-12,12,.5,()=>KSEL.tone,v=>{KSEL.tone=v;later()},v=>(v>0?'+':'')+v);
+  gSlider(sg,'Largo del kit',50,200,1,()=>KSEL.len,v=>{KSEL.len=v;later()},v=>v+'%');
+  gSlider(sg,'Brillo del kit',50,200,1,()=>KSEL.br,v=>{KSEL.br=v;later()},v=>v+'%');
+  sel.onchange=()=>{KSEL.id=sel.value;if(sel.value)apply(true)};
+  sug.onclick=()=>{const id=KIT_SUG(gSt());KSEL.id=id;sel.value=id;apply(true)};
+  row.append(sel,sug,hint,sg);host.parentNode.insertBefore(row,host);
+}
+
+Object.assign(I18N.x,{"Kits sintetizados…": "Synthesized kits…", "Sugerido por el estilo": "Suggested for the style", "Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.": "Sounds created inside the app: no files, no licenses. You can also load your own.", "Tono del kit": "Kit pitch", "Largo del kit": "Kit length", "Brillo del kit": "Kit brightness", "Calidez": "Warmth", "Variación": "Variation"});Object.assign(I18N.f,{});
+
+ksUI();
 select(0);status('Listo');
 </script>
 </body>
