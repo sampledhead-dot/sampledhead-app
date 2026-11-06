@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.40</title>
+<title>SampledHeadApp 1.44</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -547,7 +547,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
     <div class="fxbox" data-m="3"><div class="fxt">REVERB</div><div class="fxpad" id="fxpad3" role="application" aria-label="Pad de reverb del máster. Mantener pulsado y mover."><canvas id="fxcv3"></canvas></div><button class="fxhold" data-m="3" aria-pressed="false" aria-label="Mantener reverb activo al soltar">Hold</button></div>
     <div class="fxbox" data-m="4"><div class="fxt">DELAY</div><div class="fxpad" id="fxpad4" role="application" aria-label="Pad de delay del máster. Mantener pulsado y mover."><canvas id="fxcv4"></canvas></div><button class="fxhold" data-m="4" aria-pressed="false" aria-label="Mantener delay activo al soltar">Hold</button></div>
     <div class="fxbox" data-m="7"><div class="fxt">DUB DELAY</div><div class="fxpad" id="fxpad7" role="application" aria-label="Pad de dub delay del máster. Mantener pulsado y mover."><canvas id="fxcv7"></canvas></div><button class="fxhold" data-m="7" aria-pressed="false" aria-label="Mantener dub delay activo al soltar">Hold</button></div>
-    <div class="fxbox" data-m="5"><div class="fxt">VINILO</div><div class="fxpad" id="fxpad5" role="application" aria-label="Pad de vinilo del máster. Mantener pulsado y mover."><canvas id="fxcv5"></canvas></div><button class="fxhold" data-m="5" aria-pressed="false" aria-label="Mantener vinilo activo al soltar">Hold</button></div>
+    <div class="fxbox" data-m="5"><div class="fxt">STOP</div><div class="fxpad" id="fxpad5" role="application" aria-label="Pad de parada de disco. Mantener pulsado: el sonido se frena y se para; al soltar vuelve donde va la secuencia. X: duración de la frenada, Y: curva."><canvas id="fxcv5"></canvas></div><button class="fxhold" data-m="5" aria-pressed="false" aria-label="Mantener vinilo activo al soltar">Hold</button></div>
     <div class="fxbox" data-m="6"><div class="fxt">RADIO</div><div class="fxpad" id="fxpad6" role="application" aria-label="Pad de radio antigua del máster. Mantener pulsado y mover."><canvas id="fxcv6"></canvas></div><button class="fxhold" data-m="6" aria-pressed="false" aria-label="Mantener radio activo al soltar">Hold</button></div>
     <div class="fxfoot" id="fxnote"><span>Actúan sobre todo lo que suena.</span><button id="fxmix">Mixer</button></div>
   </div>
@@ -897,8 +897,13 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.40</summary>
-<ul><li><b>Limitador final</b> en el máster; envíos de reverb y delay con tope del 70 %; realimentación del Dub delay máxima del 65 %; menos estática en Radio; <b>modo ahorro</b> automático si el audio se atasca (reduce las animaciones).</li>
+<details><summary>29. Novedades de la 1.44</summary>
+<ul><li><b>Pantalla de inicio</b>: tras el logo eliges Nuevo proyecto, Cargar el último abierto o Abrir un proyecto guardado (la primera vez, sin nada guardado, se entra directo).</li>
+<li><b>FX · STOP</b> (el hueco libre): mantén pulsado y el sonido se frena como un disco que se para; al soltar vuelve justo donde va la secuencia, como un mute con efecto de parada. X: duración de la frenada; Y: curva (suave a brusca).</li>
+<li><b>Vinilo en el máster</b>: sale de los pads de FX (queda un hueco libre) y de los efectos de cada parte. Ahora está en Mixer → «Vinilo · master»: lo activas y eliges si se aplica a todos los canales o solo a algunos (sampler, bajo, teclas, batería); los demás suenan limpios.</li>
+<li><b>Cadena de efectos limitada</b>: como máximo 4 efectos de parte (batería, bajo, teclas) activos a la vez, el vinilo solo en una parte, y 3 pads de FX a la vez (al pulsar uno más se suelta el más antiguo). Menos carga y menos ruido acumulado.</li>
+<li><b>Nuevo</b> ahora también reinicia los efectos y el generador (sus sonidos se conservan). <b>Repeat</b> repite el fragmento más fuerte del último segundo, no el último que pasó, que podía ser casi silencio.</li>
+<li><b>Limitador final</b> en el máster; envíos de reverb y delay con tope del 70 %; realimentación del Dub delay máxima del 65 %; menos estática en Radio; <b>modo ahorro</b> automático si el audio se atasca (reduce las animaciones).</li>
 <li><b>Vinilo</b>: el siseo es mucho más bajo y menos silbante.</li>
 <li><b>Octava de los kits de bajo</b>: al abrir un kit o proyecto con el bajo en octava 0, se abre en la 1.</li>
 <li><b>Graves extremos</b> (octava 0): los bajos ya no meten sub infrasónico y añaden una ayuda de octava para que se oigan en el móvil; kits más bajos de nivel.</li>
@@ -933,7 +938,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.40</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.44</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1046,8 +1051,13 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.40</summary>
-<ul><li><b>Final limiter</b> on the master; reverb and delay sends capped at 70%; Dub delay feedback capped at 65%; less radio static; automatic <b>saver mode</b> if the audio stalls (reduces animations).</li>
+<details><summary>29. What is new in 1.44</summary>
+<ul><li><b>Start screen</b>: after the logo you choose New project, Load the last one or Open a saved project (the first time, with nothing saved, it goes straight in).</li>
+<li><b>FX · STOP</b> (the free slot): hold it and the sound slows down like a record stopping; on release it comes back exactly where the sequence is, like a mute with a stop effect. X: stop length; Y: curve (soft to abrupt).</li>
+<li><b>Vinyl on the master</b>: it leaves the FX pads (a free slot remains) and the per-part effects. It is now in Mixer → «Vinilo · master»: switch it on and choose whether it applies to all channels or only some (sampler, bass, keys, drums); the others stay clean.</li>
+<li><b>Limited effects chain</b>: at most 4 part effects (drums, bass, keys) on at once, vinyl in one part only, and 3 FX pads at once (pressing one more releases the oldest). Less load and less accumulated noise.</li>
+<li><b>New</b> now also resets the effects and the generator (its sounds are kept). <b>Repeat</b> repeats the loudest fragment of the last second, not the latest one, which could be almost silence.</li>
+<li><b>Final limiter</b> on the master; reverb and delay sends capped at 70%; Dub delay feedback capped at 65%; less radio static; automatic <b>saver mode</b> if the audio stalls (reduces animations).</li>
 <li><b>Vinyl</b>: the hiss is much lower and less sibilant.</li>
 <li><b>Bass kit octave</b>: opening a kit or project with the bass in octave 0 now opens it in octave 1.</li>
 <li><b>Extreme lows</b> (octave 0): basses no longer add an infrasonic sub and get an octave helper so they are audible on a phone; kits at a lower level.</li>
@@ -1082,7 +1092,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.40</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.44</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1129,8 +1139,10 @@ const $=s=>document.querySelector(s);
 const ctx=new (window.AudioContext||window.webkitAudioContext)();
 const master=ctx.createGain();   // todo lo que suena pasa por aquí y luego por los FX del máster
 const rsBus=ctx.createGain();      // suma solo los pads elegidos para el resample (no va a la salida)
-const genBus=ctx.createGain();genBus.connect(master);   // batería del generador (canal del mixer)
-const sampBus=ctx.createGain();sampBus.connect(master);   // todos los pads del sampler (volumen del mixer)
+const chOut=[0,1,2,3].map(()=>ctx.createGain()),chDry=[0,1,2,3].map(()=>ctx.createGain()),chVin=[0,1,2,3].map(()=>ctx.createGain());
+for(let k=0;k<4;k++){chOut[k].connect(chDry[k]);chDry[k].connect(master);chOut[k].connect(chVin[k]);chVin[k].gain.value=0}
+const genBus=ctx.createGain();genBus.connect(chOut[3]);   // batería del generador (canal del mixer)
+const sampBus=ctx.createGain();sampBus.connect(chOut[0]);   // todos los pads del sampler (volumen del mixer)
 /* ---------- FX del máster: pad XY con Filtro, Bit y Beat repeat (como los FX táctiles del Koala) ---------- */
 const FX_WORKLET=`
 class Crush extends AudioWorkletProcessor{
@@ -1156,13 +1168,13 @@ class Rep extends AudioWorkletProcessor{
       if(!this.on||L!==this.L){
         this.L=L;
         /* el fragmento es la última ventana con sonido: si justo ahora no suena nada, se retrocede en el búfer en vez de repetir silencio */
-        let off=0;
-        for(let tries=0;tries<64;tries++){
-          let e=0;const st=this.w-L-off;
-          for(let k=0;k<L;k+=8){const v=this.buf[0][(st+k+this.N*2)%this.N];e+=v*v}
-          if(e/(L/8)>1e-6||off+L>=this.N-1)break;
-          off+=Math.max(256,L>>2);
-        }
+        let off=0,best=-1;
+        {const stp=Math.max(128,L>>2),lim=Math.min(sampleRate,this.N-1-L);
+          for(let o=0;o<=lim;o+=stp){
+            let e=0;const st=this.w-L-o;
+            for(let k=0;k<L;k+=8){const v=this.buf[0][(st+k+this.N*2)%this.N];e+=v*v}
+            e/=(L/8);if(e>best*1.15){best=e;off=o}
+          }}
         for(let c=0;c<2;c++)for(let k=0;k<L;k++)this.slice[c][k]=this.buf[c][(this.w-L-off+k+this.N*2)%this.N];
         this.p=0;
       }
@@ -1188,7 +1200,34 @@ class Rep extends AudioWorkletProcessor{
     return true;
   }
 }
-registerProcessor('sh-crush',Crush);registerProcessor('sh-rep',Rep);
+class Stop extends AudioWorkletProcessor{
+  constructor(){
+    super();this.N=Math.floor(sampleRate*3);this.b=[new Float32Array(this.N),new Float32Array(this.N)];this.w=0;this.on=false;this.rp=0;this.t=0;this.T=1;this.k=1.5;
+    this.port.onmessage=e=>{const d=e.data;if(d.off){this.on=false;return}
+      this.T=Math.max(.15,d.T);this.k=d.k||1.5;
+      if(!this.on){this.on=true;this.t=0;this.rp=this.w-64}};
+  }
+  process(i,o){
+    const a=i[0],b=o[0],n=b[0].length,N=this.N;
+    for(let k=0;k<n;k++){
+      const wi=this.w%N;
+      for(let c=0;c<b.length;c++)this.b[c][wi]=((a[c]||a[0])||[])[k]||0;
+      let y0=0,y1=0;
+      if(this.on){
+        const r=Math.pow(Math.max(0,1-this.t/this.T),this.k),i0=Math.floor(this.rp),f=this.rp-i0,g=Math.min(1,r*5);
+        for(let c=0;c<b.length;c++){
+          const A=this.b[c],p0=((i0%N)+N)%N,p1=(p0+1)%N,v=(A[p0]*(1-f)+A[p1]*f)*g;
+          b[c][k]=v;
+        }
+        this.rp+=r;this.t+=1/sampleRate;
+        if(this.rp>this.w)this.rp=this.w;
+      }else{for(let c=0;c<b.length;c++)b[c][k]=0}
+      this.w++;
+    }
+    return true;
+  }
+}
+registerProcessor('sh-crush',Crush);registerProcessor('sh-rep',Rep);registerProcessor('sh-stop',Stop);
 `;
 /* tempo de un sample en loop (para el Beat repeat): se detectan los golpes del audio y se prueba con la duración de la región */
 function audioOnsets(b){
@@ -1271,10 +1310,12 @@ function fxNodes(on){
     if(!on){
       if(fxCrush){try{fxIn[1].disconnect(fxCrush)}catch{}try{fxCrush.disconnect()}catch{}fxCrush=null}
       if(fxRep){try{fxIn[2].disconnect(fxRep)}catch{}try{fxRep.disconnect()}catch{}fxRep=null}
+      if(fxStop){try{fxIn[3].disconnect(fxStop)}catch{}try{fxStop.disconnect()}catch{}fxStop=null}
       return;
     }
     if(!fxCrush){fxCrush=fxMk('sh-crush');fxIn[1].connect(fxCrush);fxCrush.connect(fxW[1])}
     if(!fxRep){fxRep=fxMk('sh-rep');fxIn[2].connect(fxRep);fxRep.connect(fxW[2])}
+    if(!fxStop){fxStop=fxMk('sh-stop');fxIn[3].connect(fxStop);fxStop.connect(fxW[3])}
   }catch{}
 }
 async function fxInit(){
@@ -1307,7 +1348,7 @@ function fxVals(m){
     const h=Math.pow(48,x),bits=Math.round(16-y*13);
     return {h,bits,txt:bits+' bit',sub:x<.03?'sin reducción':'÷'+h.toFixed(h<10?1:0)+' muestras'};
   }
-  if(m===5){const w=Math.round(x*100),n=Math.round(y*100);return {wow:x,noise:y,lpf:12000*Math.pow(.22,y),txt:'wow '+w+'%',sub:'crujido '+n+'%'}}
+  if(m===5){const T=.2*Math.pow(10,x),k=.7+y*1.6;return {T,k,txt:'parada '+T.toFixed(1)+' s',sub:y<.34?'suave':y<.67?'normal':'brusca'}}
   if(m===7){const k=Math.min(3,Math.floor(x*4)),D=[['1/4',1],['1/8.',.75],['1/8',.5],['1/2',2]];return {k,bt:D[k][1],fb:.35+y*.3,txt:D[k][0],sub:'realim. '+Math.round((.35+y*.3)*100)+'%',sub2:Math.round(fxTempo().bpm)+' BPM'}}
   if(m===6){const w=Math.round(x*100),n=Math.round(y*100);return {bw:x,stat:y,hp:150+x*600,lp:6000-x*3800,txt:'banda '+Math.round(100-x*100+5)+'%',sub:'estática '+n+'%'}}
   if(m===3){const k=Math.min(2,Math.floor(x*3));return {k,a:y*.7,txt:REV_N[k],sub:'envío '+Math.round(y*70)+'%'}}
@@ -1329,7 +1370,7 @@ function fxSend(){
   if(d[4]){const v=fxVals(4),tt=Math.min(1.9,fxBeatLen()*DLY_DIV[v.k][1]);fxSet(dlyL.delayTime,tt,t,.14);fxSet(dlyR.delayTime,tt,t,.14);fxSet(fxDlySend.gain,v.a,t,.02)}else fxSet(fxDlySend.gain,0,t,.05);
   if(fxRep){if(d[2]){const v=fxVals(2);fxRep.port.postMessage({L:v.L,g:v.g})}else fxRep.port.postMessage({off:1})}
   for(let i=1;i<3;i++){fxSet(fxDry[i].gain,d[i]?0:1,t,.01);fxSet(fxW[i].gain,d[i]?1:0,t,.01)}
-  fxVinSend(d[5],t);fxRadioSend(d[6],t);fxDubSend(d[7],t);
+  fxStopSend(d[5],t);fxRadioSend(d[6],t);fxDubSend(d[7],t);
   if(!d[0]){fxSet(fxLP.frequency,20000,t,.012);fxSet(fxHP.frequency,20,t,.012);fxSet(fxLP.Q,.7,t,.012);fxSet(fxHP.Q,.7,t,.012)}
   fxDraw();
 }
@@ -1386,10 +1427,10 @@ function fxHold(m,on){
     const hb=document.querySelector('.fxhold[data-m="'+m+'"]');if(hb)hb.onclick=()=>fxHold(m);
     pad.addEventListener('pointerdown',e=>{
       const S=fx.st[m];if(S.down&&S.id!==null)return;e.preventDefault();
-      if(m===2&&fx.noRep)return;
+      if((m===2||m===5)&&fx.noRep)return;
       try{pad.setPointerCapture(e.pointerId)}catch{}
       if(ctx.state==='suspended')ctx.resume();
-      S.down=true;S.id=e.pointerId;fxPos(e,m);fxSend();
+      fxCap(m);S.down=true;S.id=e.pointerId;fxPos(e,m);fxSend();
     });
     pad.addEventListener('pointermove',e=>{const S=fx.st[m];if(S.down&&e.pointerId===S.id){fxPos(e,m);fxSend()}});
     ['pointerup','pointercancel','lostpointercapture'].forEach(n=>pad.addEventListener(n,e=>{if(e.pointerId===fx.st[m].id)fxUp(m)}));
@@ -1637,10 +1678,20 @@ async function load(f){
   catch{status(vid?'No se pudo extraer el audio (formato no compatible o sin audio)':'No se pudo leer ese archivo')}
 }
 $('#file').onchange=e=>{if(e.target.files[0])load(e.target.files[0]);e.target.value=''};
+function newFxGen(){
+  try{if(G.play)gStop()}catch{}
+  try{MX.vn.on=0;mxApply();mxSave()}catch{}
+  fxRelease();fx.st.forEach(o=>{o.x=.5;o.y=.5;o.hold=false});
+  Object.assign(BFX,gFxDef());Object.assign(KFX,gFxDef());
+  Object.assign(G,gDef());
+  try{gFxLive();bfxLive();kfxLive();gFxRefresh();gApplyStyle()}catch(e){}
+  try{fxDraw()}catch{}
+}
 $('#newb').onclick=()=>{
-  if(!pads.some(p=>p.buf)){status('Ya está vacío');return}
-  if(!confirm('¿Vaciar los 64 pads? Se puede deshacer.'))return;
-  uCommit(true);applyKit([]);uCommit(true);undoUI();status('Pads vacíos · Deshacer disponible');
+  const full=pads.some(p=>p.buf);
+  if(!confirm(full?'¿Empezar de nuevo? Se vacían los 64 pads (se puede deshacer) y se reinician los efectos y el generador (sus sonidos se conservan).':'¿Reiniciar los efectos y el generador? (sus sonidos se conservan)'))return;
+  if(full){uCommit(true);applyKit([]);uCommit(true);undoUI()}
+  newFxGen();status(full?'Todo reiniciado · Deshacer disponible para los pads':'Efectos y generador reiniciados');
 };
 $('#clear').onclick=()=>{stop(sel);resetPad(pads[sel]);labels(sel);select(sel);status('Pad vacío')};
 $('#rec').onclick=async()=>{
@@ -2695,7 +2746,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.40';
+const APP_VERSION='1.44';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -2872,7 +2923,7 @@ function mkBass(c,dest,P){
     silence(t){st.length=0;if(cur){cur.kill(t);cur=null}}
   };
 }
-const bassBus=ctx.createGain();bassBus.connect(master);
+const bassBus=ctx.createGain();bassBus.connect(chOut[1]);
 let bassP=null;
 const bp=()=>bassP||(bassP=mkBass(ctx,bassBus,BP));
 const bgrid=$('#bgrid'),bHeldK=new Set();
@@ -3257,7 +3308,7 @@ function mkKeys(c,dest,P){
     silence(t){[...gr.keys()].forEach(i=>drop(i,t,true))}
   };
 }
-const keysBus=ctx.createGain();keysBus.connect(master);
+const keysBus=ctx.createGain();keysBus.connect(chOut[2]);
 let keysP=null,kLastVel=.8;
 const kp=()=>keysP||(keysP=mkKeys(ctx,kLofiIn(),KP));
 /* lo-fi en directo (SP-1200, SP-202, MPC60): mismas cifras que en el sampler, con el procesador de BIT; sin él, solo la profundidad de bits */
@@ -3487,15 +3538,16 @@ if(typeof requestAnimationFrame==='function')(function phFrame(){phUpdate();requ
 /* ---------- MIXER: volumen de Sampler / Bajo / Teclas, ecualizador de 8 bandas y compresor del máster ---------- */
 const MXKEY='sampledhead.mixer';
 const EQ_F=[80,160,320,640,1250,2500,5000,10000];
-const MXD=()=>({vol:[0,0,0,0],mute:[false,false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0}});
+const MXD=()=>({vol:[0,0,0,0],mute:[false,false,false,false],master:0,eqOn:true,eq:[0,0,0,0,0,0,0,0],compOn:false,comp:{th:-18,ratio:3,att:10,rel:200,knee:12,gain:0},vn:{on:0,ch:[1,1,1,1],crk:.5,his:.12,wow:.3,lpf:9000,drv:.15}});
 const MX=MXD();
-try{const sv=JSON.parse(localStorage.getItem(MXKEY)||'null');if(sv&&sv.vol){const d=MXD();Object.assign(MX,d,sv,{comp:{...d.comp,...(sv.comp||{})}});while(MX.vol.length<4)MX.vol.push(0);while(MX.mute.length<4)MX.mute.push(false)}}catch{}
+try{const sv=JSON.parse(localStorage.getItem(MXKEY)||'null');if(sv&&sv.vol){const d=MXD();Object.assign(MX,d,sv,{comp:{...d.comp,...(sv.comp||{})},vn:{...d.vn,...(sv.vn||{})}});if(!Array.isArray(MX.vn.ch)||MX.vn.ch.length!==4)MX.vn.ch=[1,1,1,1];while(MX.vol.length<4)MX.vol.push(0);while(MX.mute.length<4)MX.mute.push(false)}}catch{}
 let mxSaveT=0;
 const mxSave=()=>{clearTimeout(mxSaveT);mxSaveT=setTimeout(()=>{try{localStorage.setItem(MXKEY,JSON.stringify(MX))}catch{}},300)};
 const dbG=db=>db<=-59.9?0:Math.pow(10,db/20);
 const mxSet=(p,v)=>{if(!p)return;try{if(p.setTargetAtTime)p.setTargetAtTime(v,ctx.currentTime,.015);else p.value=v}catch{p.value=v}};
 const MX_BUS=[sampBus,bassBus,keysBus,genBus];
 function mxApply(){
+  try{vnApply();if(window.vnSync)window.vnSync()}catch{}
   for(const k of ['rev','dly','rsz','ddiv','rret','dret','dfb'])delete MX[k];   // envíos del mixer retirados en 1.28
   MX_BUS.forEach((b,i)=>mxSet(b.gain,MX.mute[i]?0:dbG(MX.vol[i])));
   mxSet(mixMaster.gain,dbG(MX.master));
@@ -4362,12 +4414,7 @@ async function pjSave(key,quiet){
   finally{pj.busy=false}
 }
 async function pjAutoLoad(){
-  try{
-    if(pjAutoOn()){
-      const d=await tx('readonly',s=>s.get(PJAUTO));
-      if(d&&d.v===1){await pjApply(d);status('Sesión anterior recuperada')}
-    }
-  }catch{}
+  try{await pjStart()}catch{}
   uLast=uSnap();uSig=uSigNow();uStack=[];rStack=[];pj.sig=pjSig();pj.ready=true;
 }
 function pjTick(force){
@@ -5126,17 +5173,17 @@ function gFxLive(){
 let kfxChain=null;
 function kfxLive(){
   if(kfxChain){try{keysBus.disconnect(kfxChain.inp)}catch{}kfxChain.stop()}
-  try{keysBus.disconnect(master)}catch{}   // solo la salida al máster: así siguen conectados el medidor del mixer y los demás analizadores
-  if(!Object.values(KFX).some(x=>x.on)){kfxChain=null;keysBus.connect(master);return}
-  kfxChain=gFxChain(ctx,KFX,G.bpm);keysBus.connect(kfxChain.inp);kfxChain.out.connect(master);
+  try{keysBus.disconnect(chOut[2])}catch{}   // solo la salida al máster: así siguen conectados el medidor del mixer y los demás analizadores
+  if(!Object.values(KFX).some(x=>x.on)){kfxChain=null;keysBus.connect(chOut[2]);return}
+  kfxChain=gFxChain(ctx,KFX,G.bpm);keysBus.connect(kfxChain.inp);kfxChain.out.connect(chOut[2]);
 }
 let bfxChain=null;
 function bfxLive(){
   if(bfxChain){try{bassBus.disconnect(bfxChain.inp)}catch{}bfxChain.stop()}
-  try{bassBus.disconnect(master)}catch{}
+  try{bassBus.disconnect(chOut[1])}catch{}
   const anyOn=Object.values(BFX).some(x=>x.on);
-  if(!anyOn){bfxChain=null;bassBus.connect(master);return}
-  bfxChain=gFxChain(ctx,BFX,G.bpm);bassBus.connect(bfxChain.inp);bfxChain.out.connect(master);
+  if(!anyOn){bfxChain=null;bassBus.connect(chOut[1]);return}
+  bfxChain=gFxChain(ctx,BFX,G.bpm);bassBus.connect(bfxChain.inp);bfxChain.out.connect(chOut[1]);
 }
 const GP_={timer:0,td:0,tb:0,nd:0,nb:0,q:[]};
 function gDrumStep(E,n,t,sd){
@@ -5318,10 +5365,10 @@ const GFXUI=[
 function gFxUI(host,cfg,apply,skip=[]){
   host.replaceChildren();
   for(const [id,name,pars] of GFXUI){
-    if(skip.includes(id))continue;
+    if(skip.includes(id)||id==='vn')continue;
     const box=gEl('div','gfx'),hd=gEl('button','',`<span>${name}</span><span>${cfg[id].on?'On':'Off'}</span>`),body=gEl('div','gfb');
     const sync=()=>{box.classList.toggle('on',!!cfg[id].on);hd.classList.toggle('on',!!cfg[id].on);hd.lastChild.textContent=cfg[id].on?'On':'Off';hd.setAttribute('aria-pressed',String(!!cfg[id].on))};
-    hd.onclick=()=>{cfg[id].on=cfg[id].on?0:1;sync();apply()};
+    hd.onclick=()=>{if(!cfg[id].on){if(gFxActive()>=GFX_MAX){status('Máximo '+GFX_MAX+' efectos de parte a la vez: apaga uno antes');return}if(id==='vn'&&[G.dfx,BFX,KFX].some(c=>c.vn&&c.vn.on)){status('El vinilo solo puede estar en una parte a la vez');return}}cfg[id].on=cfg[id].on?0:1;sync();apply()};
     for(const p of pars){
       const [k,lab]=p;
       if(p[2]==='sel'){
@@ -5997,6 +6044,144 @@ function ksUI(){
   sug.onclick=()=>{const id=KIT_SUG(gSt());KSEL.id=id;sel.value=id;apply(true)};
   row.append(sel,sug,hint,sg);host.parentNode.insertBefore(row,host);
 }
+
+/* ---------- 1.42: presupuesto de efectos (cadena limitada) ---------- */
+const GFX_MAX=4,FXP_MAX=3;
+const gFxActive=()=>[G.dfx,BFX,KFX].reduce((n,c)=>n+Object.values(c).filter(x=>x&&x.on).length,0);
+function gFxClamp(){
+  let n=0,ch=false;
+  for(const c of [G.dfx,BFX,KFX])for(const k in c)if(c[k]&&c[k].on){if(++n>GFX_MAX){c[k].on=0;ch=true}}
+  if(ch){try{gFxLive();bfxLive();kfxLive();gFxRefresh();gSave()}catch{}}
+}
+/* pads de FX globales: como máximo 3 a la vez; al pulsar uno más se suelta el más antiguo */
+function fxCap(m){
+  const on=fx.st.map((s,i)=>[i,s]).filter(([i,s])=>i!==m&&(s.down||s.hold));
+  if(on.length>=FXP_MAX){
+    on.sort((a,b)=>(a[1].t0||0)-(b[1].t0||0));const [i,s]=on[0];
+    s.hold=false;s.down=false;s.id=null;s.tr=[];
+    const b=document.querySelector('.fxhold[data-m="'+i+'"]');if(b)b.setAttribute('aria-pressed','false');
+  }
+  fx.st[m].t0=performance.now();
+}
+gFxClamp();
+
+/* ---------- 1.43: VINILO como efecto del máster, aplicable a todos los canales o a algunos ---------- */
+const VN_CH=['Sampler','Bajo','Teclas','Batería'];
+let vn=null,vnBufT=0;
+function vnCfg(){return MX.vn}
+function vnOn(on){
+  if(on&&!vn){
+    const c=ctx,inp=c.createGain(),dl=c.createDelay(.05),hp=c.createBiquadFilter(),lp=c.createBiquadFilter(),sh=c.createWaveShaper(),
+      l1=c.createOscillator(),g1=c.createGain(),l2=c.createOscillator(),g2=c.createGain(),ng=c.createGain();
+    dl.delayTime.value=.012;hp.type='highpass';hp.frequency.value=45;lp.type='lowpass';
+    l1.frequency.value=.55;l2.frequency.value=6.2;l1.connect(g1);g1.connect(dl.delayTime);l2.connect(g2);g2.connect(dl.delayTime);
+    inp.connect(dl);dl.connect(hp);hp.connect(lp);lp.connect(sh);sh.connect(master);
+    const ns=c.createBufferSource();ns.loop=true;ns.connect(ng);ng.connect(master);ng.gain.value=.16;
+    l1.start();l2.start();
+    vn={inp,dl,hp,lp,sh,l1,g1,l2,g2,ns,ng,buf:''};
+    chVin.forEach(g=>g.connect(inp));
+  }else if(!on&&vn){
+    const v=vn;vn=null;
+    chVin.forEach(g=>{try{g.disconnect(v.inp)}catch{}});
+    try{v.l1.stop();v.l2.stop();v.ns.stop()}catch{}
+    [v.inp,v.dl,v.hp,v.lp,v.sh,v.g1,v.g2,v.ng].forEach(n=>{try{n.disconnect()}catch{}});
+  }
+}
+function vnApply(){
+  const V=vnCfg();if(!V)return;
+  const on=!!V.on&&V.ch.some(x=>x);
+  if(on)vnOn(true);
+  const t=ctx.currentTime;
+  for(let k=0;k<4;k++){const s=on&&V.ch[k];mxSet(chDry[k].gain,s?0:1);mxSet(chVin[k].gain,s?1:0)}
+  if(on&&vn){
+    mxSet(vn.g1.gain,.0035*V.wow);mxSet(vn.g2.gain,.0005*V.wow);mxSet(vn.lp.frequency,V.lpf);vn.sh.curve=vinylCurve(V.drv);
+    const key=V.crk.toFixed(2)+'/'+V.his.toFixed(2);
+    if(vn.buf!==key){
+      clearTimeout(vnBufT);
+      vnBufT=setTimeout(()=>{if(!vn)return;const b=ctx.createBuffer(1,Math.round(ctx.sampleRate*4),ctx.sampleRate);b.copyToChannel(vinylNoise(ctx.sampleRate,4,V.crk,V.his),0);
+        const old=vn.ns,ns=ctx.createBufferSource();ns.buffer=b;ns.loop=true;ns.connect(vn.ng);ns.start();vn.ns=ns;try{old.stop()}catch{};vn.buf=key},vn.buf===''?0:200);
+    }
+  }else if(vn){setTimeout(()=>{if(!(MX.vn.on&&MX.vn.ch.some(x=>x)))vnOn(false)},300)}
+}
+function vnUI(){
+  const pan=$('#mixpanel');if(!pan||$('#vnsec'))return;
+  const sec=document.createElement('div');sec.className='bsec';sec.id='vnsec';
+  const bt=document.createElement('div');bt.className='bt';bt.textContent='Vinilo · master';
+  const g1=document.createElement('div');g1.className='bgrp c2';
+  const on=document.createElement('button');on.textContent='Vinilo desactivado';on.setAttribute('aria-pressed','false');
+  g1.append(on);
+  const g2=document.createElement('div');g2.className='bgrp';g2.id='vnch';g2.style.cssText='display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0';
+  const all=document.createElement('button');all.textContent='Todos';all.style.fontSize='12px';all.style.padding='8px 2px';g2.append(all);
+  const chb=VN_CH.map((n,k)=>{const b=document.createElement('button');b.textContent=n;b.style.fontSize='12px';b.style.padding='8px 2px';b.onclick=()=>{MX.vn.ch[k]=MX.vn.ch[k]?0:1;chg()};g2.append(b);return b});
+  const sg=document.createElement('div');sg.className='gsg';
+  const note=document.createElement('div');note.className='note';note.textContent='Elige a qué canales se aplica: a todos o solo a algunos. Los demás suenan limpios.';
+  const sync=()=>{
+    const V=MX.vn;on.classList.toggle('on',!!V.on);on.textContent=V.on?'Vinilo activado':'Vinilo desactivado';on.setAttribute('aria-pressed',String(!!V.on));
+    chb.forEach((b,k)=>b.classList.toggle('on',!!V.ch[k]));all.classList.toggle('on',V.ch.every(x=>x));
+  };
+  const chg=()=>{sync();vnApply();mxSave()};
+  on.onclick=()=>{MX.vn.on=MX.vn.on?0:1;chg()};
+  all.onclick=()=>{const a=MX.vn.ch.every(x=>x);MX.vn.ch=MX.vn.ch.map(()=>a?0:1);chg()};
+  const sl=(lab,k,min,max,st,fmt,log)=>gSlider(sg,lab,min,max,st,()=>MX.vn[k],v=>{MX.vn[k]=v;vnApply();mxSave()},fmt,'gsl',log);
+  sl('Crujido','crk',0,1,.01,v=>Math.round(v*100)+'%');
+  sl('Siseo','his',0,1,.01,v=>Math.round(v*100)+'%');
+  sl('Wow y flutter','wow',0,1,.01,v=>Math.round(v*100)+'%');
+  sl('Recorte de agudos','lpf',2000,16000,.01,v=>v>=1000?(v/1000).toFixed(1)+' kHz':Math.round(v)+' Hz',true);
+  sl('Saturación','drv',0,1,.01,v=>Math.round(v*100)+'%');
+  sec.append(bt,g1,g2,note,sg);pan.append(sec);
+  window.vnSync=sync;sync();
+}
+/* el vinilo ya no está en la cadena de FX ni en los efectos de cada parte */
+function vnStrip(){let ch=false;for(const c of [G.dfx,BFX,KFX])if(c.vn&&c.vn.on){c.vn.on=0;ch=true}if(ch){try{gFxLive();bfxLive();kfxLive();gFxRefresh();gSave()}catch{}}}
+vnStrip();vnUI();vnApply();
+
+/* ---------- 1.44: pad STOP de disco en FX + pantalla de inicio ---------- */
+let fxStop=null;
+function fxStopSend(down,t){
+  if(!fxStop){fxSet(fxDry[3].gain,1,t,.01);fxSet(fxW[3].gain,0,t,.01);return}
+  if(down){const v=fxVals(5);fxStop.port.postMessage({T:v.T,k:v.k});fxSet(fxDry[3].gain,0,t,.008);fxSet(fxW[3].gain,1,t,.008)}
+  else{fxStop.port.postMessage({off:1});fxSet(fxDry[3].gain,1,t,.012);fxSet(fxW[3].gain,0,t,.012)}
+}
+function pjStartCss(){
+  if(document.getElementById('startcss'))return;
+  const s=document.createElement('style');s.id='startcss';
+  s.textContent='#startsheet{position:fixed;inset:0;z-index:90;background:#101216;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;overflow:auto}'+
+  '#startsheet h2{margin:0 0 6px;font:700 20px/1.2 Barlow,sans-serif;color:#ffd23f;letter-spacing:.04em;text-transform:uppercase}'+
+  '#startsheet .sb{width:min(92vw,360px);padding:16px 14px;border-radius:12px;border:1px solid #2b3038;background:#1b1f26;color:#e9edf2;font:600 16px/1.2 Barlow,sans-serif;text-align:left}'+
+  '#startsheet .sb small{display:block;margin-top:4px;font:500 12px/1.3 Barlow,sans-serif;color:#9aa4b2}'+
+  '#startsheet .sb:disabled{opacity:.4}#startsheet .sb.pri{background:#ffd23f;color:#101216;border-color:#ffd23f}#startsheet .sb.pri small{color:#3a3410}'+
+  '#startsheet .sl{display:flex;flex-direction:column;gap:8px;width:min(92vw,360px);max-height:52vh;overflow:auto}';
+  document.head.appendChild(s);
+}
+async function pjStart(){
+  let auto=null,names=[];
+  try{if(pjAutoOn()){auto=await tx('readonly',s=>s.get(PJAUTO));if(auto&&auto.v!==1)auto=null}}catch{}
+  try{names=(await tx('readonly',s=>s.getAllKeys())).map(String).filter(k=>k.startsWith(PJ)&&k!==PJAUTO).map(k=>k.slice(PJ.length)).sort()}catch{}
+  if(!auto&&!names.length)return;   // primera vez: se entra directo
+  pjStartCss();
+  return new Promise(res=>{
+    const sh=document.createElement('div');sh.id='startsheet';sh.setAttribute('role','dialog');sh.setAttribute('aria-label','Inicio');
+    const h=document.createElement('h2');h.textContent='¿Cómo empezamos?';
+    const mk=(t,sub,cls)=>{const b=document.createElement('button');b.className='sb'+(cls?' '+cls:'');b.append(document.createTextNode(t));if(sub){const s=document.createElement('small');s.textContent=sub;b.append(s)}return b};
+    const done=async fn=>{try{await fn()}catch{}sh.remove();res()};
+    const bNew=mk('Nuevo proyecto','Todo vacío, con efectos y generador reiniciados','pri');
+    const when=auto&&auto.t?new Date(auto.t).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    const bLast=mk('Cargar el último abierto',auto?('Guardado automático'+(when?' · '+when:'')):(pjAutoOn()?'No hay sesión anterior':'Guardado automático desactivado'));bLast.disabled=!auto;
+    const bOpen=mk('Abrir un proyecto guardado',names.length?names.length+(names.length===1?' proyecto':' proyectos'):'No hay proyectos guardados');bOpen.disabled=!names.length;
+    bNew.onclick=()=>done(async()=>{try{newFxGen()}catch{}status('Proyecto nuevo')});
+    bLast.onclick=()=>done(async()=>{await pjApply(auto);status('Sesión anterior recuperada')});
+    bOpen.onclick=()=>{
+      sh.replaceChildren();
+      const h2=document.createElement('h2');h2.textContent='Proyectos guardados';sh.append(h2);
+      const l=document.createElement('div');l.className='sl';
+      names.forEach(n=>{const b=mk(n);b.onclick=()=>done(async()=>{const d=await tx('readonly',s=>s.get(PJ+n));if(d){showTab(0);await pjApply(d);status('Proyecto cargado: '+n)}});l.append(b)});
+      const back=mk('← Volver');back.onclick=()=>{sh.replaceChildren(h,bNew,bLast,bOpen)};
+      sh.append(l,back);
+    };
+    sh.append(h,bNew,bLast,bOpen);document.body.appendChild(sh);
+  });
+}
+Object.assign(I18N.x,{"¿Cómo empezamos?":"How shall we start?","Nuevo proyecto":"New project","Cargar el último abierto":"Load the last one","Abrir un proyecto guardado":"Open a saved project","Proyectos guardados":"Saved projects","← Volver":"← Back","Todo vacío, con efectos y generador reiniciados":"Everything empty, with effects and generator reset"});
 
 Object.assign(I18N.x,{"Kits sintetizados…": "Synthesized kits…", "Sugerido por el estilo": "Suggested for the style", "Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.": "Sounds created inside the app: no files, no licenses. You can also load your own.", "Tono del kit": "Kit pitch", "Largo del kit": "Kit length", "Brillo del kit": "Kit brightness", "Calidez": "Warmth", "Variación": "Variation"});Object.assign(I18N.f,{});
 
