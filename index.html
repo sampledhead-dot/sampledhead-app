@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.44</title>
+<title>SampledHeadApp 1.45</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -897,8 +897,10 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.44</summary>
-<ul><li><b>Pantalla de inicio</b>: tras el logo eliges Nuevo proyecto, Cargar el último abierto o Abrir un proyecto guardado (la primera vez, sin nada guardado, se entra directo).</li>
+<details><summary>29. Novedades de la 1.45</summary>
+<ul><li><b>Delay y Dub delay</b> van ahora al final de la cadena (después del filtro): suenan sobre lo que se oye, también con STOP pulsado, que ya no deja volver el audio.</li>
+<li><b>Nuevo proyecto</b> deja todo vacío: pads del sampler, looper, efectos y generador.</li>
+<li><b>Pantalla de inicio</b>: tras el logo eliges Nuevo proyecto, Cargar el último abierto o Abrir un proyecto guardado (la primera vez, sin nada guardado, se entra directo).</li>
 <li><b>FX · STOP</b> (el hueco libre): mantén pulsado y el sonido se frena como un disco que se para; al soltar vuelve justo donde va la secuencia, como un mute con efecto de parada. X: duración de la frenada; Y: curva (suave a brusca).</li>
 <li><b>Vinilo en el máster</b>: sale de los pads de FX (queda un hueco libre) y de los efectos de cada parte. Ahora está en Mixer → «Vinilo · master»: lo activas y eliges si se aplica a todos los canales o solo a algunos (sampler, bajo, teclas, batería); los demás suenan limpios.</li>
 <li><b>Cadena de efectos limitada</b>: como máximo 4 efectos de parte (batería, bajo, teclas) activos a la vez, el vinilo solo en una parte, y 3 pads de FX a la vez (al pulsar uno más se suelta el más antiguo). Menos carga y menos ruido acumulado.</li>
@@ -938,7 +940,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.44</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.45</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1051,8 +1053,10 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.44</summary>
-<ul><li><b>Start screen</b>: after the logo you choose New project, Load the last one or Open a saved project (the first time, with nothing saved, it goes straight in).</li>
+<details><summary>29. What is new in 1.45</summary>
+<ul><li><b>Delay and Dub delay</b> now sit at the end of the chain (after the filter): they act on what you hear, even with STOP held, so audio no longer leaks back.</li>
+<li><b>New project</b> leaves everything empty: sampler pads, looper, effects and generator.</li>
+<li><b>Start screen</b>: after the logo you choose New project, Load the last one or Open a saved project (the first time, with nothing saved, it goes straight in).</li>
 <li><b>FX · STOP</b> (the free slot): hold it and the sound slows down like a record stopping; on release it comes back exactly where the sequence is, like a mute with a stop effect. X: stop length; Y: curve (soft to abrupt).</li>
 <li><b>Vinyl on the master</b>: it leaves the FX pads (a free slot remains) and the per-part effects. It is now in Mixer → «Vinilo · master»: switch it on and choose whether it applies to all channels or only some (sampler, bass, keys, drums); the others stay clean.</li>
 <li><b>Limited effects chain</b>: at most 4 part effects (drums, bass, keys) on at once, vinyl in one part only, and 3 FX pads at once (pressing one more releases the oldest). Less load and less accumulated noise.</li>
@@ -1092,7 +1096,7 @@ canvas#meter{position:absolute;left:0;right:0;top:-6px;width:100%;height:4px;min
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.44</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.45</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1263,12 +1267,12 @@ function padTempo(i){
 const fxMix=ctx.createGain();
 /* FILTRO: va al final, tras la suma de todos los efectos (incluidos reverb y delays), para que afecte a todo lo que suena */
 const fxLP=ctx.createBiquadFilter(),fxHP=ctx.createBiquadFilter();
-fxLP.type='lowpass';fxHP.type='highpass';fxLP.frequency.value=20000;fxHP.frequency.value=20;fxMix.connect(fxLP);fxLP.connect(fxHP);
+const fxEnd=ctx.createGain();fxLP.type='lowpass';fxHP.type='highpass';fxHP.connect(fxEnd);fxLP.frequency.value=20000;fxHP.frequency.value=20;fxMix.connect(fxLP);fxLP.connect(fxHP);
 /* salida: mezcla de FX → ecualizador de 8 bandas → compresor → ganancia → master (volumen) → altavoces */
 const mixEq=EQ_FREQS().map((f,i)=>{const q=ctx.createBiquadFilter();q.type=i===0?'lowshelf':i===7?'highshelf':'peaking';q.frequency.value=f;q.Q.value=1.1;q.gain.value=0;return q});
 const mixLim=ctx.createDynamicsCompressor?ctx.createDynamicsCompressor():ctx.createGain();if(mixLim.threshold){mixLim.threshold.value=-2;mixLim.knee.value=0;mixLim.ratio.value=20;mixLim.attack.value=.002;mixLim.release.value=.09}
 const mixComp=ctx.createDynamicsCompressor?ctx.createDynamicsCompressor():ctx.createGain(),mixMk=ctx.createGain(),mixMaster=ctx.createGain();
-{let prev=fxHP;for(const n of mixEq){prev.connect(n);prev=n}prev.connect(mixComp);mixComp.connect(mixMk);mixMk.connect(mixMaster);mixMaster.connect(mixLim);mixLim.connect(ctx.destination)}
+{let prev=fxEnd;for(const n of mixEq){prev.connect(n);prev=n}prev.connect(mixComp);mixComp.connect(mixMk);mixMk.connect(mixMaster);mixMaster.connect(mixLim);mixLim.connect(ctx.destination)}
 function EQ_FREQS(){return [80,160,320,640,1250,2500,5000,10000]}
 const fxIn=Array.from({length:5},()=>ctx.createGain()),fxOut=Array.from({length:5},()=>ctx.createGain()),
       fxDry=Array.from({length:5},()=>ctx.createGain()),fxW=Array.from({length:5},()=>ctx.createGain());
@@ -1293,9 +1297,9 @@ function revMake(sz){
 const dlyIn=ctx.createGain(),dlyL=ctx.createDelay(2),dlyR=ctx.createDelay(2),dlyFbL=ctx.createGain(),dlyFbR=ctx.createGain(),dlyLpL=ctx.createBiquadFilter(),dlyLpR=ctx.createBiquadFilter(),dlyMg=ctx.createChannelMerger(2),dlyOut=ctx.createGain(),fxDlySend=ctx.createGain();
 dlyLpL.type=dlyLpR.type='lowpass';dlyLpL.frequency.value=dlyLpR.frequency.value=3800;
 fxDlySend.gain.value=0;dlyOut.gain.value=.7;dlyFbL.gain.value=dlyFbR.gain.value=.4;dlyL.delayTime.value=dlyR.delayTime.value=.5;
-master.connect(fxDlySend);fxDlySend.connect(dlyIn);
+fxHP.connect(fxDlySend);fxDlySend.connect(dlyIn);
 dlyIn.connect(dlyL);dlyL.connect(dlyLpL);dlyLpL.connect(dlyFbL);dlyFbL.connect(dlyR);dlyR.connect(dlyLpR);dlyLpR.connect(dlyFbR);dlyFbR.connect(dlyL);
-dlyL.connect(dlyMg,0,0);dlyR.connect(dlyMg,0,1);dlyMg.connect(dlyOut);dlyOut.connect(fxMix);
+dlyL.connect(dlyMg,0,0);dlyR.connect(dlyMg,0,1);dlyMg.connect(dlyOut);dlyOut.connect(fxEnd);
 const DLY_DIV=[['1/4',1],['1/8',.5],['1/8 con puntillo',.75],['1/16',.25]],REV_N=['Corta','Media','Larga'];
 let fxCrush=null,fxRep=null,fxShaper=null;
 const fx={tab:false,noRep:false,ok:{crush:false,rep:false},st:[0,1,2,3,4,5,6,7].map(()=>({down:false,hold:false,x:.5,y:.5,id:null}))};
@@ -2746,7 +2750,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.44';
+const APP_VERSION='1.45';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -4749,7 +4753,7 @@ function fxDubInit(){
     lf=ctx.createOscillator(),lg=ctx.createGain();
   send.gain.value=0;hp.type='highpass';hp.frequency.value=220;lp.type='lowpass';lp.frequency.value=2200;sh.curve=vinylCurve(.5);fb.gain.value=.6;out.gain.value=.55;
   lf.frequency.value=.6;lg.gain.value=.0012;lf.connect(lg);lg.connect(dl.delayTime);
-  master.connect(send);send.connect(dl);dl.connect(hp);hp.connect(lp);lp.connect(sh);sh.connect(fb);fb.connect(dl);sh.connect(out);out.connect(fxMix);
+  fxHP.connect(send);send.connect(dl);dl.connect(hp);hp.connect(lp);lp.connect(sh);sh.connect(fb);fb.connect(dl);sh.connect(out);out.connect(fxEnd);
   lf.start();dl.delayTime.value=.5;
   return fxDub={send,dl,fb,out};
 }
@@ -6168,7 +6172,7 @@ async function pjStart(){
     const when=auto&&auto.t?new Date(auto.t).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
     const bLast=mk('Cargar el último abierto',auto?('Guardado automático'+(when?' · '+when:'')):(pjAutoOn()?'No hay sesión anterior':'Guardado automático desactivado'));bLast.disabled=!auto;
     const bOpen=mk('Abrir un proyecto guardado',names.length?names.length+(names.length===1?' proyecto':' proyectos'):'No hay proyectos guardados');bOpen.disabled=!names.length;
-    bNew.onclick=()=>done(async()=>{try{newFxGen()}catch{}status('Proyecto nuevo')});
+    bNew.onclick=()=>done(async()=>{try{applyKit([])}catch{}try{lpClear()}catch{}try{newFxGen()}catch{}status('Proyecto nuevo')});
     bLast.onclick=()=>done(async()=>{await pjApply(auto);status('Sesión anterior recuperada')});
     bOpen.onclick=()=>{
       sh.replaceChildren();
