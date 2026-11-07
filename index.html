@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.55</title>
+<title>SampledHeadApp 1.56</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -984,7 +984,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.55</summary>
+<details><summary>29. Novedades de la 1.56</summary>
+<ul><li><b>Piano apaisado</b>: en Teclas solo se iluminan las teclas de Teclas (antes se encendían también las notas del bajo que sonaban), y viceversa en Bajo.</li></ul>
 <ul><li><b>Girar la pantalla con el Looper sonando</b>: el reloj del Looper va en un Worker, con más margen de programación y los golpes que llegan tarde ya no se pierden. Al girar, la app vigila el audio: lo reanuda si se suspende y, si el móvil bloqueó la app, lo indica en la barra de estado.</li></ul>
 <ul><li><b>Teclas</b>: mando <b>Glide</b> (0–600 ms) en «Corte, reson., glide, vol». Con glide activo Teclas es monofónico y cada nota resbala desde la anterior. El preset Lead G-funk lo usa; vale para cualquier preset propio.</li></ul>
 <ul><li><b>Teclas</b>: el preset Lead G-funk ahora suena como lead de verdad (sierra filtrada con vibrato y chorus) y pasa Teclas a notas sueltas; al elegir otro preset vuelven los acordes.</li></ul>
@@ -1053,7 +1054,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.55</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.56</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1166,7 +1167,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.55</summary>
+<details><summary>29. What is new in 1.56</summary>
+<ul><li><b>Landscape piano</b>: in Keys only the Keys notes light up (bass notes playing used to light it too), and vice versa in Bass.</li></ul>
 <ul><li><b>Rotating the screen while the Looper plays</b>: the Looper clock runs in a Worker with more scheduling margin and late hits are no longer dropped. On rotation the app watches the audio: it resumes it if suspended and reports in the status bar if the phone froze the app.</li></ul>
 <ul><li><b>Keys</b>: new <b>Glide</b> knob (0–600 ms). With glide on, Keys is monophonic and each note slides from the previous one. The Lead G-funk preset uses it; works with any user preset.</li></ul>
 <ul><li><b>Keys</b>: the Lead G-funk preset now sounds like a real lead (filtered saw with vibrato and chorus) and switches Keys to single notes; picking another preset brings chords back.</li></ul>
@@ -1235,7 +1237,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.55</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.56</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2909,7 +2911,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.55';
+const APP_VERSION='1.56';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -3118,7 +3120,7 @@ function bLabels(){
 }
 function bVis(k,on,t){
   const el=bgrid.children[k];if(!el)return;
-  const dt=t-ctx.currentTime,fn=()=>{el.classList.toggle('on',on);pianoVis(k,on)};
+  const dt=t-ctx.currentTime,fn=()=>{el.classList.toggle('on',on);pianoVis(k,on,'b')};
   if(dt>.01)setTimeout(fn,dt*1000);else fn();
 }
 function bOn(k,when){const t=when||ctx.currentTime;bp().on(k,t,bMidi(k));bVis(k,true,t)}
@@ -3539,7 +3541,7 @@ function kLabels(){
 }
 function kVis(k,on,t){
   const el=kgrid.children[k];if(!el)return;
-  const dt=t-ctx.currentTime,fn=()=>{el.classList.toggle('on',on);pianoVis(k,on)};
+  const dt=t-ctx.currentTime,fn=()=>{el.classList.toggle('on',on);pianoVis(k,on,'k')};
   if(dt>.01)setTimeout(fn,dt*1000);else fn();
 }
 function kOn(k,when,vel){const t=when||ctx.currentTime;kp().on(k,t,kNotes(k),(vel==null?.8:vel)*LPV);kLofiApply();kVis(k,true,t)}
@@ -6725,9 +6727,11 @@ function pianoBuild(){
   mids.forEach((n,k)=>{   // 1.51: solo notas de la escala, teclas iguales, con su nombre; raíz en otro color
     const d=document.createElement('div');d.className='pk'+(((n%12)+12)%12===root?' root':'');
     d.dataset.k=k;d.textContent=noteName(n);host.append(d);
+    const g=(m==='b'?bgrid:kgrid).children[k];if(g&&g.classList.contains('on'))d.classList.add('on');   // al girar, conservar lo que está sonando
   });
 }
-function pianoVis(k,on){const e=document.querySelector('#pkeys [data-k="'+k+'"]');if(e)e.classList.toggle('on',on)}
+function pianoVis(k,on,m){if(m&&m!==pianoMode())return;   // 1.56: solo la parte que se está viendo (el bajo no enciende las teclas de Teclas ni al revés)
+  const e=document.querySelector('#pkeys [data-k="'+k+'"]');if(e)e.classList.toggle('on',on)}
 (function(){
   const host=$('#pkeys'),down=new Map();
   const keyAt=e=>{const t=document.elementFromPoint(e.clientX,e.clientY);return t&&t.closest&&t.closest('#pkeys [data-k]')};
