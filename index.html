@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.51</title>
+<title>SampledHeadApp 1.52</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -172,11 +172,13 @@ canvas#mxeqc{display:block;width:100%;height:210px;touch-action:none;flex:none;m
 .fxfoot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;font:500 12px Barlow,sans-serif;color:var(--mute)}
 .fxfoot button{padding:8px 16px}
 /* debajo de los pads (pantallas estrechas): dos filas compactas, siempre con los mismos botones */
-.tuner.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"tn tm tu un" "rs rs rs rs";gap:6px 12px;align-items:center;padding:6px 10px;text-align:left}
+.tuner.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;grid-template-areas:"tn tm tu fu un" "rs rs rs rs rs";gap:6px 12px;align-items:center;padding:6px 10px;text-align:left}
 .tuner.row .tl,.tuner.row .tf{display:none}
 .tuner.row .tn{grid-area:tn;font-size:28px;min-height:0;min-width:56px}
 .tuner.row .tm{grid-area:tm;max-width:none;width:100%}
 .tuner.row #tune{grid-area:tu;padding:6px 10px}
+.tuner.row #tfopen{grid-area:fu;padding:6px 10px}
+.tuner #tfopen{padding:5px 8px}
 .tuner.row .undo{grid-area:un;margin:0;padding:0}
 .tuner.row .rsbox{grid-area:rs;flex-direction:row;gap:5px;margin:0;width:100%}
 .tuner.row .rsbox>button{width:auto;flex:none;padding:6px 12px}
@@ -606,6 +608,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
       <div class="tm" aria-hidden="true"><i id="tneedle"></i></div>
       <div class="tf" id="tfreq">Pad vacío</div>
       <button id="tune" disabled aria-label="Afinar: llevar el sonido del pad a la nota más cercana" title="Lleva el sonido a la nota más cercana">Afinar</button>
+      <button id="tfopen" aria-label="Ampliar: abrir el afinador completo de guitarra y bajo" title="Afinador completo">⤢</button>
       <div class="rsbox">
         <button id="rsmp" aria-label="Resample: elegir qué pads se graban y grabar el resultado en un pad">Resample</button>
         <div class="rsbar" id="rsbar">
@@ -981,7 +984,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.51</summary>
+<details><summary>29. Novedades de la 1.52</summary>
+<ul><li><b>Afinador</b>: detección de nota más fiable en el pad. Botón ⤢ que abre un <b>afinador completo</b> de guitarra (6 y 7 cuerdas), bajo (4 y 5), ukelele y cromático, con afinaciones Estándar, Open D, Open C, Open G y más (Drop D, DADGAD, Open E…), cuerda automática o fija, tono de referencia y La4 ajustable. Entrada por micrófono, línea o USB con selector de dispositivo.</li></ul>
 <ul><li><b>Sampler apaisado</b>: el afinador pasa a una columna vertical a la derecha de los pads, que ganan espacio.</li>
 <li><b>Piano apaisado</b> (Bajo y Teclas): solo muestra las notas de la escala, teclas iguales con su nombre y la raíz en otro color.</li>
 <li><b>Teclas</b>: preset Lead G-funk. <b>Generador</b>: estilo G-funk (batería, bajo y teclas; Sol dórico).</li></ul>
@@ -1046,7 +1050,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.51</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.52</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1159,7 +1163,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.51</summary>
+<details><summary>29. What is new in 1.52</summary>
+<ul><li><b>Tuner</b>: more reliable pitch detection on pads. A ⤢ button opens a <b>full tuner</b> for guitar (6 and 7 strings), bass (4 and 5), ukulele and chromatic, with Standard, Open D, Open C, Open G and more tunings (Drop D, DADGAD, Open E…), auto or fixed string, reference tone and adjustable A4. Mic, line or USB input with device selector.</li></ul>
 <ul><li><b>Landscape Sampler</b>: the tuner is now a vertical column right of the pads, which gain space.</li>
 <li><b>Landscape piano</b> (Bass and Keys): shows only the scale notes, equal keys with their note name and the root in another colour.</li>
 <li><b>Keys</b>: Lead G-funk preset. <b>Generator</b>: G-funk style (drums, bass and keys; G Dorian).</li></ul>
@@ -1224,7 +1229,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.51</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.52</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2898,7 +2903,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.51';
+const APP_VERSION='1.52';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -6739,7 +6744,182 @@ function pianoVis(k,on){const e=document.querySelector('#pkeys [data-k="'+k+'"]'
   rb();
 })();
 
-Object.assign(I18N.x,{"Kits sintetizados…": "Synthesized kits…", "Sugerido por el estilo": "Suggested for the style", "Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.": "Sounds created inside the app: no files, no licenses. You can also load your own.", "Tono del kit": "Kit pitch", "Largo del kit": "Kit length", "Brillo del kit": "Kit brightness", "Calidez": "Warmth", "Variación": "Variation"});Object.assign(I18N.f,{});
+/* ---------- 1.52: detección de notas más fiable + afinador completo (guitarra/bajo, mic/línea/USB) ---------- */
+let pitchConf=0;
+function yinWin(d,p0,W,TM,sr,thr){   // YIN en una ventana: devuelve {f,c} (c = confianza 0..1) o null
+  const df=new Float64Array(TM),cm=new Float64Array(TM);
+  for(let tau=1;tau<TM;tau++){let s=0;for(let j=0;j<W;j++){const x=d[p0+j]-d[p0+j+tau];s+=x*x}df[tau]=s}
+  let run=0;cm[0]=1;for(let tau=1;tau<TM;tau++){run+=df[tau];cm[tau]=run?df[tau]*tau/run:1}
+  const t0=Math.max(2,Math.floor(sr/4200));let tau=-1;
+  for(let k=t0;k<TM-1;k++){if(cm[k]<thr){while(k+1<TM-1&&cm[k+1]<cm[k])k++;tau=k;break}}
+  if(tau<0){let m=1,mk=-1;for(let k=t0;k<TM-1;k++)if(cm[k]<m&&cm[k]<=cm[k-1]&&cm[k]<=cm[k+1]){m=cm[k];mk=k}
+    if(mk<0||m>.5)return null;tau=mk;   // sin pico claro: mejor estimación si es razonable
+    // evitar error de octava: si el doble del periodo es casi igual de bueno, quedarse con el más largo solo si mejora claramente
+  }
+  const a=cm[tau-1],b=cm[tau],c=cm[tau+1],den=a-2*b+c,sh=den?.5*(a-c)/den:0;
+  return{f:sr/(tau+sh),c:1-Math.min(1,cm[tau])};
+}
+detectPitch=function(d,sr){
+  const n=d.length;pitchConf=0;
+  let W=Math.min(2048,n>>1);if(W<256)return null;
+  const TM=Math.min(W,Math.floor(sr/24)),hop=W>>1;
+  const nb=Math.floor((n-W-TM)/hop);if(nb<0)return null;
+  const be=[];for(let b=0;b<=nb;b++){let s=0;for(let j=b*hop;j<b*hop+W;j+=2)s+=d[j]*d[j];be.push([s,b*hop])}
+  be.sort((a,c)=>c[0]-a[0]);
+  const top=[];for(const c of be){if(c[0]<=be[0][0]*.04||c[0]<1e-8)break;if(top.every(t=>Math.abs(t[1]-c[1])>=W))top.push(c);if(top.length>=8)break}
+  if(!top.length)return null;
+  for(const thr of [.12,.2,.3]){
+    const res=[];
+    for(const [,p0] of top){const r=yinWin(d,p0,W,TM,sr,thr);if(r)res.push(r)}
+    if(!res.length)continue;
+    res.sort((a,b)=>a.f-b.f);
+    const med=res[res.length>>1].f,ok=res.filter(r=>Math.abs(12*Math.log2(r.f/med))<.6);
+    if(ok.length>=Math.max(1,Math.ceil(top.length/3))){
+      ok.sort((a,b)=>a.f-b.f);pitchConf=ok.reduce((s,r)=>s+r.c,0)/ok.length;
+      return ok[ok.length>>1].f;
+    }
+  }
+  return null;
+};
+/* --- afinaciones: notas MIDI de cada cuerda, de grave a aguda (ukelele y Nashville: orden real de cuerdas) --- */
+const TU_INS={
+  g6:{n:'Guitarra (6 cuerdas)',t:[['Más usadas',[['Estándar',[40,45,50,55,59,64]],['Open D',[38,45,50,54,57,62]],['Open C',[36,43,48,55,60,64]],['Open G',[38,43,50,55,59,62]]]],
+    ['Otras',[['Drop D',[38,45,50,55,59,64]],['DADGAD',[38,45,50,55,57,62]],['Open E',[40,47,52,56,59,64]],['Open A',[40,45,49,52,57,64]],['Open Em',[40,47,52,55,59,64]],['Open Dm',[38,45,50,53,57,62]],['Open Gm',[38,43,50,55,58,62]],['Doble Drop D',[38,45,50,55,59,62]],['Medio tono abajo (Eb)',[39,44,49,54,58,63]],['Un tono abajo (D)',[38,43,48,53,57,62]],['Drop C#',[37,44,49,54,58,63]],['Drop C',[36,43,48,53,57,62]],['Nashville',[52,57,62,67,59,64]]]]]},
+  g7:{n:'Guitarra (7 cuerdas)',t:[['Más usadas',[['Estándar',[35,40,45,50,55,59,64]],['Open D',[33,38,45,50,54,57,62]],['Open G',[31,38,43,50,55,59,62]]]],['Otras',[['Drop A',[33,40,45,50,55,59,64]],['Un tono abajo',[33,38,43,48,53,57,62]]]]]},
+  b4:{n:'Bajo (4 cuerdas)',t:[['Más usadas',[['Estándar',[28,33,38,43]],['Open D',[26,33,38,42]],['Open C',[24,31,36,43]],['Open G',[26,31,38,43]]]],
+    ['Otras',[['Drop D',[26,33,38,43]],['Medio tono abajo (Eb)',[27,32,37,42]],['D estándar',[26,31,36,41]],['Drop C',[24,31,36,41]],['Octavas (E)',[28,40,33,45]]]]]},
+  b5:{n:'Bajo (5 cuerdas)',t:[['Más usadas',[['Estándar (BEADG)',[23,28,33,38,43]],['Open D',[21,26,33,38,42]],['Open G',[19,26,31,38,43]]]],['Otras',[['Do agudo (EADGC)',[28,33,38,43,48]],['Drop A',[21,28,33,38,43]],['Medio tono abajo',[22,27,32,37,42]]]]]},
+  uk:{n:'Ukelele',t:[['Más usadas',[['Estándar (GCEA)',[67,60,64,69]],['Barítono (DGBE)',[50,55,59,64]]]]]},
+  cr:{n:'Cromático (cualquier nota)',t:[['',[['Todas las notas',[]]]]]}
+};
+const TU_NAMES=['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'],tuName=m=>NOTES[((m%12)+12)%12]+(Math.floor(m/12)-1);
+(function(){
+  const css=document.createElement('style');css.textContent=`
+#tfull{position:fixed;inset:0;z-index:300;background:#0a0c0f;color:#e8eaee;display:none;flex-direction:column;gap:10px;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:auto}
+#tfull.show{display:flex}
+#tfull .tfr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#tfull h2{margin:0;font:700 22px 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;flex:1}
+#tfull select,#tfull input[type=number]{background:#171a20;color:inherit;border:1px solid #2c313a;border-radius:9px;padding:8px 10px;font:inherit;min-width:0}
+#tfull .tfr select{flex:1 1 140px}
+#tfull button{background:#171a20;color:inherit;border:1px solid #2c313a;border-radius:9px;padding:8px 12px;font:inherit}
+#tfull button.on{background:var(--ink,#37d0ff);color:#101216;border-color:transparent}
+#tfstr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#tfstr button{min-width:56px;padding:10px 8px;font:700 20px 'Barlow Condensed',sans-serif;position:relative}
+#tfstr button small{display:block;font-size:11px;opacity:.6;font-weight:600}
+#tfstr button.near{border-color:#37d0ff;box-shadow:0 0 0 2px #37d0ff55}
+#tfstr button.ok{background:#3fcf7a;color:#08140c;border-color:transparent}
+#tfmain{flex:1;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+#tfnote{font:700 clamp(64px,22vh,150px)/1 'Barlow Condensed',sans-serif}
+#tfmain.ok #tfnote{color:#3fcf7a}
+#tfcents{font-size:20px;font-variant-numeric:tabular-nums;color:#9aa0ab;min-height:26px}
+#tfhint{font:700 22px 'Barlow Condensed',sans-serif;letter-spacing:.08em;min-height:28px;color:#ffb347}
+#tfmain.ok #tfhint{color:#3fcf7a}
+#tfgauge{position:relative;width:min(100%,640px);height:26px;border-radius:13px;background:linear-gradient(90deg,#7a3a3a,#4a5262 30%,#4a5262 70%,#7a3a3a)}
+#tfgauge:before{content:'';position:absolute;left:50%;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:#fff;border-radius:2px}
+#tfgauge i{position:absolute;top:-5px;bottom:-5px;width:12px;margin-left:-6px;border-radius:6px;background:#ffb347;left:50%;transition:left .08s}
+#tfmain.ok #tfgauge i{background:#3fcf7a}
+#tflvl{height:6px;border-radius:3px;background:#1c2027;overflow:hidden;flex:1 1 120px}
+#tflvl i{display:block;height:100%;width:0;background:#37d0ff}
+#tfmsg{font-size:13px;color:#9aa0ab;min-height:18px}
+@media (orientation:landscape) and (max-height:560px){#tfnote{font-size:clamp(48px,26vh,100px)}#tfmain{min-height:110px}}`;
+  document.head.append(css);
+  const o=document.createElement('div');o.id='tfull';o.setAttribute('role','dialog');o.setAttribute('aria-label','Afinador completo');
+  o.innerHTML=`<div class="tfr"><h2>Afinador</h2><label>La4 <input id="tfa4" type="number" min="420" max="460" value="440" style="width:70px" aria-label="Frecuencia de referencia de La4"></label><button id="tfx" aria-label="Cerrar el afinador">✕ Cerrar</button></div>
+<div class="tfr"><select id="tfins" aria-label="Instrumento"></select><select id="tftun" aria-label="Afinación"></select></div>
+<div class="tfr"><select id="tfdev" aria-label="Entrada de audio"><option value="">Entrada predeterminada</option></select><button id="tfgo">🎤 Iniciar</button><button id="tfauto" class="on" aria-pressed="true" title="Detecta sola la cuerda">Auto</button><div id="tflvl" aria-hidden="true"><i></i></div></div>
+<div id="tfstr" role="group" aria-label="Cuerdas: toca una para oír su nota de referencia y fijarla"></div>
+<div id="tfmain"><div id="tfhint">—</div><div id="tfnote">—</div><div id="tfgauge" aria-hidden="true"><i></i></div><div id="tfcents" role="status"></div></div>
+<div id="tfmsg" role="status"></div>`;
+  document.body.append(o);
+  const T=id=>o.querySelector('#'+id);
+  const st={ins:'g6',tun:0,strs:[],manual:-1,run:false,stream:null,src:null,an:null,buf:null,timer:0,hist:[],lastOk:0,osc:null};
+  const A4=()=>Math.max(420,Math.min(460,+T('tfa4').value||440)),fm=m=>A4()*Math.pow(2,(m-69)/12);
+  const insSel=T('tfins'),tunSel=T('tftun');
+  Object.entries(TU_INS).forEach(([k,v])=>insSel.append(new Option(v.n,k)));
+  const flat=()=>{const a=[];TU_INS[st.ins].t.forEach(([g,l])=>l.forEach(e=>a.push([g,...e])));return a};
+  function fillTun(){
+    tunSel.replaceChildren();let i=0;
+    TU_INS[st.ins].t.forEach(([g,l])=>{const og=document.createElement('optgroup');og.label=g||'Afinaciones';l.forEach(e=>{og.append(new Option(e[0],i++))});tunSel.append(og)});
+    try{const s=JSON.parse(localStorage.getItem('sh_tu')||'{}')[st.ins];if(s>=0&&s<i)tunSel.value=s}catch{}
+    st.tun=+tunSel.value||0;strings();
+  }
+  function strings(){
+    const e=flat()[st.tun];st.strs=e?e[2]:[];st.manual=-1;T('tfauto').classList.add('on');
+    const box=T('tfstr');box.replaceChildren();
+    st.strs.forEach((m,i)=>{const b=document.createElement('button');b.innerHTML=tuName(m)+'<small>'+(st.ins==='cr'?'':'cuerda '+(st.ins==='g6'||st.ins==='g7'||st.ins==='b4'||st.ins==='b5'?(st.strs.length-i):i+1))+'</small>';b.dataset.i=i;
+      b.onclick=()=>{st.manual=i;T('tfauto').classList.remove('on');T('tfauto').setAttribute('aria-pressed','false');ref(m);mark(i,false)};box.append(b)});
+    box.style.display=st.strs.length?'flex':'none';
+  }
+  function mark(i,ok){[...T('tfstr').children].forEach((b,j)=>{b.classList.toggle('near',j===i);b.classList.toggle('ok',j===i&&ok)})}
+  function ref(m){   // tono de referencia de la cuerda (1,2 s)
+    try{ctx.resume();if(st.osc)st.osc.stop();const t=ctx.currentTime,os=ctx.createOscillator(),g=ctx.createGain();os.type='triangle';os.frequency.value=fm(m);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.18,t+.03);g.gain.setTargetAtTime(0,t+.9,.12);os.connect(g);g.connect(ctx.destination);os.start(t);os.stop(t+1.4);st.osc=os;}catch{}
+  }
+  insSel.onchange=()=>{st.ins=insSel.value;fillTun()};
+  tunSel.onchange=()=>{st.tun=+tunSel.value;try{const s=JSON.parse(localStorage.getItem('sh_tu')||'{}');s[st.ins]=st.tun;localStorage.setItem('sh_tu',JSON.stringify(s))}catch{}strings()};
+  T('tfauto').onclick=()=>{st.manual=-1;T('tfauto').classList.add('on');T('tfauto').setAttribute('aria-pressed','true');mark(-1,false)};
+  /* --- lectura --- */
+  function show(f){
+    const main=T('tfmain'),cents=T('tfcents'),hint=T('tfhint'),nt=T('tfnote'),needle=T('tfgauge').firstElementChild;
+    if(!f){main.classList.remove('ok');return}
+    const m=69+12*Math.log2(f/A4());let target,idx=-1;
+    if(!st.strs.length||(st.manual<0&&false)){target=Math.round(m)}
+    else if(st.manual>=0){idx=st.manual;target=st.strs[idx]}
+    else{let bd=1e9;st.strs.forEach((s,i)=>{const dd=Math.abs(m-s);if(dd<bd){bd=dd;idx=i}});target=st.strs[idx]}
+    const c=(m-target)*100,ok=Math.abs(c)<=5;
+    main.classList.toggle('ok',ok);nt.textContent=tuName(target);
+    cents.textContent=(c>0?'+':'')+Math.round(c)+' ¢ · '+f.toFixed(1)+' Hz';
+    hint.textContent=ok?'✔ AFINADA':c<0?'▲ SUBE':'▼ BAJA';
+    needle.style.left=(50+Math.max(-50,Math.min(50,c)))+'%';
+    if(idx>=0)mark(idx,ok);
+  }
+  function tick(){
+    if(!st.an)return;st.an.getFloatTimeDomainData(st.buf);
+    let s=0;for(let i=0;i<st.buf.length;i++)s+=st.buf[i]*st.buf[i];const rms=Math.sqrt(s/st.buf.length);
+    T('tflvl').firstElementChild.style.width=Math.min(100,rms*400)+'%';
+    if(rms<.006){if(performance.now()-st.lastOk>900){T('tfmain').classList.remove('ok');T('tfhint').textContent='—'}return}
+    const r=yinWin(st.buf,0,2048,Math.min(2047,Math.floor(ctx.sampleRate/24)),ctx.sampleRate,.15);
+    if(!r||r.c<.8)return;
+    st.hist.push(r.f);if(st.hist.length>5)st.hist.shift();
+    const a=[...st.hist].sort((x,y)=>x-y),f=a[a.length>>1];
+    if(a.length>=2&&Math.abs(12*Math.log2(r.f/f))>1.5){st.hist=[r.f];return}   // salto (armónico): esperar confirmación
+    st.lastOk=performance.now();show(f);
+  }
+  async function devs(){
+    try{const l=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'),cur=T('tfdev').value;
+      T('tfdev').replaceChildren(new Option('Entrada predeterminada',''));
+      l.forEach((d,i)=>T('tfdev').append(new Option(d.label||('Entrada '+(i+1)),d.deviceId)));if([...T('tfdev').options].some(x=>x.value===cur))T('tfdev').value=cur}catch{}
+  }
+  async function start(){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){T('tfmsg').textContent='Este navegador no permite usar el micrófono';return}
+    stop();ctx.resume();
+    try{
+      const id=T('tfdev').value,au={echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1};if(id)au.deviceId={exact:id};
+      st.stream=await navigator.mediaDevices.getUserMedia({audio:au});
+      st.src=ctx.createMediaStreamSource(st.stream);st.an=ctx.createAnalyser();st.an.fftSize=4096;st.an.smoothingTimeConstant=0;st.buf=new Float32Array(4096);
+      st.src.connect(st.an);st.run=true;st.hist=[];st.timer=setInterval(tick,45);
+      T('tfgo').textContent='■ Parar';T('tfgo').classList.add('on');T('tfmsg').textContent='Escuchando: '+((st.stream.getAudioTracks()[0]||{}).label||'entrada');
+      devs();
+    }catch(e){T('tfmsg').textContent='Sin acceso a la entrada de audio: '+(e.name||e.message)}
+  }
+  function stop(){
+    clearInterval(st.timer);try{st.src&&st.src.disconnect()}catch{}
+    if(st.stream)st.stream.getTracks().forEach(t=>t.stop());
+    st.stream=st.src=st.an=null;st.run=false;T('tfgo').textContent='🎤 Iniciar';T('tfgo').classList.remove('on');T('tflvl').firstElementChild.style.width='0';
+  }
+  T('tfgo').onclick=()=>st.run?stop():start();
+  T('tfdev').onchange=()=>{if(st.run)start()};
+  const close=()=>{stop();o.classList.remove('show')};
+  T('tfx').onclick=close;
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&o.classList.contains('show'))close()});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&st.run)stop()});
+  window.tuFullOpen=()=>{o.classList.add('show');fillTun();T('tfmsg').textContent='Pulsa «Iniciar» y toca una cuerda. Si usas una interfaz USB o la entrada de línea, elígela en la lista.';devs();T('tfstr').firstElementChild&&0};
+  window.tuFull={st,show,fm,strings,fillTun,start,stop};
+  fillTun();
+  const ob=$('#tfopen');if(ob)ob.onclick=tuFullOpen;
+})();
+
+Object.assign(I18N.x,{"Kits sintetizados…": "Synthesized kits…", "Sugerido por el estilo": "Suggested for the style", "Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.": "Sounds created inside the app: no files, no licenses. You can also load your own.", "Tono del kit": "Kit pitch", "Largo del kit": "Kit length", "Brillo del kit": "Kit brightness", "Calidez": "Warmth", "Variación": "Variation", "Afinador completo": "Full tuner", "Cerrar": "Close", "✕ Cerrar": "✕ Close", "🎤 Iniciar": "🎤 Start", "■ Parar": "■ Stop", "Entrada predeterminada": "Default input", "Guitarra (6 cuerdas)": "Guitar (6 strings)", "Guitarra (7 cuerdas)": "Guitar (7 strings)", "Bajo (4 cuerdas)": "Bass (4 strings)", "Bajo (5 cuerdas)": "Bass (5 strings)", "Ukelele": "Ukulele", "Cromático (cualquier nota)": "Chromatic (any note)", "Más usadas": "Most used", "Otras": "Others", "Estándar": "Standard", "Estándar (BEADG)": "Standard (BEADG)", "Estándar (GCEA)": "Standard (GCEA)", "Barítono (DGBE)": "Baritone (DGBE)", "Doble Drop D": "Double Drop D", "Medio tono abajo (Eb)": "Half step down (Eb)", "Un tono abajo (D)": "Whole step down (D)", "Un tono abajo": "Whole step down", "Medio tono abajo": "Half step down", "D estándar": "D standard", "Octavas (E)": "Octaves (E)", "Do agudo (EADGC)": "High C (EADGC)", "Todas las notas": "All notes", "Auto": "Auto", "✔ AFINADA": "✔ IN TUNE", "▲ SUBE": "▲ TUNE UP", "▼ BAJA": "▼ TUNE DOWN", "Ampliar: abrir el afinador completo de guitarra y bajo": "Expand: open the full guitar and bass tuner", "Afinador": "Tuner"});Object.assign(I18N.f,{});
 
 
 /* modo ahorro: si el hilo se atasca mientras suena, se reducen las animaciones a ~15 fps hasta recargar */
