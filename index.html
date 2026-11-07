@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.54</title>
+<title>SampledHeadApp 1.55</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -984,7 +984,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.54</summary>
+<details><summary>29. Novedades de la 1.55</summary>
+<ul><li><b>Girar la pantalla con el Looper sonando</b>: el reloj del Looper va en un Worker, con más margen de programación y los golpes que llegan tarde ya no se pierden. Al girar, la app vigila el audio: lo reanuda si se suspende y, si el móvil bloqueó la app, lo indica en la barra de estado.</li></ul>
 <ul><li><b>Teclas</b>: mando <b>Glide</b> (0–600 ms) en «Corte, reson., glide, vol». Con glide activo Teclas es monofónico y cada nota resbala desde la anterior. El preset Lead G-funk lo usa; vale para cualquier preset propio.</li></ul>
 <ul><li><b>Teclas</b>: el preset Lead G-funk ahora suena como lead de verdad (sierra filtrada con vibrato y chorus) y pasa Teclas a notas sueltas; al elegir otro preset vuelven los acordes.</li></ul>
 <ul><li><b>Afinador</b>: detección de nota más fiable en el pad. Botón ⤢ que abre un <b>afinador completo</b> de guitarra (6 y 7 cuerdas), bajo (4 y 5), ukelele y cromático, con afinaciones Estándar, Open D, Open C, Open G y más (Drop D, DADGAD, Open E…), cuerda automática o fija, tono de referencia y La4 ajustable. Entrada por micrófono, línea o USB con selector de dispositivo.</li></ul>
@@ -1052,7 +1053,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.54</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.55</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1165,7 +1166,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.54</summary>
+<details><summary>29. What is new in 1.55</summary>
+<ul><li><b>Rotating the screen while the Looper plays</b>: the Looper clock runs in a Worker with more scheduling margin and late hits are no longer dropped. On rotation the app watches the audio: it resumes it if suspended and reports in the status bar if the phone froze the app.</li></ul>
 <ul><li><b>Keys</b>: new <b>Glide</b> knob (0–600 ms). With glide on, Keys is monophonic and each note slides from the previous one. The Lead G-funk preset uses it; works with any user preset.</li></ul>
 <ul><li><b>Keys</b>: the Lead G-funk preset now sounds like a real lead (filtered saw with vibrato and chorus) and switches Keys to single notes; picking another preset brings chords back.</li></ul>
 <ul><li><b>Tuner</b>: more reliable pitch detection on pads. A ⤢ button opens a <b>full tuner</b> for guitar (6 and 7 strings), bass (4 and 5), ukulele and chromatic, with Standard, Open D, Open C, Open G and more tunings (Drop D, DADGAD, Open E…), auto or fixed string, reference tone and adjustable A4. Mic, line or USB input with device selector.</li></ul>
@@ -1233,7 +1235,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.54</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.55</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2907,7 +2909,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.54';
+const APP_VERSION='1.55';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -3837,7 +3839,7 @@ mxApply();
 /* Estados: idle (vacío) · armed (Rec armado, espera el primer pad) · rec1 (grabando la primera pasada)
             · playing (bucle sonando; overdub si lp.over) · stopped (bucle grabado, parado).
    Cada evento guarda su instante dentro del bucle, el pad (índice global) y la capa a la que pertenece. */
-const LP_LOOK=.12,LP_TICK=30,LP_MAX=4000;
+const LP_LOOK=.25,LP_TICK=30,LP_MAX=4000;
 const lp={pm:false,st:'idle',ev:[],t0:0,len:0,start:0,sched:0,over:false,sess:0,tempo:null,oct:1,trk:0,mute:[false,false,false,false],vol:[1,1,1,1],solo:[false,false,false,false],scope:1};
 let LPV=1;
 const lpAud=t=>!lp.mute[t]&&(!lp.solo.some(Boolean)||lp.solo[t]);
@@ -3892,14 +3894,18 @@ function lpTick(){
       if(!lpAud(e.trk))continue;                          // pista silenciada (o fuera del solo)
       if(e.sess===lp.sess&&e.pass===c)continue;           // lo grabado en esta pasada ya sonó en directo
       const a=cs+e.t;
-      if(a>=lp.sched&&a<hz&&a>=now-.02)lpFire(e,Math.max(a,now));
+      if(a>=lp.sched&&a<hz&&a>=now-.15)lpFire(e,Math.max(a,now));   // un golpe que llegó tarde (hilo bloqueado) suena igual, algo retrasado, en vez de perderse
     }
   }
   lp.sched=hz;
 }
+let lpW=null,lpUiT=0;
 function lpLoopTimer(on){
-  clearTimeout(lpTimer);lpTimer=0;
+  clearTimeout(lpTimer);lpTimer=0;clearInterval(lpUiT);lpUiT=0;
+  if(lpW)lpW.postMessage(0);
   if(!on)return;
+  if(!lpW){try{lpW=new Worker(URL.createObjectURL(new Blob(['let t;onmessage=e=>{clearInterval(t);if(e.data)t=setInterval(()=>postMessage(0),e.data)}'])));lpW.onmessage=()=>{if(lp.st==='playing')lpTick()}}catch{lpW=null}}   // reloj en un Worker: no se frena con el hilo principal
+  if(lpW){lpW.postMessage(LP_TICK);lpTick();lpUiT=setInterval(()=>lpUI(true),50);lpUI(true);return}
   const step=()=>{lpTick();lpUI(true);const h=setTimeout(step,LP_TICK);lpTimer=h;if(h&&h.unref)h.unref()};
   step();
 }
@@ -6925,6 +6931,22 @@ const TU_NAMES=['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','S
   window.tuFull={st,show,fm,strings,fillTun,start,stop};
   fillTun();
   const ob=$('#tfopen');if(ob)ob.onclick=tuFullOpen;
+})();
+
+/* ---------- 1.55: al girar la pantalla (o cualquier bloqueo largo) vigilar el audio ---------- */
+(function(){
+  let last=performance.now(),worst=0,rotT=0,rotAt=-9e9;
+  setInterval(()=>{const n=performance.now(),g=n-last;last=n;if(g>350&&!document.hidden&&n-rotAt<3000)worst=Math.max(worst,g)},100);
+  function settle(){
+    try{if(ctx.state!=='running')ctx.resume()}catch{}
+    try{if(G.play)gResync()}catch{}
+    const held=(()=>{try{return fx.st.some(s=>s&&s.down)}catch{return false}})();
+    if(worst>0){status('Giro: el móvil bloqueó la app '+Math.round(worst)+' ms');if(!held){try{dlyBuild()}catch{}}}
+    worst=0;
+  }
+  const rot=()=>{rotAt=performance.now();clearTimeout(rotT);rotT=setTimeout(settle,700)};
+  addEventListener('resize',rot);addEventListener('orientationchange',rot);
+  try{ctx.addEventListener('statechange',()=>{if(ctx.state!=='running'&&!document.hidden){try{ctx.resume()}catch{}if(performance.now()-rotAt<4000)status('Audio '+ctx.state+' al girar: reanudado')}})}catch{}
 })();
 
 Object.assign(I18N.x,{"Kits sintetizados…": "Synthesized kits…", "Sugerido por el estilo": "Suggested for the style", "Sonidos creados dentro de la app: sin ficheros ni licencias. Tú también puedes cargar los tuyos.": "Sounds created inside the app: no files, no licenses. You can also load your own.", "Tono del kit": "Kit pitch", "Largo del kit": "Kit length", "Brillo del kit": "Kit brightness", "Calidez": "Warmth", "Variación": "Variation", "Afinador completo": "Full tuner", "Cerrar": "Close", "✕ Cerrar": "✕ Close", "🎤 Iniciar": "🎤 Start", "■ Parar": "■ Stop", "Entrada predeterminada": "Default input", "Guitarra (6 cuerdas)": "Guitar (6 strings)", "Guitarra (7 cuerdas)": "Guitar (7 strings)", "Bajo (4 cuerdas)": "Bass (4 strings)", "Bajo (5 cuerdas)": "Bass (5 strings)", "Ukelele": "Ukulele", "Cromático (cualquier nota)": "Chromatic (any note)", "Más usadas": "Most used", "Otras": "Others", "Estándar": "Standard", "Estándar (BEADG)": "Standard (BEADG)", "Estándar (GCEA)": "Standard (GCEA)", "Barítono (DGBE)": "Baritone (DGBE)", "Doble Drop D": "Double Drop D", "Medio tono abajo (Eb)": "Half step down (Eb)", "Un tono abajo (D)": "Whole step down (D)", "Un tono abajo": "Whole step down", "Medio tono abajo": "Half step down", "D estándar": "D standard", "Octavas (E)": "Octaves (E)", "Do agudo (EADGC)": "High C (EADGC)", "Todas las notas": "All notes", "Auto": "Auto", "✔ AFINADA": "✔ IN TUNE", "▲ SUBE": "▲ TUNE UP", "▼ BAJA": "▼ TUNE DOWN", "Ampliar: abrir el afinador completo de guitarra y bajo": "Expand: open the full guitar and bass tuner", "Afinador": "Tuner", "Glide": "Glide"});Object.assign(I18N.f,{});
