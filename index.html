@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.50</title>
+<title>SampledHeadApp 1.51</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -475,14 +475,11 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
   #pbend b{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%) rotate(-90deg);font-size:11px;letter-spacing:.12em;opacity:.55;pointer-events:none}
   #pbend i{position:absolute;left:5px;right:5px;height:34px;margin-top:-17px;top:50%;border-radius:8px;background:var(--acc);opacity:.9;pointer-events:none}
   #pkeys{position:relative;flex:1 1 0;min-width:0;display:flex;touch-action:none;user-select:none}
-  #pkeys .wk{flex:1 1 0;min-width:0;border:1px solid #0d0f12;border-radius:0 0 7px 7px;background:#d9dce1;color:#14161a;position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-size:11px;font-weight:700}
-  #pkeys .wk.off{background:#2a2d34;color:#555b66}
-  #pkeys .wk.root{background:var(--acc);color:#14161a}
-  #pkeys .wk.on{background:#fff;box-shadow:inset 0 -6px 0 var(--acc)}
-  #pkeys .bk{position:absolute;top:0;height:62%;border-radius:0 0 6px 6px;background:#14161a;border:1px solid #000;z-index:2;color:#9aa0ab;font-size:9px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
-  #pkeys .bk.off{background:#1d2026;border-color:#15171b;opacity:.75}
-  #pkeys .bk.on{background:var(--acc);color:#14161a}
-  #pkeys .bk.root{background:#b36a14}
+  #pkeys{gap:5px}
+  #pkeys .pk{flex:1 1 0;min-width:0;border:1px solid #2c313a;border-radius:9px;background:#1b1f26;color:#e6e9ee;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font:700 clamp(11px,1.6vw,17px) 'Barlow Condensed',sans-serif;letter-spacing:.02em}
+  #pkeys .pk.root{background:var(--acc);border-color:var(--acc);color:#14161a}
+  #pkeys .pk.on{background:#fff;color:#14161a;box-shadow:inset 0 -8px 0 var(--acc)}
+  #pkeys .pk.root.on{background:#ffd9a8}
 }
 @media (orientation:landscape) and (max-height:560px){
   .unit:not(.bass):not(.keys):not(.mix):not(.fxt):not(.gen)>.padzone{position:sticky;top:6px;height:calc(100dvh - 96px);align-self:start;display:flex;flex-direction:column;flex-wrap:nowrap}
@@ -490,6 +487,21 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
   .unit:not(.bass):not(.keys) .padzone .grid{flex:1 1 0;min-height:0;grid-template-rows:repeat(4,minmax(0,1fr));aspect-ratio:auto}
   .unit.fxt #fxpanel{height:calc(100dvh - 104px);min-height:200px}
   .unit.fxt{min-height:0}
+}
+@media (orientation:landscape) and (max-height:560px){
+  .unit:not(.loop):not(.bass):not(.keys):not(.mix):not(.fxt):not(.gen)>.padzone{flex-direction:row;gap:8px}
+  .unit:not(.loop):not(.bass):not(.keys):not(.mix):not(.fxt):not(.gen) .padzone>.tuner.row{display:flex;flex-direction:column;align-items:stretch;flex:0 0 106px;width:106px;min-width:0;height:100%;overflow-y:auto;gap:5px;padding:6px;text-align:center}
+  .unit:not(.loop) .padzone>.tuner.row .tn{font-size:26px;min-width:0}
+  .unit:not(.loop) .padzone>.tuner.row .tm{width:100%;flex:none}
+  .unit:not(.loop) .padzone>.tuner.row #tune{padding:6px 4px}
+  .unit:not(.loop) .padzone>.tuner.row .rsbox{flex-direction:column;gap:5px}
+  .unit:not(.loop) .padzone>.tuner.row .rsbox>button{width:100%;padding:6px 2px}
+  .unit:not(.loop) .padzone>.tuner.row .rsbar{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .unit:not(.loop) .padzone>.tuner.row .rsbar button{flex:none;width:100%;padding:6px 0}
+  .unit:not(.loop) .padzone>.tuner.row #rsrec,.unit:not(.loop) .padzone>.tuner.row #rsstop{flex:none}
+  .unit:not(.loop) .padzone>.tuner.row .rscount{grid-column:1/-1}
+  .unit:not(.loop) .padzone>.tuner.row .rsbar button{font-size:11px;padding:6px 0;min-width:0;overflow:hidden}
+  .unit:not(.loop) .padzone>.tuner.row .undo{margin-top:auto;justify-content:center;padding:0}
 }
 </style>
 </head>
@@ -969,7 +981,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos</b> (apagados por defecto): lo-fi SP-1200, SP-202 o MPC60 y filtro, comunes o por sonido; wah, phaser, flanger, trémolo y chorus. Los efectos del bajo también están en la pestaña Bajo.</li>
 <li><b>Exportar</b>: a pad (todo en uno o cada sonido por separado), al Looper, a WAV y a MIDI. «Ciclo completo» dura hasta que batería y bajo vuelven a coincidir. El MIDI no incluye efectos.</li></ul>
 </details>
-<details><summary>29. Novedades de la 1.50</summary>
+<details><summary>29. Novedades de la 1.51</summary>
+<ul><li><b>Sampler apaisado</b>: el afinador pasa a una columna vertical a la derecha de los pads, que ganan espacio.</li>
+<li><b>Piano apaisado</b> (Bajo y Teclas): solo muestra las notas de la escala, teclas iguales con su nombre y la raíz en otro color.</li>
+<li><b>Teclas</b>: preset Lead G-funk. <b>Generador</b>: estilo G-funk (batería, bajo y teclas; Sol dórico).</li></ul>
 <ul><li><b>Generador</b>: botones Play ▶ y Stop ■; casilla «Escala y nota del estilo»: al elegir un estilo, bajo y teclas toman su escala y tónica (editables luego).</li>
 <li><b>Escalas y presets</b>: ahora en desplegables por categorías. Presets nuevos: Roots reggae, Ska y Dub (bajo) y Roots reggae (teclas); estilos nuevos Ska y Dub (el Reggae pasa a «Roots reggae»).</li>
 <li><b>EQ del pad</b>: los extremos (1 y 8) son filtros shelf.</li>
@@ -1031,7 +1046,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>35. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.50</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.51</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1144,7 +1159,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Effects</b> (off by default): SP-1200, SP-202 or MPC60 lo-fi and filter, common or per sound; wah, phaser, flanger, tremolo and chorus. Bass effects are also in the Bass tab.</li>
 <li><b>Export</b>: to pad (all in one or each sound separately), to the Looper, WAV and MIDI. «Full cycle» lasts until drums and bass line up again. MIDI carries no effects.</li></ul>
 </details>
-<details><summary>29. What is new in 1.50</summary>
+<details><summary>29. What is new in 1.51</summary>
+<ul><li><b>Landscape Sampler</b>: the tuner is now a vertical column right of the pads, which gain space.</li>
+<li><b>Landscape piano</b> (Bass and Keys): shows only the scale notes, equal keys with their note name and the root in another colour.</li>
+<li><b>Keys</b>: Lead G-funk preset. <b>Generator</b>: G-funk style (drums, bass and keys; G Dorian).</li></ul>
 <ul><li><b>Generator</b>: Play ▶ and Stop ■ buttons; «Style scale and note» checkbox: picking a style sets the scale and root for bass and keys (editable afterwards).</li>
 <li><b>Scales and presets</b>: now dropdowns by category. New presets: Roots reggae, Ska and Dub (bass) and Roots reggae (keys); new styles Ska and Dub (Reggae becomes «Roots reggae»).</li>
 <li><b>Pad EQ</b>: end bands (1 and 8) are shelf filters.</li>
@@ -1206,7 +1224,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>35. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.50</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.51</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2880,7 +2898,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.50';
+const APP_VERSION='1.51';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -3368,7 +3386,8 @@ const KPRE=[
   ['Post-punk frío',{wave:'square',mr:1,idx:0,idec:.2,tl:0,tr:2,tdec:.1,a:.004,d:.5,s:.4,r:.12,cut:3200,res:1,drv:.1,trem:5,tdep:0,tmode:1,crate:.8,cdep:.6,cmix:.45,vol:.8}],
   ['Dark pad',{wave:'sawtooth',mr:1,idx:.05,idec:2,tl:0,tr:2,tdec:.1,a:.7,d:2,s:.9,r:1.5,cut:1100,res:1.2,drv:.05,trem:2,tdep:.15,tmode:1,crate:.4,cdep:.9,cmix:.6,vol:1.4}],
   ['Coldwave synth',{wave:'sawtooth',mr:1,idx:.04,idec:1.2,tl:0,tr:2,tdec:.1,a:.01,d:.8,s:.55,r:.35,cut:2600,res:1.5,drv:.1,trem:3,tdep:.1,tmode:1,crate:.6,cdep:.85,cmix:.55,vol:1.1}],
-  ['Roots reggae',{wave:'sine',mr:2,idx:.18,idec:.08,tl:0,tr:2,tdec:.1,a:.002,d:.18,s:0,r:.05,cut:3500,res:0,drv:.15,trem:6,tdep:.2,tmode:1,crate:.5,cdep:.4,cmix:.25,vol:1.1}]];
+  ['Roots reggae',{wave:'sine',mr:2,idx:.18,idec:.08,tl:0,tr:2,tdec:.1,a:.002,d:.18,s:0,r:.05,cut:3500,res:0,drv:.15,trem:6,tdep:.2,tmode:1,crate:.5,cdep:.4,cmix:.25,vol:1.1}],
+  ['Lead G-funk',{wave:'sine',mr:1,idx:.1,idec:1.2,tl:0,tr:2,tdec:.1,a:.02,d:3,s:.85,r:.28,cut:5200,res:1.2,drv:.08,trem:5.2,tdep:.28,tmode:0,crate:.7,cdep:.3,cmix:.3,vol:1}]];
 const kDeg=(iv,d)=>iv[d%iv.length]+12*Math.floor(d/iv.length);
 const kCd=(iv,o)=>{const n=iv.length;return o===7?n:n<=7?o:Math.round(o*n/7)};   // grado de la escala para cada salto de acorde
 const kBase=()=>12*(KS.oct+1)+KS.root;
@@ -4949,6 +4968,7 @@ gs(GG,'molchat','Molchat Doma (coldwave)',{bpm:118,j:.03,k:'9000 0030 9000 0000'
 gs(GG,'reggae','Roots reggae (one drop)',{bpm:76,sw:30,k:'0000 0000 9000 0000',s:'0000 0000 9000 0000',h:'3090 3090 3090 3090',o:GNO,b:'0... .... 0..7 ...5',bl:6});
 gs(GG,'ska','Ska',{bpm:168,sw:15,j:.05,k:'9000 9000 9000 9000',s:'0000 9000 0000 9000',h:G8,o:GNO,b:'0.2. 4.3. 0.2. 4.5.',bl:1,c:'0090 0090 0090 0090',cl:1});
 gs(GG,'dub','Dub',{bpm:70,sw:25,j:.06,k:'0000 0000 9000 0000',s:'0000 0000 9000 0000',h:'3000 3000 3000 3000',o:'0000 0000 0000 0020',b:'0... .... 0... 0.5.',bl:6,c:'0000 0090 0000 0000',cl:2});
+gs(GG,'gfunk','G-funk',{bpm:94,sw:18,j:.05,k:'9000 0000 0090 0050',s:'0000 9000 0000 9002',h:'8050 8050 8050 8050',o:'0000 0000 0000 0030',b:'0... ..0. 0.5. ..3.',bl:3,c:'9000 0000 0000 0000',cl:2});
 gs(GG,'jazz','Jazz',{bpm:130,sw:67,sb:4,k:'5000 5000 5000 5000',s:'0000 0020 0000 0030',h:'9000 9090 9000 9090',o:GNO,b:'0... 2... 4... 3...',bl:4,j:.1});
 gs(GG,'bebop','Bebop',{bpm:200,sw:62,sb:4,k:'3000 0020 0000 2000',s:'0020 0000 0030 0200',h:'9000 9090 9000 9090',o:GNO,b:'0... 1... 2... 4...',bl:4,j:.1});
 gs(GG,'dnb','Drum and bass',{bpm:174,k:'9000 0000 0090 0000',s:'0000 9000 0000 9000',h:'9595 9595 9595 9595',o:GNO,b:'0... ..0. .... 5...',bl:6});
@@ -5699,7 +5719,7 @@ function gRegen(what){gGenerate(what);gGrid();gUI();gSave()}
 const GSCALE={boombap:['Menor',5],funk:['Dórica',4],acid:['Menor',9],motorik:['Menor',9],postpunk:['Menor',4],punk:['Mayor',4],darkwave:['Menor',9],molchat:['Menor',2],
   reggae:['Menor',9],ska:['Mayor',7],dub:['Menor',9],jazz:['Dórica',2],bebop:['Bebop dom.',7],dnb:['Menor',5],trap:['Menor',5],ukg:['Menor',9],triphop:['Menor',9],
   rock60:['Mayor',4],rock70:['Pent. menor',9],soul:['Dórica',7],afrobeat:['Dórica',4],cumbia:['Menor',9],son:['Menor',9],flamenco:['Frigia',9],blues4:['Blues',9],blues12:['Blues',9],
-  chacarera:['Menor',9],zamba:['Menor',9],milonga:['Menor',2],burial:['Menor',9],dilla:['Dórica',3]};
+  chacarera:['Menor',9],zamba:['Menor',9],milonga:['Menor',2],burial:['Menor',9],dilla:['Dórica',3],gfunk:['Dórica',7]};
 function gStyleScale(st){
   if(!G.styleScale)return;const e=st.sc?[st.sc,st.rt|0]:GSCALE[st.id];if(!e)return;
   const si=SCI[e[0]];if(si==null)return;
@@ -6619,7 +6639,7 @@ const PRE={
 const preSels=[];
 const PRE_CAT={
   b:[['Cálidos y redondos',['Redondo','Cálido','Apagado','Polvo','Terciopelo','Tape']],['Sub y 808',['Sub suave','Profundo','Sub 808','Sub largo','808 caída']],['Sintéticos',['Analógico','Reese','Pluck','Acid','FM','Wobble']],['Sucios',['Fuzz','Sucio']],['Géneros',['Joy Division','Dark wave','Coldwave','Punk']],['Reggae / Ska / Dub',['Roots reggae','Ska','Dub']]],
-  k:[['Eléctricos',['Cálido','Suave','Nocturno','Velado','Polvoriento','Lento']],['Pads',['Pad suave','Pad oscuro']],['Synth',['Synth suave','FM']],['Géneros',['Post-punk frío','Dark pad','Coldwave synth']],['Reggae / Ska / Dub',['Roots reggae']]]
+  k:[['Eléctricos',['Cálido','Suave','Nocturno','Velado','Polvoriento','Lento']],['Pads',['Pad suave','Pad oscuro']],['Synth',['Synth suave','FM']],['Géneros',['Post-punk frío','Dark pad','Coldwave synth']],['Reggae / Ska / Dub',['Roots reggae']],['Leads',['Lead G-funk']]]
 };
 function preFill(x){
   const T=PRE[x];
@@ -6681,21 +6701,11 @@ function pianoMidis(m){
 }
 function pianoBuild(){
   const m=pianoMode();if(!m||!piano.offsetParent&&!matchMedia('(orientation:landscape)').matches)return;
-  const host=$('#pkeys'),mids=pianoMidis(m),byMidi=new Map(mids.map((v,k)=>[v,k]));
-  const lo=Math.min(...mids),hi=Math.max(...mids),root=(m==='b'?BS.root:KS.root);
-  let a=lo,z=hi;while(!PK_W.includes(((a%12)+12)%12))a--;while(!PK_W.includes(((z%12)+12)%12))z++;
+  const host=$('#pkeys'),mids=pianoMidis(m),root=(m==='b'?BS.root:KS.root);
   host.replaceChildren();
-  const whites=[];for(let n=a;n<=z;n++)if(PK_W.includes(((n%12)+12)%12))whites.push(n);
-  const nW=whites.length;
-  whites.forEach(n=>{
-    const d=document.createElement('div'),k=byMidi.get(n);d.className='wk'+(k==null?' off':'')+(k!=null&&((n%12)+12)%12===root?' root':'');
-    if(k!=null)d.dataset.k=k;if(((n%12)+12)%12===0||(k!=null&&((n%12)+12)%12===root))d.textContent=noteName(n);host.append(d);
-  });
-  const bw=Math.min(62/nW,3.6);
-  whites.forEach((n,i)=>{
-    const nx=n+1;if(PK_W.includes(((nx%12)+12)%12)||nx>z)return;
-    const d=document.createElement('div'),k=byMidi.get(nx);d.className='bk'+(k==null?' off':'')+(k!=null&&((nx%12)+12)%12===root?' root':'');
-    d.style.left=((i+1)/nW*100-bw/2)+'%';d.style.width=bw+'%';if(k!=null)d.dataset.k=k;host.append(d);
+  mids.forEach((n,k)=>{   // 1.51: solo notas de la escala, teclas iguales, con su nombre; raíz en otro color
+    const d=document.createElement('div');d.className='pk'+(((n%12)+12)%12===root?' root':'');
+    d.dataset.k=k;d.textContent=noteName(n);host.append(d);
   });
 }
 function pianoVis(k,on){const e=document.querySelector('#pkeys [data-k="'+k+'"]');if(e)e.classList.toggle('on',on)}
