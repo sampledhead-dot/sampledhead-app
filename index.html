@@ -1929,6 +1929,7 @@ const brSelf=()=>new URL('./',location.href).href;
 BR.set('url:sampler',brSelf()).catch(()=>{});
 async function brOpenEditor(){
   let u=null;try{u=await BR.get('url:editor')}catch{}
+  if(!u)u='https://sampledhead-dot.github.io/sampledhead-editor/';
   if(!u){u=(prompt(T('Dirección del editor (solo se pide una vez; abre antes el editor 1.16 para que se guarde sola):'),'https://')||'').trim();
     if(!/^https?:\/\//i.test(u)||u==='https://'){status('Dirección no válida');return false}
     try{await BR.set('url:editor',u)}catch{}}
