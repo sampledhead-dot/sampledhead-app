@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.60</title>
+<title>SampledHeadApp 1.61</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1067,7 +1067,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 </details>
 <details><summary>30. Novedades de la 1.60</summary>
 <ul><li><b>Chop por golpes sin límite</b>: ya no se para en 16 fragmentos. Si hay más de 16, se reparten en los bancos siguientes (hasta el D).</li>
-<li><b>Cortes editables</b>: con Chop activo, <b>arrastra</b> cualquier corte para moverlo, <b>toca</b> uno para seleccionarlo y quítalo con <b>− Corte</b>, o añade uno nuevo con <b>＋ Corte</b> (aparece en el centro de la vista; acerca el zoom para colocarlo con precisión). Vale para partes iguales, golpes y breaks, antes de pulsar <b>Asignar</b>.</li>
+<li><b>Cortes editables</b>: con Chop activo, <b>arrastra</b> cualquier corte para moverlo, <b>toca</b> uno para seleccionarlo y quítalo con <b>− Corte</b>, o añade uno nuevo con <b>＋ Corte</b> (aparece en el centro de la vista; acerca el zoom para colocarlo con precisión). Vale para partes iguales, golpes y breaks, antes de pulsar <b>Asignar</b>. Al soltar un corte (o tocarlo) suena el fragmento que va desde ese corte hasta el siguiente, con la línea de reproducción sobre la onda.</li>
 <li><b>Chop por breaks</b>: tras «Golpes», <b>Dividir</b> ofrece <b>Breaks</b>. Busca los cambios de sonido en una grabación larga con varios breaks seguidos y pone un corte en cada uno (pegado al golpe más cercano). El slider <b>Sensibilidad</b> añade o quita cortes. Es una detección aproximada: revisa y corrige los cortes.</li>
 <li><b>Nombres del kit</b>: bajo la onda hay un campo para <b>renombrar</b> el pad y un selector de <b>clase</b> (Kick, Snare, Clap, Hat, Open Hat, Cymbal, Tom, Rim, Perc, Bass…): al elegirla el pad se llama «Kick 01», «Kick 02»… <b>Nombrar kit</b> reconoce solo el tipo de cada sonido y nombra todos los pads (los de clase elegida a mano la conservan). Los nombres se usan al exportar el kit.</li>
 <li><b>Conversor audio → batería</b>: botón <b>▶ Play</b> para pre-escuchar el patrón con su BPM, swing y desfases; suena con los sonidos de los huecos del generador (o sonidos básicos si están vacíos), sigue los cambios que hagas y marca el paso que suena.</li>
@@ -1156,7 +1156,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>39. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.60</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.61</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1278,7 +1278,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 </details>
 <details><summary>30. What is new in 1.60</summary>
 <ul><li><b>Chop by hits, no limit</b>: it no longer stops at 16 slices. With more than 16, they spread over the next banks (up to D).</li>
-<li><b>Editable cuts</b>: with Chop on, <b>drag</b> any cut to move it, <b>tap</b> one to select it and remove it with <b>− Cut</b>, or add one with <b>＋ Cut</b> (it appears at the centre of the view; zoom in to place it precisely). Works for equal parts, hits and breaks, before you press <b>Assign</b>.</li>
+<li><b>Editable cuts</b>: with Chop on, <b>drag</b> any cut to move it, <b>tap</b> one to select it and remove it with <b>− Cut</b>, or add one with <b>＋ Cut</b> (it appears at the centre of the view; zoom in to place it precisely). Works for equal parts, hits and breaks, before you press <b>Assign</b>. When you release a cut (or tap it), the slice from that cut to the next one plays, with the playhead over the waveform.</li>
 <li><b>Chop by breaks</b>: after «Hits», <b>Split</b> offers <b>Breaks</b>. It looks for sound changes in a long recording with several breaks in a row and puts a cut at each one (snapped to the nearest hit). The <b>Sensitivity</b> slider adds or removes cuts. Detection is approximate: check and fix the cuts.</li>
 <li><b>Kit names</b>: under the waveform there is a field to <b>rename</b> the pad and a <b>class</b> selector (Kick, Snare, Clap, Hat, Open Hat, Cymbal, Tom, Rim, Perc, Bass…): choosing one names the pad «Kick 01», «Kick 02»… <b>Name kit</b> recognises each sound type and names every pad (pads with a hand-picked class keep it). The names are used when exporting the kit.</li>
 <li><b>Audio → drums converter</b>: <b>▶ Play</b> button to preview the pattern with its BPM, swing and offsets; it plays the generator slot sounds (or basic sounds if empty), follows your edits and shows the playing step.</li>
@@ -1367,7 +1367,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>39. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.60</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.61</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2526,7 +2526,7 @@ cv.addEventListener('pointermove',e=>{
 const up=e=>{
   const was=gest&&gest.id===e.pointerId?gest:null;
   ptrs.delete(e.pointerId);
-  if(was&&was.edge!=null){gest=null;chop.sel=was.edge;chopUI();draw();if(ptrs.size<2)pinch=null;return}
+  if(was&&was.edge!=null){gest=null;chop.sel=was.edge;chopUI();draw();if(ptrs.size<2)pinch=null;if(e.type==='pointerup')chopAudK(was.edge);return}
   if(was){
     gest=null;
     if(!was.moved&&e.type==='pointerup'){
@@ -3117,7 +3117,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.60';
+const APP_VERSION='1.61';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -3906,6 +3906,7 @@ kKitList(lastGet(LASTKY)).catch(()=>{});
 const phEl=document.createElement('div');phEl.id='ph';phEl.setAttribute('aria-hidden','true');
 {const l=document.querySelector('.lcd');if(l)l.appendChild(phEl)}
 function phFrac(){      // posición actual dentro del sample (0–1 del buffer entero), o null si el pad seleccionado no suena
+  if(typeof chopAudPos==='function'){const q=chopAudPos();if(q!=null)return q}
   const p=pads[sel];
   if(!p||!p.src||!p.buf||vbuf()!==p.buf)return null;
   let reg;try{reg=region(p)}catch{return null}
@@ -7724,6 +7725,31 @@ if($('#recsys'))$('#recsys').onclick=async()=>{
   }catch(err){status(err&&err.name==='NotAllowedError'?'Captura cancelada':'No se pudo capturar el audio: '+(err.name||err.message))}
 };
 try{nameUI()}catch{}
+/* ---------- 1.61 · chopeo: pre-escucha del fragmento entre un corte y el siguiente ---------- */
+var chopAud=null;
+function chopAudStop(){if(chopAud){try{chopAud.src.stop()}catch{}chopAud=null}}
+function chopAudK(k){
+  if(!chop.on||!chop.n)return;
+  const p=pads[chop.pad];if(!p||!p.buf)return;
+  const a=chopEdge(p,k),z=chopEdge(p,k+1);if(a==null||z==null||z<=a)return;
+  try{
+    ctx.resume();chopAudStop();
+    if(p.src)stop(chop.pad,true);
+    const ap=Object.assign({},p,{s:a,e:z,loop:false,cache:null,src:null,flt:null,gn:null});
+    const src=ctx.createBufferSource(),g=ctx.createGain();
+    src.buffer=region(ap);src.playbackRate.value=playRate(ap);g.gain.value=p.vol*LPV*normG(p);
+    chain(ctx,src,ap,g,grpBus[p.grp]||sampBus,true);
+    const o={src,ap,lt:ctx.currentTime,dur:src.buffer.duration};
+    src.onended=()=>{if(chopAud===o)chopAud=null};
+    src.start();chopAud=o;
+  }catch(e){console.warn('chopAud',e.message)}
+}
+function chopAudPos(){
+  const o=chopAud;if(!o||!chop.on)return null;
+  const f=(ctx.currentTime-o.lt)*playRate(o.ap)/o.dur;
+  if(f<0||f>1)return null;
+  return o.ap.rev?o.ap.e-f*(o.ap.e-o.ap.s):o.ap.s+f*(o.ap.e-o.ap.s);
+}
 
 Object.assign(I18N.x,{"＋ Corte": "＋ Cut", "− Corte": "− Cut", "Sensibilidad": "Sensitivity", "Nombre del pad": "Pad name", "Clase de sonido del pad": "Pad sound class", "Clase…": "Class…", "Nombrar kit": "Name kit", "▶ Play": "▶ Play", "Grabar audio de otra pestaña o app": "Record audio from another tab or app", "Grabar audio del sistema": "Record system audio", "Detener": "Stop", "Sin pads vacíos: vaciar uno primero": "No empty pads: clear one first", "Clase quitada": "Class removed", "No hay pads con sonido": "No pads with sound", "Buscando los cambios de break…": "Looking for break changes…", "No encuentro cambios de break: 16 partes iguales": "No break changes found: 16 equal parts", "No cabe un corte ahí: acerca la vista a un hueco libre": "No room for a cut there: zoom in to a free spot", "Este navegador no puede capturar el audio del sistema: graba la pantalla y usa Importar": "This browser cannot capture system audio: record the screen and use Import", "No se compartió audio: elige una pestaña y marca «Compartir audio de la pestaña»": "No audio shared: choose a tab and tick «Share tab audio»", "Grabando el audio del sistema…": "Recording system audio…", "Captura cancelada": "Capture cancelled"});Object.assign(I18N.f,{"Chop por breaks · ": "Chop by breaks · ", " fragmentos · ajusta la sensibilidad o edita los cortes": " slices · adjust the sensitivity or edit the cuts", " fragmentos · se pueden editar": " slices · editable", "Corte ": "Cut ", "Corte añadido · ": "Cut added · ", " fragmentos · arrástralo para colocarlo": " slices · drag it to place it", "Corte quitado · ": "Cut removed · ", "Breaks · ": "Breaks · ", "Editado · ": "Edited · ", "Clase: ": "Class: ", "Kit nombrado: ": "Kit named: ", "Se renombrarán ": "These pads will be renamed: ", " pads según su tipo de sonido (Kick 01, Snare 01…). Los pads con clase elegida a mano la mantienen. ¿Continuar?": " pads by sound type (Kick 01, Snare 01…). Pads with a hand-picked class keep it. Continue?", "Chop: ": "Chop: ", " fragmentos en los pads ": " slices in pads ", "No se pudo capturar el audio: ": "Could not capture audio: "});
 
