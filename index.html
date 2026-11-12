@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.59</title>
+<title>SampledHeadApp 1.60</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -244,6 +244,11 @@ button:disabled{opacity:.4}
 
 .chop{display:flex;gap:6px}
 .chop button{flex:1 1 0;padding:5px 4px;min-width:0;font-size:12px;white-space:nowrap}
+.chop[hidden]{display:none}
+.chop label{display:flex;align-items:center;gap:6px;flex:2 1 0;font-size:12px;min-width:0}.chop label input{flex:1 1 auto;min-width:0}
+.pname{display:flex;gap:6px;margin-top:6px}
+.pname input,.pname select{background:#171a20;color:inherit;border:1px solid #2c313a;border-radius:9px;padding:6px 8px;font:inherit;font-size:13px;min-width:0}
+.pname input{flex:1 1 100px}.pname select{flex:0 1 96px}.pname button{flex:0 0 auto;padding:6px 10px;font-size:12px;white-space:nowrap}
 .chop button.on{background:var(--ink);color:#101216}
 #wave{min-height:56px}
 .lcd{position:relative}
@@ -594,6 +599,16 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
       <button id="chopn" disabled aria-label="Dividir la región en 16, 8, 4 o 2 partes">Dividir</button>
       <button id="trimb" aria-label="Recortar el pad al tramo marcado">✂ Recortar</button>
       <button id="chopa" disabled aria-label="Asignar los fragmentos a los pads del banco">Asignar</button>
+    </div>
+    <div class="chop" id="chop2" hidden>
+      <button id="chopadd" aria-label="Añadir un corte en el centro de la vista">＋ Corte</button>
+      <button id="chopdel" disabled aria-label="Quitar el corte seleccionado">− Corte</button>
+      <label id="chopsl" hidden>Sensibilidad <input id="chopsens" type="range" min="1" max="10" value="5" aria-label="Sensibilidad de la detección de breaks"></label>
+    </div>
+    <div class="pname" id="pname">
+      <input id="padnm" type="text" maxlength="32" placeholder="Nombre del pad" aria-label="Nombre del pad">
+      <select id="padcls" aria-label="Clase de sonido del pad"></select>
+      <button id="padauto" aria-label="Nombrar todo el kit según el tipo de sonido">Nombrar kit</button>
     </div>
   </div>
 
@@ -977,7 +992,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <ul><li><b>Hold</b> mantiene el efecto al soltar; apagarlo lo suelta. Cambiar de pestaña suelta todos.</li><li>Tempo de Repeat y Delay: loop en reproducción, Looper o 120 BPM.</li><li>No entran en Resample ni en exportaciones.</li><li>Bit y Repeat solo actúan en la pestaña FX y requieren AudioWorklet.</li><li><b>Mixer</b> abre la pestaña Mixer.</li></ul>
 </details>
 <details><summary>13. Auto chop</summary>
-<ol><li>Seleccionar un pad con sample y ajustar la región.</li><li><b>✂ Chop</b>, luego <b>Dividir</b>: 16, 8, 4, 2 partes o <b>Golpes</b> (detección de ataques, hasta 16).</li><li><b>Asignar</b>: cada trozo va a un pad del banco actual, desde el 1.</li></ol>
+<ol><li>Seleccionar un pad con sample y ajustar la región.</li><li><b>✂ Chop</b>, luego <b>Dividir</b>: 16, 8, 4, 2 partes o <b>Golpes</b> (detección de ataques, sin límite) o <b>Breaks</b> (cambios de break en una grabación larga, con control de sensibilidad).</li><li><b>Asignar</b>: cada trozo va a un pad del banco actual, desde el 1.</li></ol>
 <ul><li>Pide confirmación si hay pads ocupados. Los trozos comparten el audio, se crean como One shot y se deshacen de una vez.</li><li>Cambiar de pad apaga Chop.</li></ul>
 </details>
 <details><summary>14. Resample</summary>
@@ -1050,7 +1065,15 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Abrir editor</b>: la primera vez te pide la dirección de la app del editor; se recuerda.</li>
 <li>Si no pasa nada: comprueba que ambas apps estén en el mismo dominio y que el navegador no bloquee las ventanas emergentes.</li></ul>
 </details>
-<details><summary>30. Novedades de la 1.59</summary>
+<details><summary>30. Novedades de la 1.60</summary>
+<ul><li><b>Chop por golpes sin límite</b>: ya no se para en 16 fragmentos. Si hay más de 16, se reparten en los bancos siguientes (hasta el D).</li>
+<li><b>Cortes editables</b>: con Chop activo, <b>arrastra</b> cualquier corte para moverlo, <b>toca</b> uno para seleccionarlo y quítalo con <b>− Corte</b>, o añade uno nuevo con <b>＋ Corte</b> (aparece en el centro de la vista; acerca el zoom para colocarlo con precisión). Vale para partes iguales, golpes y breaks, antes de pulsar <b>Asignar</b>.</li>
+<li><b>Chop por breaks</b>: tras «Golpes», <b>Dividir</b> ofrece <b>Breaks</b>. Busca los cambios de sonido en una grabación larga con varios breaks seguidos y pone un corte en cada uno (pegado al golpe más cercano). El slider <b>Sensibilidad</b> añade o quita cortes. Es una detección aproximada: revisa y corrige los cortes.</li>
+<li><b>Nombres del kit</b>: bajo la onda hay un campo para <b>renombrar</b> el pad y un selector de <b>clase</b> (Kick, Snare, Clap, Hat, Open Hat, Cymbal, Tom, Rim, Perc, Bass…): al elegirla el pad se llama «Kick 01», «Kick 02»… <b>Nombrar kit</b> reconoce solo el tipo de cada sonido y nombra todos los pads (los de clase elegida a mano la conservan). Los nombres se usan al exportar el kit.</li>
+<li><b>Conversor audio → batería</b>: botón <b>▶ Play</b> para pre-escuchar el patrón con su BPM, swing y desfases; suena con los sonidos de los huecos del generador (o sonidos básicos si están vacíos), sigue los cambios que hagas y marca el paso que suena.</li>
+<li><b>Grabar audio del sistema</b>: en <b>Más → Grabar audio del sistema</b> se captura el sonido de otra pestaña o app (solo audio). Funciona en Chrome de escritorio; en el móvil el navegador normalmente no lo permite: graba la pantalla e importa el vídeo.</li></ul>
+</details>
+<details><summary>31. Novedades de la 1.59</summary>
 <ul><li><b>Afinador completo</b>: botón <b>＋ Afinación propia</b>: pon nombre, sube o baja cada cuerda de medio en medio tono (suena la nota de referencia), añade o quita cuerdas y guarda. Aparece en el grupo «Mis afinaciones» de ese instrumento; con <b>✎ Editar</b> la cambias o la borras.</li>
 <li><b>Generador · bajo</b>: dos controles nuevos, <b>Bajo: notas fantasma</b> (notas muy suaves y cortas entre las principales) y <b>Bajo: slides</b> (algunas notas entran deslizando desde un tono vecino). Se aplican al generar o pulsar el dado; en la rejilla las fantasma se ven atenuadas y los slides con un borde blanco.</li>
 <li><b>Teclas</b>: mando <b>Detune lento</b> (en la fila Corte, reson., glide) que hace derivar el tono de cada nota como una cinta gastada, y preset <b>Cinta gastada</b> (categoría Eléctricos).</li>
@@ -1058,10 +1081,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → secuencia (batería)</b>: en el Generador, «Convertir la batería del pad…» analiza el pad seleccionado: detecta bombo, caja, hat cerrado y abierto, el tempo y el swing, cuantiza a 16 pasos y promedia las repeticiones. Puedes corregir el tempo (÷2 / ×2), los compases y cada celda antes de <b>Aplicar</b> o <b>Aplicar y guardar estilo</b> (incluye el desfase de caja y bombo y la humanización). Es una detección heurística: funciona mejor con baterías limpias.</li>
 <li><b>Estilos</b>: Questlove pasa a Bateristas.</li></ul>
 </details>
-<details><summary>31. Novedades de la 1.58</summary>
+<details><summary>32. Novedades de la 1.58</summary>
 <ul><li><b>Conexión con SampledHead Editor</b>: sección «Editor de audio» en el menú (enviar pad, recoger, abrir editor). Ver sección 29.</li></ul>
 </details>
-<details><summary>32. Novedades de la 1.57</summary>
+<details><summary>33. Novedades de la 1.57</summary>
 <ul><li><b>Vista de escritorio</b> (pantalla ancha con ratón; el móvil no cambia): Sampler y Looper con el editor a la izquierda y los pads grandes a la derecha; Bajo y Teclas con pads y piano a la vez y los ajustes a un lado; Mixer y Gen en columnas; FX con los 8 pads en una fila. Se adapta a un portátil de 14" y a un monitor de 27" (con ancho máximo y centrado).</li>
 <li><b>Teclas</b>: preset Theremin (seno, glide largo, vibrato lento; categoría Leads).</li></ul>
 <ul><li><b>Piano apaisado</b>: en Teclas solo se iluminan las teclas de Teclas (antes se encendían también las notas del bajo que sonaban), y viceversa en Bajo.</li></ul>
@@ -1108,23 +1131,23 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Grupo Breaks</b> en los estilos de batería: Amen (clásico, half-time, jungle, picado), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut y Ashley's Roachclip. Son recreaciones aproximadas por reglas, con el tempo y el swing de origen; no son las grabaciones. Usa tus sonidos o un kit sintetizado.</li>
 <li>La exportación MIDI del generador sigue en Generador → Exportar → MIDI.</li></ul>
 </details>
-<details><summary>33. Novedades de la 1.35</summary>
+<details><summary>34. Novedades de la 1.35</summary>
 <ul><li><b>Mixer</b>: vuelve a verse la barra de nivel de Bajo y Teclas cuando suenan desde el Generador.</li>
 </ul>
 </details>
-<details><summary>34. Novedades de la 1.33</summary>
+<details><summary>35. Novedades de la 1.33</summary>
 <ul><li><b>Estética unificada</b>: todas las pestañas usan el color de su pestaña como acento (botones activos, títulos, regla lateral de cada sección y deslizadores). Bajo, Teclas y Mixer tienen <b>secciones plegables</b> como el Generador; se recuerda cuáles cierras. Por defecto están cerrados los kits, el lo-fi, trémolo, chorus, ecualizador y compresor.</li></ul>
 </details>
-<details><summary>35. Novedades de la 1.32</summary>
+<details><summary>36. Novedades de la 1.32</summary>
 <ul><li><b>FX</b>: el <b>Filtro</b> va ahora al final y afecta a todo lo que suena (radio, vinilo, reverb, delays). Delay, Dub Delay y Repeat siguen el tempo del generador cuando está sonando, y el tiempo del eco cambia con transiciones suaves.</li>
 <li><b>Generador</b>: transporte (modo, Reproducir y BPM) fijo arriba, secciones plegables (se recuerda cuáles cierras) y un color por modo: batería rosa, bajo naranja, teclas violeta. Rejilla de pasos con brillo y halo en el paso actual.</li>
 <li><b>Pads de FX</b> con brillo, estela del dedo y borde de color mientras suenan. <b>Mixer</b>: color por canal, medidores más gruesos y marca de pico. Pestaña activa más destacada.</li></ul>
 </details>
-<details><summary>36. Novedades de la 1.31</summary>
+<details><summary>37. Novedades de la 1.31</summary>
 <ul><li><b>FX</b>: pad nuevo <b>Dub Delay</b> (eco de cinta oscuro; X = tiempo, Y = realimentación; al soltar el eco se apaga solo) junto al Delay, y pad <b>Radio</b> (radio antigua). Ahora son 8 efectos.</li>
 <li><b>Vinilo</b> con mucha menos saturación: nivel igual al original en el pad de FX, en el lo-fi de los pads y en el generador, con menos grave y crujido más suave.</li></ul>
 </details>
-<details><summary>37. Novedades de la 1.30</summary>
+<details><summary>38. Novedades de la 1.30</summary>
 <ul><li><b>Generador</b>: modo Teclas (acordes por grado de la escala con progresiones y ritmo de acompañamiento por estilo; el bajo puede seguir a las teclas). Interruptor «Tempo del estilo»: apagado, el tempo no cambia al cambiar de estilo.</li>
 <li><b>Mixer</b>: canal nuevo «Gen bat.» para la batería del generador. <b>Teclas</b> con estilo propio (independiente de batería y bajo). Con la pantalla bloqueada o la app en segundo plano el generador se recoloca al volver; en iPhone/iPad el sistema puede pausar el audio, así que al volver pulsa Reproducir si se detuvo.</li>
 <li><b>FX · Radio</b>: pad de radio antigua (banda estrecha tipo AM, válvula, estática y desvanecimiento). X = más estrecha hacia la derecha, Y = estática.</li>
@@ -1132,8 +1155,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>38. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.59</b></p>
+<details><summary>39. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.60</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1180,7 +1203,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <ul><li><b>Hold</b> keeps the effect on after release; turning it off releases it. Changing tab releases all.</li><li>Repeat and Delay tempo: playing loop, Looper or 120 BPM.</li><li>Not included in Resample or exports.</li><li>Bit and Repeat only act in the FX tab and require AudioWorklet.</li><li><b>Mixer</b> opens the Mixer tab.</li></ul>
 </details>
 <details><summary>13. Auto chop</summary>
-<ol><li>Select a pad with a sample and adjust the region.</li><li><b>✂ Chop</b>, then <b>Split</b>: 16, 8, 4, 2 parts or <b>Hits</b> (attack detection, up to 16).</li><li><b>Assign</b>: each slice goes to a pad of the current bank, from 1.</li></ol>
+<ol><li>Select a pad with a sample and adjust the region.</li><li><b>✂ Chop</b>, then <b>Split</b>: 16, 8, 4, 2 parts or <b>Hits</b> (attack detection, no limit) or <b>Breaks</b> (break changes in a long recording, with a sensitivity control).</li><li><b>Assign</b>: each slice goes to a pad of the current bank, from 1.</li></ol>
 <ul><li>Asks for confirmation if pads are occupied. Slices share the audio, are created as One shot and are undone at once.</li><li>Selecting another pad turns Chop off.</li></ul>
 </details>
 <details><summary>14. Resample</summary>
@@ -1253,7 +1276,15 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Open editor</b>: the first time it asks for the editor app's web address; it is remembered.</li>
 <li>If nothing happens: check that both apps are on the same domain and that the browser is not blocking pop-ups.</li></ul>
 </details>
-<details><summary>30. What is new in 1.59</summary>
+<details><summary>30. What is new in 1.60</summary>
+<ul><li><b>Chop by hits, no limit</b>: it no longer stops at 16 slices. With more than 16, they spread over the next banks (up to D).</li>
+<li><b>Editable cuts</b>: with Chop on, <b>drag</b> any cut to move it, <b>tap</b> one to select it and remove it with <b>− Cut</b>, or add one with <b>＋ Cut</b> (it appears at the centre of the view; zoom in to place it precisely). Works for equal parts, hits and breaks, before you press <b>Assign</b>.</li>
+<li><b>Chop by breaks</b>: after «Hits», <b>Split</b> offers <b>Breaks</b>. It looks for sound changes in a long recording with several breaks in a row and puts a cut at each one (snapped to the nearest hit). The <b>Sensitivity</b> slider adds or removes cuts. Detection is approximate: check and fix the cuts.</li>
+<li><b>Kit names</b>: under the waveform there is a field to <b>rename</b> the pad and a <b>class</b> selector (Kick, Snare, Clap, Hat, Open Hat, Cymbal, Tom, Rim, Perc, Bass…): choosing one names the pad «Kick 01», «Kick 02»… <b>Name kit</b> recognises each sound type and names every pad (pads with a hand-picked class keep it). The names are used when exporting the kit.</li>
+<li><b>Audio → drums converter</b>: <b>▶ Play</b> button to preview the pattern with its BPM, swing and offsets; it plays the generator slot sounds (or basic sounds if empty), follows your edits and shows the playing step.</li>
+<li><b>Record system audio</b>: <b>More → Record system audio</b> captures the sound of another tab or app (audio only). It works in desktop Chrome; on phones the browser usually does not allow it: record the screen and import the video.</li></ul>
+</details>
+<details><summary>31. What is new in 1.59</summary>
 <ul><li><b>Full tuner</b>: <b>＋ Custom tuning</b> button: name it, raise or lower each string by semitones (the reference note plays), add or remove strings and save. It shows up in the «My tunings» group of that instrument; <b>✎ Edit</b> changes or deletes it.</li>
 <li><b>Generator · bass</b>: two new controls, <b>Bass: ghost notes</b> (very soft, short notes between the main ones) and <b>Bass: slides</b> (some notes slide in from a neighbouring pitch). They apply when you generate or roll the dice; in the grid ghosts look dimmed and slides have a white outline.</li>
 <li><b>Keys</b>: <b>Slow detune</b> knob (in the Cutoff, reson., glide row) that lets each note's pitch drift like worn tape, and a <b>Worn tape</b> preset (Electric category).</li>
@@ -1261,10 +1292,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → sequence (drums)</b>: in the Generator, «Convert the pad's drums…» analyses the selected pad: it detects kick, snare, closed and open hat, tempo and swing, quantises to 16 steps and averages repeats. You can fix the tempo (÷2 / ×2), the bars and any cell before <b>Apply</b> or <b>Apply and save style</b> (it keeps snare/kick offsets and humanisation). It is heuristic: it works best on clean drums.</li>
 <li><b>Styles</b>: Questlove moves to Drummers.</li></ul>
 </details>
-<details><summary>31. What is new in 1.58</summary>
+<details><summary>32. What is new in 1.58</summary>
 <ul><li><b>Connection with SampledHead Editor</b>: «Audio editor» section in the menu (send pad, pick up, open editor). See section 29.</li></ul>
 </details>
-<details><summary>32. What is new in 1.57</summary>
+<details><summary>33. What is new in 1.57</summary>
 <ul><li><b>Desktop view</b> (wide screen with mouse; mobile unchanged): Sampler and Looper with the editor on the left and big pads on the right; Bass and Keys with pads and piano together and settings aside; Mixer and Gen in columns; FX with the 8 pads in one row. Fits a 14" laptop and a 27" monitor (max width, centred).</li>
 <li><b>Keys</b>: Theremin preset (sine, long glide, slow vibrato; Leads category).</li></ul>
 <ul><li><b>Landscape piano</b>: in Keys only the Keys notes light up (bass notes playing used to light it too), and vice versa in Bass.</li></ul>
@@ -1311,23 +1342,23 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Breaks group</b> in the drum styles: Amen (classic, half-time, jungle, chopped), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut and Ashley's Roachclip. They are approximate rule-based re-creations with the original tempo and swing, not the recordings. Use your sounds or a synthesized kit.</li>
 <li>The generator MIDI export is still in Generator → Export → MIDI.</li></ul>
 </details>
-<details><summary>33. What is new in 1.35</summary>
+<details><summary>34. What is new in 1.35</summary>
 <ul><li><b>Mixer</b>: the Bass and Keys level bars show again when they play from the Generator.</li>
 </ul>
 </details>
-<details><summary>34. What is new in 1.33</summary>
+<details><summary>35. What is new in 1.33</summary>
 <ul><li><b>Unified look</b>: every tab uses its tab colour as the accent (active buttons, titles, a side rule on each section and sliders). Bass, Keys and Mixer now have <b>collapsible sections</b> like the Generator; it remembers which ones you close. Kits, lo-fi, tremolo, chorus, equalizer and compressor are closed by default.</li></ul>
 </details>
-<details><summary>35. What is new in 1.32</summary>
+<details><summary>36. What is new in 1.32</summary>
 <ul><li><b>FX</b>: the <b>Filter</b> now sits at the end and affects everything that sounds (radio, vinyl, reverb, delays). Delay, Dub Delay and Repeat follow the generator tempo while it plays, and the echo time changes smoothly.</li>
 <li><b>Generator</b>: transport (mode, Play and BPM) pinned at the top, collapsible sections (it remembers which you close) and one colour per mode: drums pink, bass orange, keys violet. Step grid with glow and a halo on the current step.</li>
 <li><b>FX pads</b> with glow, finger trail and a coloured border while active. <b>Mixer</b>: colour per channel, thicker meters and a peak mark. Active tab stands out more.</li></ul>
 </details>
-<details><summary>36. What is new in 1.31</summary>
+<details><summary>37. What is new in 1.31</summary>
 <ul><li><b>FX</b>: new <b>Dub Delay</b> pad (dark tape echo; X = time, Y = feedback; the echo fades out on its own when released) next to Delay, and the <b>Radio</b> pad (old radio). There are now 8 effects.</li>
 <li><b>Vinyl</b> with much less saturation: same level as the original in the FX pad, the pad lo-fi and the generator, with less rumble and softer crackle.</li></ul>
 </details>
-<details><summary>37. What is new in 1.30</summary>
+<details><summary>38. What is new in 1.30</summary>
 <ul><li><b>Generator</b>: Keys mode (chords by scale degree with progressions and a comping rhythm per style; the bass can follow the keys). «Style tempo» switch: when off, the tempo does not change when the style changes.</li>
 <li><b>Mixer</b>: new «Gen drums» channel for the generator drums. <b>Keys</b> can have their own style (independent of drums and bass). With the screen locked or the app in the background the generator resyncs on return; on iPhone/iPad the system may pause audio, so press Play again if it stopped.</li>
 <li><b>FX · Radio</b>: old-radio pad (narrow AM-style band, tube saturation, static and fading). X = narrower to the right, Y = static.</li>
@@ -1335,8 +1366,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>38. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.59</b></p>
+<details><summary>39. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.60</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1346,6 +1377,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
     <input id="url" type="url" placeholder="https://…/audio.mp3" aria-label="Enlace al audio">
     <button id="urlgo">Cargar</button>
   </div>
+  <b>Grabar audio de otra pestaña o app</b>
+  <div class="kit files"><button id="recsys">Grabar audio del sistema</button></div>
   <b>Kits</b>
   <div class="kit">
     <select id="kits" aria-label="Kits guardados"></select>
@@ -2207,7 +2240,7 @@ function select(i){
   [...grid.children].forEach((b,j)=>b.classList.toggle('sel',j===(i&15)));
   $('#vol').value=p.vol;$('#pitch').value=p.pitch;lockUI();
   $('#rev').classList.toggle('on',p.rev);$('#loop').classList.toggle('on',p.loop);gateUI(p);grpUI(p);
-  sync();draw();fxSync();chopUI();
+  sync();draw();fxSync();chopUI();try{nameUI()}catch{}
 }
 function sync(){
   const p=pads[sel];tunerUpdate();
@@ -2298,7 +2331,8 @@ function draw(){
       g.save();g.setLineDash([5*d,4*d]);g.strokeStyle='#fff';g.fillStyle='#fff';g.lineWidth=1.5*d;g.textAlign='left';
       for(let k=0;k<chop.n;k++){
         const xa=X(chopEdge(p,k)),xb=X(chopEdge(p,k+1));
-        if(k>0&&xa>=0&&xa<=W){g.beginPath();g.moveTo(xa,0);g.lineTo(xa,H);g.stroke()}
+        if(k>0&&xa>=0&&xa<=W){const sl=k===chop.sel;g.save();if(sl){g.setLineDash([]);g.strokeStyle='#ffd34d';g.fillStyle='#ffd34d';g.lineWidth=2.5*d}
+          g.beginPath();g.moveTo(xa,0);g.lineTo(xa,H);g.stroke();g.beginPath();g.arc(xa,7*d,(sl?6:4.5)*d,0,7);g.fill();g.restore()}
         if(xb-xa>16*d&&xb>0&&xa<W)g.fillText(String(k+1),Math.max(xa,0)+4*d,H-6*d);
       }
       g.restore();
@@ -2333,15 +2367,16 @@ cv.addEventListener('wheel',e=>{
 
 const gapOf=b=>16/b.length;
 /* ---------- auto chop: divide la región del pad en 16, 8, 4 o 2 partes y las reparte por los pads del banco ---------- */
-const chop={on:false,n:0,pad:-1,mode:'',edges:[]},CHOPN=[16,8,4,2];
-const chopEdge=(p,k)=>chop.mode==='hit'&&chop.edges[k]!=null?chop.edges[k]:p.s+(p.e-p.s)*k/chop.n;
+const chop={on:false,n:0,pad:-1,mode:'',edges:[],sel:-1},CHOPN=[16,8,4,2];
+const chopEdge=(p,k)=>chop.mode!==''&&chop.edges[k]!=null?chop.edges[k]:p.s+(p.e-p.s)*k/chop.n;
 function chopUI(){
   const p=pads[sel],bs=$('#chopb');if(!bs)return;
   bs.disabled=!p.buf&&!chop.on;bs.classList.toggle('on',chop.on);bs.setAttribute('aria-pressed',String(chop.on));
-  $('#chopn').disabled=!chop.on;$('#chopn').textContent=chop.on&&chop.n?(chop.mode==='hit'?'Golpes · ':'÷ ')+chop.n:'Dividir';
+  $('#chopn').disabled=!chop.on;$('#chopn').textContent=chop.on&&chop.n?({hit:'Golpes · ',brk:'Breaks · ',edit:'Editado · '}[chop.mode]||'÷ ')+chop.n:'Dividir';
+  const c2=$('#chop2');if(c2){c2.hidden=!(chop.on&&chop.n);$('#chopsl').hidden=chop.mode!=='brk';$('#chopdel').disabled=!(chop.sel>0&&chop.sel<chop.n)}
   $('#chopa').disabled=!(chop.on&&chop.n);$('#chopa').textContent='Asignar a '+BANKS[bank];
 }
-function chopOff(){chop.on=false;chop.n=0;chop.pad=-1;chop.mode='';chopUI();draw()}
+function chopOff(){chop.on=false;chop.n=0;chop.pad=-1;chop.mode='';chop.sel=-1;chopUI();draw()}
 $('#chopb').onclick=()=>{
   if(chop.on){chopOff();status('Chop desactivado');return}
   if(!pads[sel].buf){status('Seleccionar un pad con sample');return}
@@ -2349,11 +2384,20 @@ $('#chopb').onclick=()=>{
 };
 $('#chopn').onclick=()=>{
   if(!chop.on)return;
-  const seq=[16,8,4,2,-1],cur=chop.mode==='hit'?-1:chop.n,nx=seq[(seq.indexOf(cur)+1)%seq.length],p=pads[chop.pad];   // 16 → 8 → 4 → 2 → golpes → 16
+  const seq=[16,8,4,2,-1,-2],cur=chop.mode==='hit'?-1:chop.mode==='brk'?-2:chop.mode==='edit'?-9:chop.n,nx=seq[(seq.indexOf(cur)+1)%seq.length],p=pads[chop.pad];   // 16 → 8 → 4 → 2 → golpes → breaks → 16
+  chop.sel=-1;
   if(nx===-1){
     chopHits(p);
-    if(chop.edges.length>=3){chop.mode='hit';chop.n=chop.edges.length-1;chopUI();draw();status('Chop por golpes · '+chop.n+' fragmentos');return}
+    if(chop.edges.length>=3){chop.mode='hit';chop.n=chop.edges.length-1;chopUI();draw();status('Chop por golpes · '+chop.n+' fragmentos · se pueden editar');return}
     chop.mode='';chop.n=16;chopUI();draw();status('Sin golpes claros: 16 partes iguales');return;
+  }
+  if(nx===-2){
+    status('Buscando los cambios de break…');
+    setTimeout(()=>{
+      if(!chop.on)return;
+      if(chopBreaks(p)){chop.mode='brk';chop.n=chop.edges.length-1;chopUI();draw();status('Chop por breaks · '+chop.n+' fragmentos · ajusta la sensibilidad o edita los cortes')}
+      else{chop.mode='';chop.n=16;chopUI();draw();status('No encuentro cambios de break: 16 partes iguales')}
+    },30);return;
   }
   chop.mode='';chop.n=nx;
   const len=(p.e-p.s)*p.buf.duration/chop.n;
@@ -2362,26 +2406,31 @@ $('#chopn').onclick=()=>{
 function chopAssign(){
   if(!chop.on||!chop.n)return;
   const src=pads[chop.pad];if(!src||!src.buf){chopOff();return}
-  const n=chop.n,b0=bank,targets=Array.from({length:n},(_,k)=>b0*16+k);
+  const b0=bank,room=64-b0*16;let n=chop.n;
+  if(n>room){if(!confirm('Hay '+n+' fragmentos y solo caben '+room+' desde el banco '+BANKS[b0]+'. Se asignarán los primeros '+room+'. ¿Continuar?'))return;n=room}
+  const targets=Array.from({length:n},(_,k)=>b0*16+k);
   const used=targets.filter(t=>t!==chop.pad&&pads[t].buf).length;
-  if(used&&!confirm('Se sustituirán '+used+(used===1?' sample':' samples')+' del banco '+BANKS[b0]+'. ¿Continuar?'))return;
-  const gp=gapOf(src.buf),edge=[src.s];
-  for(let k=1;k<n;k++){
-    const t=snap(src.s+(src.e-src.s)*k/n);                  // los cortes buscan el cruce por cero más cercano, para evitar clics
-    edge.push(Math.min(src.e-gp,Math.max(t,edge[k-1]+gp)));
-  }
-  edge.push(src.e);
-  if(chop.mode==='hit')edge.splice(0,edge.length,...chop.edges);
+  if(used&&!confirm('Se sustituirán '+used+(used===1?' sample':' samples')+(n>16?' (bancos '+BANKS[b0]+'–'+BANKS[(b0*16+n-1)>>4]+')':' del banco '+BANKS[b0])+'. ¿Continuar?'))return;
+  const gp=gapOf(src.buf),edge=[];
+  if(chop.mode===''){
+    edge.push(src.s);
+    for(let k=1;k<chop.n;k++){
+      const t=snap(src.s+(src.e-src.s)*k/chop.n);        // los cortes buscan el cruce por cero más cercano, para evitar clics
+      edge.push(Math.min(src.e-gp,Math.max(t,edge[k-1]+gp)));
+    }
+    edge.push(src.e);
+  }else edge.push(...chop.edges);
   const S={buf:src.buf,ch:src.ch,vol:src.vol,pitch:src.pitch,fine:src.fine,rev:src.rev,lofi:src.lofi,grade:src.grade,cut:src.cut,res:src.res,
     base:(src.name||'chop').replace(/\.[^.]+$/,'')};
+  const pw=n>99?3:2;
   targets.forEach((t,k)=>{
     stop(t);
-    Object.assign(pads[t],{buf:S.buf,name:S.base+' '+String(k+1).padStart(2,'0'),s:edge[k],e:edge[k+1],ch:S.ch,vol:S.vol,pitch:S.pitch,fine:S.fine,rev:S.rev,
-      lofi:S.lofi,grade:S.grade,cut:S.cut,res:S.res,loop:false,gate:false,grp:0,lockS:false,lockE:false,cache:null});
+    Object.assign(pads[t],{buf:S.buf,name:S.base+' '+String(k+1).padStart(pw,'0'),s:edge[k],e:edge[k+1],ch:S.ch,vol:S.vol,pitch:S.pitch,fine:S.fine,rev:S.rev,
+      lofi:S.lofi,grade:S.grade,cut:S.cut,res:S.res,loop:false,gate:false,grp:0,lockS:false,lockE:false,cache:null,cls:'',cm:0});
     labels(t);
   });
   chopOff();select(targets[0]);
-  status('Chop: '+n+' fragmentos en los pads 1-'+n+' del banco '+BANKS[b0]);
+  status('Chop: '+n+' fragmentos en los pads '+pl(targets[0])+'–'+pl(targets[n-1]));
 }
 $('#chopa').onclick=chopAssign;
 function pickH(p,t){   // marcador más cercano que no esté bloqueado
@@ -2450,6 +2499,11 @@ cv.addEventListener('pointerdown',e=>{
     pinch={dist:Math.max(10,Math.abs(a.x-c.x)),span,t:vw.a+(((a.x+c.x)/2-r.left)/r.width)*span};
     return;
   }
+  if(chop.on&&chop.n&&chop.pad===sel){
+    const p=pads[sel],r=cv.getBoundingClientRect();let bk=-1,bd=18;
+    for(let k=1;k<chop.n;k++){const d=Math.abs((chopEdge(p,k)-vw.a)/(vw.b-vw.a)*r.width-(e.clientX-r.left));if(d<bd){bd=d;bk=k}}
+    if(bk>0){gest={id:e.pointerId,x:e.clientX,y:e.clientY,edge:bk,moved:false,t0:performance.now()};return}
+  }
   gest={id:e.pointerId,x:e.clientX,y:e.clientY,t:tAt(e),lane:laneAt(e,b),moved:false,t0:performance.now()};
 });
 cv.addEventListener('pointermove',e=>{
@@ -2462,6 +2516,7 @@ cv.addEventListener('pointermove',e=>{
     return;
   }
   if(!gest||gest.id!==e.pointerId)return;
+  if(gest.edge!=null){if(Math.hypot(e.clientX-gest.x,e.clientY-gest.y)>=4||gest.dr)chopDrag(e);return}
   if(!gest.moved){
     if(Math.hypot(e.clientX-gest.x,e.clientY-gest.y)<8)return;
     beginDrag();
@@ -2471,6 +2526,7 @@ cv.addEventListener('pointermove',e=>{
 const up=e=>{
   const was=gest&&gest.id===e.pointerId?gest:null;
   ptrs.delete(e.pointerId);
+  if(was&&was.edge!=null){gest=null;chop.sel=was.edge;chopUI();draw();if(ptrs.size<2)pinch=null;return}
   if(was){
     gest=null;
     if(!was.moved&&e.type==='pointerup'){
@@ -2555,7 +2611,7 @@ async function kitList(pick){
   }catch{status('Los kits no están disponibles en este navegador')}
 }
 /* ---------- kits ---------- */
-const packMeta=p=>({name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,rv:p.rv||0,dl:p.dl||0,lockS:!!p.lockS,lockE:!!p.lockE,eq:p.eq?[...p.eq]:null,eqf:p.eqf?[...p.eqf]:null,norm:!!p.norm});
+const packMeta=p=>({name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,rv:p.rv||0,dl:p.dl||0,lockS:!!p.lockS,lockE:!!p.lockE,eq:p.eq?[...p.eq]:null,eqf:p.eqf?[...p.eqf]:null,norm:!!p.norm,cls:p.cls||'',cm:p.cm?1:0});
 function norm(d){
   const c=typeof d.ch==='number'?d.ch:0,r=d.rg?(d.rg[c]||d.rg[0]):d;
   return {...d,ch:c,s:d.s??r.s??0,e:d.e??r.e??1};
@@ -2569,7 +2625,7 @@ function applyKit(items){
   pads.forEach((p,i)=>{
     stop(i);resetPad(p);
     const d=items[i];
-    if(d)Object.assign(p,{buf:d.buf,name:d.name||'',s:d.s,e:d.e,ch:Math.min(d.ch||0,d.buf.numberOfChannels-1),vol:d.vol??1,pitch:d.pitch??0,fine:typeof d.fine==='number'?d.fine:0,rev:!!d.rev,loop:!!d.loop,gate:d.gate??!!d.loop,grp:d.grp===1||d.grp===2?d.grp:0,lofi:d.lofi??0,grade:d.grade??1,cut:d.cut??20000,res:d.res??0,rv:d.rv||0,dl:d.dl||0,lockS:!!d.lockS,lockE:!!d.lockE,eq:Array.isArray(d.eq)?d.eq.slice(0,8):null,eqf:Array.isArray(d.eqf)?d.eqf.slice(0,8):null,norm:!!d.norm});
+    if(d)Object.assign(p,{buf:d.buf,name:d.name||'',s:d.s,e:d.e,ch:Math.min(d.ch||0,d.buf.numberOfChannels-1),vol:d.vol??1,pitch:d.pitch??0,fine:typeof d.fine==='number'?d.fine:0,rev:!!d.rev,loop:!!d.loop,gate:d.gate??!!d.loop,grp:d.grp===1||d.grp===2?d.grp:0,lofi:d.lofi??0,grade:d.grade??1,cut:d.cut??20000,res:d.res??0,rv:d.rv||0,dl:d.dl||0,lockS:!!d.lockS,lockE:!!d.lockE,eq:Array.isArray(d.eq)?d.eq.slice(0,8):null,eqf:Array.isArray(d.eqf)?d.eqf.slice(0,8):null,norm:!!d.norm,cls:d.cls||'',cm:d.cm?1:0});
     labels(i);
   });
   const f=items.find(Boolean);
@@ -2883,7 +2939,7 @@ function doDup(from,to){
   if(from===to){status('Cancelado');return}
   if(pads[to].buf&&!confirm('El pad '+pl(to)+' ya tiene un sample. ¿Sustituirlo?'))return;
   stop(to);
-  Object.assign(pads[to],{buf:p.buf,name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,rv:p.rv||0,dl:p.dl||0,lockS:p.lockS,lockE:p.lockE,eq:p.eq?[...p.eq]:null,eqf:p.eqf?[...p.eqf]:null,norm:!!p.norm,cache:null});
+  Object.assign(pads[to],{buf:p.buf,name:p.name,s:p.s,e:p.e,ch:p.ch,vol:p.vol,pitch:p.pitch,rev:p.rev,loop:p.loop,gate:p.gate,grp:p.grp,fine:p.fine,lofi:p.lofi,grade:p.grade,cut:p.cut,res:p.res,rv:p.rv||0,dl:p.dl||0,lockS:p.lockS,lockE:p.lockE,eq:p.eq?[...p.eq]:null,eqf:p.eqf?[...p.eqf]:null,norm:!!p.norm,cls:p.cls||'',cm:p.cm?1:0,cache:null});
   labels(to);select(to);status('Duplicado en pad '+pl(to));
 }
 
@@ -3061,7 +3117,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.59';
+const APP_VERSION='1.60';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -4919,7 +4975,7 @@ const mt={pk:-90,hold:-90,ht:0,clip:false,buf:null};
 /* ---------- chop por golpes ---------- */
 function chopHits(p){   // cada fragmento empieza en un golpe; lo que haya antes del primero se descarta
   const b=p.buf,dur=b.duration,on=audioOnsets(b),a=p.s*dur,z=p.e*dur,gp=gapOf(b),ed=[];
-  on.filter(t=>t>=a-.005&&t<z-.03).slice(0,16).forEach(t=>{
+  on.filter(t=>t>=a-.005&&t<z-.03).forEach(t=>{
     const f=Math.max(p.s,snap(Math.max(a,t-.004)/dur));
     if(!ed.length||f>ed[ed.length-1]+gp)if(f<p.e-gp)ed.push(f);
   });
@@ -7384,7 +7440,7 @@ function cvQuant(on,step,bars){
   return {bpm:15/step,bars,sw:Math.round(Math.min(100,200*d)),dk:lm('k'),ds:lm('s'),dh:Math.abs(lm('h'))>=Math.abs(lm('o'))?lm('h'):lm('o'),j:Math.round(Math.min(.2,sd*1.7)*100)/100,pat,cycles:C,hits:on.length};
 }
 function cvApply(res,name){
-  if(G.play)gStop();
+  if(typeof cvStop==='function')cvStop();if(G.play)gStop();
   G.ts='4/4';G.bars=res.bars;G.bpm=Math.max(40,Math.min(240,Math.round(res.bpm)));G.sw=res.sw;G.sb=2;G.page=0;
   gResizeLocked();
   GDRUM.forEach(L=>{G.lock[L.id]=0;G.pat[L.id]=res.pat[L.id].slice()});
@@ -7411,7 +7467,7 @@ function cvOpen(){
     }catch(e){status('No se pudo analizar el audio')}
   },40);
 }
-function cvShow(an){
+function cvShow(an){if(typeof cvStop==='function')cvStop();
   let o=$('#cvt');if(!o){o=document.createElement('div');o.id='cvt';o.setAttribute('role','dialog');o.setAttribute('aria-label','Convertir audio en secuencia');document.body.append(o)}
   const D=an.on[an.on.length-1].t-an.on[0].t,st0=15/an.bpm,nb=D/(16*st0)+.1;
   const S={bpm:Math.round(an.bpm*10)/10,bars:nb>=3.5?4:nb>=1.7?2:1,res:null};
@@ -7421,7 +7477,7 @@ function cvShow(an){
 <label>Compases <select id="cvbars"><option>1</option><option>2</option><option>4</option></select></label></div>
 <div id="cvgrid"></div>
 <div class="cvi">Toca una celda para cambiarla: vacío → normal → acento → fantasma. El tempo se detecta solo; si sale a la mitad o al doble, usa ÷2 / ×2.</div>
-<div class="cvr"><button class="pri" id="cvap">Aplicar al generador</button><button id="cvsv">Aplicar y guardar estilo…</button><button id="cvx">Cancelar</button></div></div>`;
+<div class="cvr"><button id="cvpl">▶ Play</button><button class="pri" id="cvap">Aplicar al generador</button><button id="cvsv">Aplicar y guardar estilo…</button><button id="cvx">Cancelar</button></div></div>`;
   const q=id=>o.querySelector('#'+id);
   const NAMES={k:'Bombo',s:'Caja',h:'Hat cerr.',o:'Hat abierto'};
   function calc(){S.res=cvQuant(an.on,15/S.bpm,S.bars);draw()}
@@ -7446,7 +7502,8 @@ function cvShow(an){
   q('cvh').onclick=()=>{S.bpm=Math.max(40,Math.round(S.bpm/2*10)/10);calc()};
   q('cvd').onclick=()=>{S.bpm=Math.min(240,Math.round(S.bpm*2*10)/10);calc()};
   q('cvbars').onchange=()=>{S.bars=+q('cvbars').value;calc()};
-  q('cvx').onclick=()=>o.classList.remove('show');
+  q('cvx').onclick=()=>{cvStop();o.classList.remove('show')};
+  q('cvpl').onclick=()=>{if(cvPlayer){cvStop();return}cvPlayer=cvPlay(S,o,q('cvpl'))};
   q('cvap').onclick=()=>{cvApply(S.res,'Convertido');o.classList.remove('show');status('Aplicado: '+Math.round(S.bpm)+' BPM, swing '+S.res.sw+'%')};
   q('cvsv').onclick=()=>{const n=(prompt('Nombre del estilo',an.name)||'').trim().slice(0,40);if(!n)return;cvApply(S.res,n);o.classList.remove('show');status('Estilo guardado: '+n)};
   calc();o.classList.add('show');o.scrollTop=0;
@@ -7454,6 +7511,221 @@ function cvShow(an){
 if($('#gcvt'))$('#gcvt').onclick=cvOpen;
 
 Object.assign(I18N.x,{"＋ Afinación propia": "＋ Custom tuning", "✎ Editar": "✎ Edit", "Nombre de la afinación": "Tuning name", "＋ Cuerda": "＋ String", "− Cuerda": "− String", "Mis afinaciones": "My tunings", "Guardar": "Save", "Cancelar": "Cancel", "Borrar": "Delete", "Escenas": "Scenes", "Cargar": "Load", "Renombrar": "Rename", "Una escena guarda estilo, patrones, tempo y los sonidos y efectos de bajo y teclas. No guarda el audio de los huecos de batería.": "A scene stores style, patterns, tempo and the bass and keys sounds and effects. It does not store the drum slot audio.", "Audio → secuencia": "Audio → sequence", "Detecta los golpes de batería del pad seleccionado del Sampler y los convierte en un patrón con su tempo, groove y acentos.": "Detects the drum hits of the selected Sampler pad and turns them into a pattern with tempo, groove and accents.", "Convertir la batería del pad…": "Convert the pad's drums…", "(sin escenas guardadas)": "(no saved scenes)", "Escenas guardadas": "Saved scenes", "Nombre de la escena": "Scene name", "Nuevo nombre": "New name", "Escena guardada: ": "Scene saved: ", "Bajo: notas fantasma": "Bass: ghost notes", "Bajo: slides": "Bass: slides", "Detune lento": "Slow detune", "Cinta gastada": "Worn tape", "Audio → batería": "Audio → drums", "Compases": "Bars", "COMPÁS": "BAR", "Bombo": "Kick", "Caja": "Snare", "Hat cerr.": "Closed hat", "Hat abierto": "Open hat", "Toca una celda para cambiarla: vacío → normal → acento → fantasma. El tempo se detecta solo; si sale a la mitad o al doble, usa ÷2 / ×2.": "Tap a cell to change it: empty → normal → accent → ghost. The tempo is detected automatically; if it comes out at half or double, use ÷2 / ×2.", "Aplicar al generador": "Apply to generator", "Aplicar y guardar estilo…": "Apply and save style…", "Elige antes un pad con la batería a convertir": "First choose a pad with the drums to convert", "Analizando el pad…": "Analysing the pad…", "No encuentro suficientes golpes claros en este pad": "I can't find enough clear hits in this pad", "No se pudo analizar el audio": "Could not analyse the audio", "Nombre del estilo": "Style name", "Escena cargada: ": "Scene loaded: ", "No se pudo cargar la escena": "Could not load the scene", "Escena borrada": "Scene deleted", "No hay espacio para guardar la escena": "No space to save the scene"});Object.assign(I18N.f,{"Escena guardada: ": "Scene saved: ", "Escena cargada: ": "Scene loaded: ", "Estilo guardado: ": "Style saved: ", "Aplicado: ": "Applied: ", " golpes detectados": " hits detected", " repeticiones promediadas": " repeats averaged", "una sola vuelta": "a single pass", "swing ": "swing ", "¿Borrar la escena «": "Delete the scene «", "¿Borrar la afinación «": "Delete the tuning «", "Ya existe «": "Already exists «", "¿Sobrescribirla?": "Overwrite it?"});
+
+/* =================== 1.60 =================== */
+(function(){const c=document.createElement('style');c.textContent='.cvc i.cur{outline:2px solid #fff;outline-offset:-2px}';document.head.append(c)})();
+
+/* ---------- chopeo: cortes editables ---------- */
+function chopFreeze(p){
+  if(chop.mode!=='')return;
+  const e=[p.s];for(let k=1;k<chop.n;k++)e.push(p.s+(p.e-p.s)*k/chop.n);e.push(p.e);chop.edges=e;chop.mode='edit';
+}
+function chopDrag(e){
+  const p=pads[chop.pad];if(!p||!gest||gest.edge==null)return;
+  gest.dr=true;chopFreeze(p);
+  const k=gest.edge,gp=gapOf(p.buf),t=snap(tAt(e)),lo=chop.edges[k-1]+gp,hi=chop.edges[k+1]-gp;
+  chop.edges[k]=Math.max(lo,Math.min(hi,t));chop.mode='edit';chop.sel=k;
+  chopUI();draw();status('Corte '+k+' · '+(chop.edges[k]*p.buf.duration).toFixed(3)+' s');
+}
+$('#chopadd').onclick=()=>{
+  if(!chop.on||!chop.n)return;
+  const p=pads[chop.pad];chopFreeze(p);
+  const gp=gapOf(p.buf);let t=(vw.a+vw.b)/2;
+  if(t<=p.s||t>=p.e)t=(p.s+p.e)/2;
+  t=snap(t);
+  let k=chop.edges.findIndex(x=>x>t);if(k<1)k=chop.edges.length-1;
+  if(t-chop.edges[k-1]<gp||chop.edges[k]-t<gp){status('No cabe un corte ahí: acerca la vista a un hueco libre');return}
+  chop.edges.splice(k,0,t);chop.n=chop.edges.length-1;chop.sel=k;chop.mode='edit';
+  chopUI();draw();status('Corte añadido · '+chop.n+' fragmentos · arrástralo para colocarlo');
+};
+$('#chopdel').onclick=()=>{
+  if(!chop.on||!(chop.sel>0&&chop.sel<chop.n))return;
+  const p=pads[chop.pad];chopFreeze(p);
+  chop.edges.splice(chop.sel,1);chop.n=chop.edges.length-1;chop.sel=-1;chop.mode='edit';
+  chopUI();draw();status('Corte quitado · '+chop.n+' fragmentos');
+};
+$('#chopsens').oninput=()=>{
+  if(chop.mode!=='brk')return;clearTimeout(chop._t);
+  chop._t=setTimeout(()=>{const p=pads[chop.pad];if(p&&chopBreaks(p)){chop.n=chop.edges.length-1;chop.sel=-1;chopUI();draw();status('Breaks · '+chop.n+' fragmentos')}},120);
+};
+/* detección de cambios de break: novedad espectral (bandas logarítmicas, antes frente a después) */
+function chopBreaks(p){
+  const b=p.buf,sr=b.sampleRate,d=b.getChannelData(Math.min(p.ch,b.numberOfChannels-1));
+  const i0=Math.floor(p.s*d.length),i1=Math.floor(p.e*d.length),N=2048,H=1024,nf=Math.floor((i1-i0-N)/H);
+  if(nf<40)return false;
+  let mxa=1e-6;for(let i=i0;i<i1;i+=5){const v=Math.abs(d[i]);if(v>mxa)mxa=v}
+  const NB=24,fl=60,fh=Math.min(9000,sr*.45),bin=sr/N,bandOf=new Int16Array(N/2).fill(-1),cnt=new Float32Array(NB);
+  for(let k=1;k<N/2;k++){const f=k*bin;if(f>=fl&&f<fh){const q=Math.min(NB-1,Math.floor(Math.log(f/fl)/Math.log(fh/fl)*NB));bandOf[k]=q;cnt[q]++}}
+  const re=new Float32Array(N),im=new Float32Array(N),win=new Float32Array(N),S=[];
+  for(let i=0;i<N;i++)win[i]=.5-.5*Math.cos(2*Math.PI*i/N);
+  for(let t=0;t<nf;t++){
+    const o=i0+t*H;for(let i=0;i<N;i++){re[i]=d[o+i]/mxa*win[i];im[i]=0}
+    cvFFT(re,im);
+    const s=new Float32Array(NB);
+    for(let k=1;k<N/2;k++){const q=bandOf[k];if(q>=0)s[q]+=Math.sqrt(re[k]*re[k]+im[k]*im[k])/(N/2)}
+    for(let q=0;q<NB;q++)s[q]=Math.log(1+50*(cnt[q]?s[q]/cnt[q]:0));
+    S.push(s);
+  }
+  const ww=Math.max(4,Math.round(1.5*sr/H));if(nf<2*ww+4)return false;
+  const ps=Array.from({length:NB},()=>new Float64Array(nf+1));
+  for(let q=0;q<NB;q++)for(let t=0;t<nf;t++)ps[q][t+1]=ps[q][t]+S[t][q];
+  const nov=[];
+  for(let i=ww;i<nf-ww;i++){let s=0;for(let q=0;q<NB;q++){const a=(ps[q][i]-ps[q][i-ww])/ww,c=(ps[q][i+ww]-ps[q][i])/ww;s+=(a-c)*(a-c)}nov.push(Math.sqrt(s))}
+  const m=nov.reduce((x,y)=>x+y,0)/nov.length,sd=Math.sqrt(nov.reduce((x,y)=>x+(y-m)*(y-m),0)/nov.length);
+  const sens=+($('#chopsens')?$('#chopsens').value:5)||5,thr=m+(1.4-.13*sens)*sd,md=Math.round(2.5*sr/H);
+  const cand=[];
+  for(let j=1;j<nov.length-1;j++)if(nov[j]>=thr&&nov[j]>=nov[j-1]&&nov[j]>=nov[j+1])cand.push(j);
+  cand.sort((x,y)=>nov[y]-nov[x]);
+  const acc=[];cand.forEach(j=>{if(acc.every(a=>Math.abs(a-j)>=md))acc.push(j)});
+  acc.sort((x,y)=>x-y);
+  if(!acc.length)return false;
+  const on=audioOnsets(b),dur=b.duration,gp=gapOf(b),ed=[p.s];
+  acc.forEach(j=>{
+    let t=i0/sr+(j+ww)*H/sr+N/2/sr,bt=null,bd=.3;
+    on.forEach(o=>{const dd=Math.abs(o-t);if(dd<bd){bd=dd;bt=o}});
+    if(bt!=null)t=Math.max(0,bt-.004);
+    const f=snap(t/dur);
+    if(f>ed[ed.length-1]+gp*8&&f<p.e-gp*8)ed.push(f);
+  });
+  ed.push(p.e);
+  if(ed.length<3)return false;
+  chop.edges=ed;return true;
+}
+
+/* ---------- nombres y clase de sonido de los pads ---------- */
+const PCLS=['Kick','Snare','Clap','Hat','Open Hat','Cymbal','Tom','Rim','Perc','Bass','Vox','Loop','FX','Break'];
+(function(){const s=$('#padcls');if(!s)return;s.append(new Option('Clase…',''));PCLS.forEach(c=>s.append(new Option(c,c)))})();
+function nameUI(){
+  const p=pads[sel],i=$('#padnm'),s=$('#padcls');if(!i||!s)return;
+  i.value=p.name||'';i.disabled=!p.buf;s.disabled=!p.buf;s.value=PCLS.includes(p.cls)?p.cls:'';
+}
+function nextName(cls,skip){
+  const used=new Set();
+  pads.forEach((q,j)=>{if(j===skip||!q.buf)return;const m=(q.name||'').match(new RegExp('^'+cls+' (\\d+)$'));if(m)used.add(+m[1])});
+  let n=1;while(used.has(n))n++;return cls+' '+String(n).padStart(2,'0');
+}
+function padFeat(b){
+  const sr=b.sampleRate,d=b.getChannelData(0);let pk=0,mx=0;const lim=Math.min(d.length,sr*4);
+  for(let i=0;i<lim;i++){const v=Math.abs(d[i]);if(v>mx){mx=v;pk=i}}
+  if(mx<1e-4)return null;
+  const w=Math.max(8,Math.round(sr*.01));let em=0,last=0;const env=[];
+  for(let i=0;i+w<=lim;i+=w){let s=0;for(let j=0;j<w;j++)s+=d[i+j]*d[i+j];const r=Math.sqrt(s/w);env.push(r);if(r>em)em=r}
+  env.forEach((r,k)=>{if(r>em*.03)last=k});
+  const dur=(last+1)*w/sr,N=4096,re=new Float32Array(N),im=new Float32Array(N),st=Math.max(0,pk-Math.round(sr*.004));
+  for(let i=0;i<N;i++)re[i]=(d[st+i]||0)*(.5-.5*Math.cos(2*Math.PI*i/N));
+  cvFFT(re,im);
+  const bw=sr/N;let eL=0,eLM=0,eM=0,eH=0,sc=0,se=0,lg=0,am=0,cn=0,pf=0,pe=0;
+  for(let k=1;k<N/2;k++){
+    const f=k*bw,e=re[k]*re[k]+im[k]*im[k];
+    if(f<200)eL+=e;else if(f<800)eLM+=e;else if(f<4000)eM+=e;else eH+=e;
+    sc+=f*e;se+=e;
+    if(f>=200&&f<8000){lg+=Math.log(e+1e-12);am+=e;cn++}
+    if(f>=30&&f<600&&e>pe){pe=e;pf=f}
+  }
+  const tot=eL+eLM+eM+eH||1;
+  return {fL:eL/tot,fLM:eLM/tot,fM:eM/tot,fH:eH/tot,cent:sc/(se||1),flat:cn?Math.exp(lg/cn)/((am/cn)||1e-12):0,dur,pf};
+}
+function padClass(b){
+  const f=padFeat(b);if(!f)return 'Perc';
+  if(f.dur>3)return 'Loop';
+  if(f.fL>.5&&f.cent<600){if(f.dur>1.2)return 'Bass';return f.pf>=115&&f.dur>.25?'Tom':'Kick'}
+  if(f.fL+f.fLM>.3&&f.cent>1500&&f.dur>=.07&&f.dur<.8)return f.dur<.07?'Rim':'Snare';
+  if(f.fH>.55||f.cent>6000){if(f.dur<.22)return 'Hat';if(f.dur<1.1)return 'Open Hat';return 'Cymbal'}
+  if(f.cent<1400&&f.flat<.25&&f.dur>.12)return 'Tom';
+  if(f.flat>.15||f.cent>1500){if(f.dur<.07)return 'Rim';return f.fLM>.2?'Snare':'Clap'}
+  return f.fL+f.fLM>.6?'Tom':'Perc';
+}
+$('#padnm').oninput=e=>{const p=pads[sel];if(!p.buf)return;p.name=e.target.value.slice(0,32);labels(sel)};
+$('#padcls').onchange=e=>{
+  const p=pads[sel];if(!p.buf)return;const c=e.target.value;
+  if(!c){p.cls='';p.cm=0;status('Clase quitada');return}
+  p.cls=c;p.cm=1;p.name=nextName(c,sel);labels(sel);nameUI();status('Clase: '+c+' → '+p.name);
+};
+$('#padauto').onclick=()=>{
+  const idx=[];pads.forEach((p,i)=>{if(p.buf)idx.push(i)});
+  if(!idx.length){status('No hay pads con sonido');return}
+  if(!confirm('Se renombrarán '+idx.length+' pads según su tipo de sonido (Kick 01, Snare 01…). Los pads con clase elegida a mano la mantienen. ¿Continuar?'))return;
+  try{uCommit(true)}catch{}
+  const cnt={};
+  idx.forEach(i=>{
+    const p=pads[i];let c=p.cm&&PCLS.includes(p.cls)?p.cls:'';
+    if(!c){try{c=padClass(region(p))}catch{c='Perc'}}
+    p.cls=c;cnt[c]=(cnt[c]||0)+1;p.name=c+' '+String(cnt[c]).padStart(2,'0');labels(i);
+  });
+  nameUI();status('Kit nombrado: '+Object.entries(cnt).map(([k,v])=>v+' '+k).join(', '));
+};
+
+/* ---------- conversor: pre-escucha ---------- */
+let cvPlayer=null;
+function cvStop(){if(cvPlayer){cvPlayer.stop();cvPlayer=null}}
+const cvE={};
+function cvNoise(){if(!cvE.n){const b=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;cvE.n=b}return cvE.n}
+function cvSynth(l,t,v){
+  const c=ctx,E=cvE.o,a=Math.pow(Math.min(127,v)/127,1.3),g=c.createGain();g.connect(E.drum);
+  const nz=(hp,dec,vol)=>{const s=c.createBufferSource(),f=c.createBiquadFilter();s.buffer=cvNoise();f.type='highpass';f.frequency.value=hp;s.connect(f);f.connect(g);g.gain.setValueAtTime(a*vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dec);s.start(t);s.stop(t+dec+.02)};
+  if(l==='k'){const o=c.createOscillator();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(a,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g);o.start(t);o.stop(t+.32)}
+  else if(l==='s'){nz(1200,.16,.8);const o=c.createOscillator(),g2=c.createGain();o.frequency.value=190;g2.gain.setValueAtTime(a*.5,t);g2.gain.exponentialRampToValueAtTime(.001,t+.1);o.connect(g2);g2.connect(E.drum);o.start(t);o.stop(t+.12)}
+  else if(l==='h')nz(7000,.05,.5);else nz(7000,.35,.5);
+}
+function cvHit(l,si,t,v){
+  if(!cvE.o){const g=ctx.createGain();g.gain.value=.9;g.connect(ctx.destination);cvE.o={c:ctx,drum:g,open:null}}
+  const S=G.sl[si];let ok=false;
+  try{ok=!!(S&&gProc(S))}catch{}
+  if(ok)gHit(cvE.o,si,t,Math.min(127,v*1.2));else cvSynth(l,t,v*1.2);
+}
+function cvPlay(S,o,btn){
+  ctx.resume();
+  let i=0,nt=ctx.currentTime+.1,raf=0,alive=true;const queue=[];
+  const sched=()=>{
+    if(!alive||!S.res)return;
+    while(nt<ctx.currentTime+.2){
+      const r=S.res,L=16*S.bars,step=15/S.bpm;if(i>=L)i=0;
+      const off=(i%2?r.sw/200:0)*step;
+      [['k',0,r.dk],['s',1,r.ds],['h',2,r.dh],['o',3,r.dh]].forEach(([l,si,dm])=>{const v=r.pat[l][i];if(v)cvHit(l,si,Math.max(ctx.currentTime,nt+off+dm*step),v)});
+      queue.push({t:nt,i});nt+=step;i++;
+    }
+  };
+  const timer=setInterval(sched,25);sched();
+  const paint=()=>{
+    if(!alive)return;
+    let cur=-1;while(queue.length&&queue[0].t<=ctx.currentTime){cur=queue.shift().i}
+    if(cur>=0){
+      o.querySelectorAll('.cur').forEach(x=>x.classList.remove('cur'));
+      const rows=o.querySelectorAll('.cvbar'),bar=cur>>4,col=cur&15;
+      for(let r=0;r<4;r++){const row=rows[bar*4+r];if(row){const c=row.querySelector('.cvc').children[col];if(c)c.classList.add('cur')}}
+    }
+    raf=requestAnimationFrame(paint);
+  };
+  raf=requestAnimationFrame(paint);btn.textContent='■ Stop';
+  return {stop(){alive=false;clearInterval(timer);cancelAnimationFrame(raf);o.querySelectorAll('.cur').forEach(x=>x.classList.remove('cur'));btn.textContent='▶ Play'}};
+}
+
+/* ---------- grabar el audio del sistema / de una pestaña ---------- */
+if($('#recsys'))$('#recsys').onclick=async()=>{
+  ctx.resume();
+  if(rec){rec.stop();return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){status('Este navegador no puede capturar el audio del sistema: graba la pantalla y usa Importar');return}
+  try{
+    const st=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    const at=st.getAudioTracks();st.getVideoTracks().forEach(t=>t.stop());
+    if(!at.length){st.getTracks().forEach(t=>t.stop());status('No se compartió audio: elige una pestaña y marca «Compartir audio de la pestaña»');return}
+    const mr=new MediaRecorder(new MediaStream(at)),chunks=[];
+    mr.ondataavailable=e=>chunks.push(e.data);
+    mr.onstop=async()=>{
+      at.forEach(t=>t.stop());rec=null;
+      $('#rec').classList.remove('live');$('#rec').textContent='Grabar';$('#recsys').textContent='Grabar audio del sistema';
+      try{loadSource(await ctx.decodeAudioData(await new Blob(chunks,{type:mr.mimeType}).arrayBuffer()),'Audio del sistema')}
+      catch{status('No se pudo procesar la grabación')}
+    };
+    at[0].onended=()=>{if(rec===mr&&mr.state!=='inactive')mr.stop()};
+    mr.start();rec=mr;
+    $('#rec').classList.add('live');$('#rec').textContent='Detener';$('#recsys').textContent='Detener';status('Grabando el audio del sistema…');
+    try{$('#sheet').hidden=true}catch{}
+  }catch(err){status(err&&err.name==='NotAllowedError'?'Captura cancelada':'No se pudo capturar el audio: '+(err.name||err.message))}
+};
+try{nameUI()}catch{}
+
+Object.assign(I18N.x,{"＋ Corte": "＋ Cut", "− Corte": "− Cut", "Sensibilidad": "Sensitivity", "Nombre del pad": "Pad name", "Clase de sonido del pad": "Pad sound class", "Clase…": "Class…", "Nombrar kit": "Name kit", "▶ Play": "▶ Play", "Grabar audio de otra pestaña o app": "Record audio from another tab or app", "Grabar audio del sistema": "Record system audio", "Detener": "Stop", "Sin pads vacíos: vaciar uno primero": "No empty pads: clear one first", "Clase quitada": "Class removed", "No hay pads con sonido": "No pads with sound", "Buscando los cambios de break…": "Looking for break changes…", "No encuentro cambios de break: 16 partes iguales": "No break changes found: 16 equal parts", "No cabe un corte ahí: acerca la vista a un hueco libre": "No room for a cut there: zoom in to a free spot", "Este navegador no puede capturar el audio del sistema: graba la pantalla y usa Importar": "This browser cannot capture system audio: record the screen and use Import", "No se compartió audio: elige una pestaña y marca «Compartir audio de la pestaña»": "No audio shared: choose a tab and tick «Share tab audio»", "Grabando el audio del sistema…": "Recording system audio…", "Captura cancelada": "Capture cancelled"});Object.assign(I18N.f,{"Chop por breaks · ": "Chop by breaks · ", " fragmentos · ajusta la sensibilidad o edita los cortes": " slices · adjust the sensitivity or edit the cuts", " fragmentos · se pueden editar": " slices · editable", "Corte ": "Cut ", "Corte añadido · ": "Cut added · ", " fragmentos · arrástralo para colocarlo": " slices · drag it to place it", "Corte quitado · ": "Cut removed · ", "Breaks · ": "Breaks · ", "Editado · ": "Edited · ", "Clase: ": "Class: ", "Kit nombrado: ": "Kit named: ", "Se renombrarán ": "These pads will be renamed: ", " pads según su tipo de sonido (Kick 01, Snare 01…). Los pads con clase elegida a mano la mantienen. ¿Continuar?": " pads by sound type (Kick 01, Snare 01…). Pads with a hand-picked class keep it. Continue?", "Chop: ": "Chop: ", " fragmentos en los pads ": " slices in pads ", "No se pudo capturar el audio: ": "Could not capture audio: "});
 
 ksUI();
 select(0);status('Listo');
