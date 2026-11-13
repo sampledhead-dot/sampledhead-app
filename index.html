@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.62</title>
+<title>SampledHeadApp 1.63</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1072,6 +1072,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Looper → Enviar a CrazyHead</b>: manda cada pista con contenido como un loop (hasta 4: A–D), con su BPM.</li>
 <li><b>Generador → Enviar a CrazyHead</b>: manda batería, bajo y teclas como loops separados (según «Qué exportar»), con el BPM del generador.</li>
 <li><b>Menú → CrazyHead → Enviar pad a CrazyHead</b>: manda el break o sample del pad seleccionado (su región).</li>
+<li><b>Menú → Recoger de CrazyHead</b>: carga en pads libres lo que mande CrazyHead (mezcla, loops o cortes como kit; los cortes de cada loop van al banco A–D). Después puedes exportar el kit a MPC, Move, SP-404, Koala o Ableton como siempre. Los loops del Looper viajan con sus <b>cortes exactos</b>, así CrazyHead no tiene que detectarlos.</li>
 <li>La primera vez te pide la dirección de CrazyHead (se recuerda; si abres antes CrazyHead una vez, se guarda sola). Al abrirse, CrazyHead pregunta si cargar el audio en A–D.</li></ul>
 </details>
 <details><summary>31. Novedades de la 1.60</summary>
@@ -1165,7 +1166,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>40. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.62</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.63</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1290,6 +1291,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Looper → Send to CrazyHead</b>: sends each track with content as a loop (up to 4: A–D), with its BPM.</li>
 <li><b>Generator → Send to CrazyHead</b>: sends drums, bass and keys as separate loops (according to «What to export»), with the generator BPM.</li>
 <li><b>Menu → CrazyHead → Send pad to CrazyHead</b>: sends the break or sample of the selected pad (its region).</li>
+<li><b>Menu → Pick up from CrazyHead</b>: loads into free pads what CrazyHead sends (mix, loops or cuts as a kit; each loop's cuts go to bank A–D). You can then export the kit to MPC, Move, SP-404, Koala or Ableton as usual. Looper loops travel with their <b>exact cuts</b>, so CrazyHead does not have to detect them.</li>
 <li>The first time it asks for CrazyHead's address (remembered; if you open CrazyHead once first, it saves itself). When it opens, CrazyHead asks whether to load the audio into A–D.</li></ul>
 </details>
 <details><summary>31. What is new in 1.60</summary>
@@ -1383,7 +1385,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>40. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.62</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.63</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1424,6 +1426,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
   <div class="kit"><button id="opened">Abrir editor</button></div>
   <b>CrazyHead</b>
   <div class="kit files"><button id="tocrz">Enviar pad a CrazyHead</button><button id="opencrz">Abrir CrazyHead</button></div>
+  <div class="kit files"><button id="fromcrz" style="grid-column:1/-1">Recoger de CrazyHead</button></div>
   <div class="note" id="brinfo"></div>
   <div class="kit"><button id="pwainst" hidden>Instalar app</button></div>
   <div class="note" id="pwainfo"></div>
@@ -2061,7 +2064,7 @@ async function crzSend(items,what){
   if(!items.length){status('No hay nada que enviar');return}
   const send=items.slice(0,4);
   try{
-    const out=send.map(it=>({name:it.name,wav:wav(it.buf).buffer,sr:it.buf.sampleRate,secs:it.buf.duration,bpm:it.bpm||0,bars:it.bars||crzBars(it.buf.duration,it.bpm)}));
+    const out=send.map(it=>({name:it.name,wav:wav(it.buf).buffer,sr:it.buf.sampleRate,secs:it.buf.duration,cuts:it.cuts||null,bpm:it.bpm||0,bars:it.bars||crzBars(it.buf.duration,it.bpm)}));
     await BR.set('toCrazyHead',{ts:Date.now(),items:out});
     status('Enviado a CrazyHead: '+(what||'')+' · '+out.length+(out.length===1?' loop':' loops')+(items.length>4?' ('+(items.length-4)+' de más sin enviar)':''));
     menu(false);await crzOpen();
@@ -2075,6 +2078,42 @@ $('#tocrz').onclick=()=>{
   crzSend([{name:p.name||'Pad '+(sel+1),buf:out}],'pad');
 };
 $('#opencrz').onclick=()=>{crzOpen();menu(false)};
+/* 1.63: marcas de corte exactas (momentos en que se tocó cada golpe) para que CrazyHead no tenga que detectarlas */
+function lpCuts(trk,dur){
+  const t=lp.ev.filter(e=>e.k==='h'&&e.i<64&&(trk==null?lpAud(e.trk):e.trk===trk)&&e.t>=0&&e.t<dur).map(e=>e.t).sort((a,b)=>a-b),o=[];
+  for(const x of t)if(!o.length||x-o[o.length-1]>.02)o.push(x);
+  return o.length>1?o:null;
+}
+/* 1.63: recoger lo que manda CrazyHead (clave 'fromCrazyHead': {ts,kind,items:[{name,wav,pad}]}) */
+let crzPicking=false;
+async function crzPick(auto){
+  if(crzPicking)return;
+  let it=null;try{it=await BR.get('fromCrazyHead')}catch{}
+  if(!it||!Array.isArray(it.items)||!it.items.length){if(!auto)status('CrazyHead no ha mandado nada todavía');return}
+  crzPicking=true;
+  try{
+    ctx.resume();let n=0,skip=0,big=null,bigN=0;
+    for(const x of it.items){
+      const buf=await ctx.decodeAudioData(x.wav.slice(0)),nm=(x.name||'CrazyHead').replace(/\.[^.]+$/,'');
+      if(buf.duration>10){big={buf,nm};bigN++;continue}
+      const i=nextEmpty(x.pad>=0?x.pad:sel);
+      if(i<0){skip++;continue}
+      Object.assign(pads[i],{buf,name:nm,s:0,e:1,ch:0,cache:null});labels(i);n++;
+    }
+    await BR.del('fromCrazyHead');
+    if(big)loadSource(big.buf,big.nm);
+    status('Recogido de CrazyHead: '+n+' pads'+(big?' + '+bigN+(bigN>1?' largos (>10 s): solo el último en el editor':' largo (>10 s) en el editor, arrastra para marcar'):'')+(skip?' ('+skip+' sin sitio)':''));
+  }catch{status('No se pudo leer el audio de CrazyHead')}
+  crzPicking=false;
+}
+$('#fromcrz').onclick=()=>{crzPick(false);menu(false)};
+async function crzCheck(){
+  try{const it=await BR.get('fromCrazyHead');if(!it)return;
+    if(Date.now()-(it.ts||0)<600000)crzPick(true);
+    else status('Hay sonidos de CrazyHead: Más → Recoger de CrazyHead');
+  }catch{}
+}
+setTimeout(crzCheck,1800);document.addEventListener('visibilitychange',()=>{if(!document.hidden)crzCheck()});
 $('#lptocrz').onclick=async()=>{
   if(lpBusy||!lp.len||!lp.ev.length){status('Grabar un bucle primero');return}
   let list=[0,1,2,3].filter(lpHas);
@@ -2083,7 +2122,7 @@ $('#lptocrz').onclick=async()=>{
   lpBusy=true;lpUI();status('Preparando…');
   try{
     const bpm=lpBpm(),items=[];
-    for(const tr of list){const r=await lpRender(tr);items.push({name:lpNameOf(tr,lpBpmTxt(),'Looper'),buf:r.buf,bpm})}
+    for(const tr of list){const r=await lpRender(tr);items.push({name:lpNameOf(tr,lpBpmTxt(),'Looper'),buf:r.buf,bpm,cuts:lpCuts(tr,r.buf.duration)})}
     await crzSend(items,'Looper');
   }catch{status('No se pudo enviar a CrazyHead')}
   lpBusy=false;lpUI();
@@ -3197,7 +3236,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.62';
+const APP_VERSION='1.63';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -6376,6 +6415,10 @@ function setLang(l,save){
 {const bx={'Dirección del editor (solo se pide una vez; abre antes el editor 1.16 para que se guarde sola):':'Editor address (asked only once; open editor 1.16 first so it is saved automatically):','Dirección no válida':'Invalid address','El editor no ha mandado nada todavía':'The editor has not sent anything yet','Elige un pad con sonido':'Choose a pad with sound','No se pudo enviar al editor':'Could not send to the editor','No se pudo leer el audio del editor':'Could not read the audio from the editor'};
 const bf={'Enviado al editor: ':'Sent to the editor: ','Recogido del editor: ':'Picked up from the editor: ','Hay un audio del editor («':'There is audio from the editor («','»): Más → Recoger del editor':'»): Menu → Pick up from editor'};
 Object.assign(I18N.x,bx);Object.assign(I18N.f,bf);I18N_FK.push(...Object.keys(bf));I18N_FK.sort((a,b)=>b.length-a.length);}
+/* v1.63 */
+{const bx={'Recoger de CrazyHead':'Pick up from CrazyHead','CrazyHead no ha mandado nada todavía':'CrazyHead has not sent anything yet','No se pudo leer el audio de CrazyHead':'Could not read the audio from CrazyHead','Hay sonidos de CrazyHead: Más → Recoger de CrazyHead':'There are sounds from CrazyHead: More → Pick up from CrazyHead'};
+const bf={'Recogido de CrazyHead: ':'Picked up from CrazyHead: ',' largos (>10 s): solo el último en el editor':' long (>10 s): only the last one in the editor',' largo (>10 s) en el editor, arrastra para marcar':' long (>10 s) in the editor, drag to mark',' sin sitio)':' no room)'};
+for(const k in bx)if(!(k in I18N.x))I18N.x[k]=bx[k];Object.assign(I18N.f,bf);I18N_FK.push(...Object.keys(bf));I18N_FK.sort((a,b)=>b.length-a.length);}
 /* v1.62: CrazyHead */
 {const bx={'CrazyHead':'CrazyHead','Enviar pad a CrazyHead':'Send pad to CrazyHead','Abrir CrazyHead':'Open CrazyHead','Enviar a CrazyHead':'Send to CrazyHead','Enviar las pistas del Looper a CrazyHead':'Send the Looper tracks to CrazyHead','Dirección de CrazyHead (solo se pide una vez; abre antes CrazyHead para que se guarde sola):':'CrazyHead address (asked only once; open CrazyHead first so it is saved automatically):','No se pudo enviar a CrazyHead':'Could not send to CrazyHead','No hay nada que enviar':'Nothing to send','Preparando…':'Preparing…','Batería':'Drums','Teclas':'Keys'};
 const bf={'Enviado a CrazyHead: ':'Sent to CrazyHead: ',' de más sin enviar)':' extra not sent)'};
