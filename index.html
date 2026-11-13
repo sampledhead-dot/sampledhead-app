@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.63</title>
+<title>SampledHeadApp 1.64</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1166,7 +1166,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>40. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.63</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.64</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1385,7 +1385,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>40. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.63</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.64</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -2789,14 +2789,15 @@ const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(
 const crc32=u=>{let c=-1;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(c^-1)>>>0};
 function zip(files){
   const enc=new TextEncoder(),parts=[],cd=[];let off=0,size=0;
+  const nw=new Date(),dT=(nw.getHours()<<11)|(nw.getMinutes()<<5)|(nw.getSeconds()>>1),dD=((nw.getFullYear()-1980)<<9)|((nw.getMonth()+1)<<5)|nw.getDate();
   for(const f of files){
-    const n=enc.encode(f.name),crc=crc32(f.data),len=f.data.length;
+    const n=enc.encode(f.name),crc=crc32(f.data),len=f.data.length,fl=n.length===f.name.length?0:0x0800;
     const h=new DataView(new ArrayBuffer(30));
-    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,fl,true);h.setUint16(10,dT,true);h.setUint16(12,dD,true);
     h.setUint32(14,crc,true);h.setUint32(18,len,true);h.setUint32(22,len,true);h.setUint16(26,n.length,true);
     parts.push(h,n,f.data);
     const c=new DataView(new ArrayBuffer(46));
-    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,fl,true);c.setUint16(12,dT,true);c.setUint16(14,dD,true);
     c.setUint32(16,crc,true);c.setUint32(20,len,true);c.setUint32(24,len,true);c.setUint16(28,n.length,true);c.setUint32(42,off,true);
     cd.push(c,n);size+=46+n.length;off+=30+n.length+len;
   }
@@ -3236,7 +3237,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.63';
+const APP_VERSION='1.64';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -4588,6 +4589,29 @@ function sxReadme(items){
     '3. Los pads sin uso quedan vacíos.',
     'Reparto seguido: pads 1–12 al banco A, 13–24 al B, etc. (12 pads por banco).','Pads que se exportan:',...rows,''].join('\r\n'));
 }
+/* 1.64: tipos numéricos y esquema como en los sets reales de Move (0.0 = float, 0 = entero; schema 1.8.0, sin timeSignature) */
+const MV_FLT=new Set("AllPassGain,AllPassSize,Amount,Attack,BandFreq,BandWidth,BaseDrive,BassShaperThreshold,Ceiling,CenterFrequency,ColorDepth,ColorFrequency,ColorWidth,CyclingEnvelope_Hold,CyclingEnvelope_MidPoint,CyclingEnvelope_Rate,CyclingEnvelope_Ratio,CyclingEnvelope_Time,DecayTime,DelayLine_OffsetL,DelayLine_OffsetR,DelayLine_PingPongDelayTimeL,DelayLine_PingPongDelayTimeR,DelayLine_SimpleDelayTimeL,DelayLine_SimpleDelayTimeR,DelayLine_TimeL,DelayLine_TimeR,DiffuseDelay,DoublerDelayTime,DryWet,EarlyReflectModDepth,EarlyReflectModFreq,Effect_EightBitFilterDecay,Effect_EightBitResamplingRate,Effect_FmAmount,Effect_FmFrequency,Effect_LoopLength,Effect_LoopOffset,Effect_NoiseAmount,Effect_NoiseFrequency,Effect_PitchEnvelopeAmount,Effect_PitchEnvelopeDecay,Effect_PunchAmount,Effect_PunchTime,Effect_RingModAmount,Effect_RingModFrequency,Effect_StretchFactor,Effect_StretchGrainSize,Effect_SubOscAmount,Effect_SubOscFrequency,Envelope1_Attack,Envelope1_Decay,Envelope1_Release,Envelope1_Sustain,Envelope2_Attack,Envelope2_Decay,Envelope2_Release,Envelope2_Sustain,Envelope_Amount,Envelope_Attack,Envelope_Release,ExpansionRatio,Feedback,Filter_Bandwidth,Filter_DjControl,Filter_Drive,Filter_Frequency,Filter_HiPassFrequency,Filter_ModAmount1,Filter_ModAmount2,Filter_Morph,Filter_Resonance,Filter_Tracking,Filter_VowelFormant,FlangerDelayTime,Gain,Global_DriftDepth,Global_Glide,Global_MonoVoiceDepth,Global_PolyVoiceDepth,Global_StereoVoiceDepth,Global_UnisonVoiceDepth,Global_VolVelMod,Global_Volume,HighShelfGain,HighpassFrequency,InternalSideChainGain,Jitter,Knee,Lfo_Amount,Lfo_Frequency,Lfo_ModAmount,Lfo_Morph,Lfo_Phase,Lfo_PhaseOffset,Lfo_Rate,Lfo_Ratio,Lfo_Smoothing,Lfo_Spin,Lfo_Time,LinkAmount,LinkAmountMidSide,LowShelfGain,Macro0,Macro1,Macro2,Macro3,Macro4,Macro5,Macro6,Macro7,MaximizeOutput,MaximizeThreshold,MidFrequency,MidGain,MixDiffuse,MixDirect,MixReflect,Mixer_NoiseLevel,Mixer_OscillatorGain1,Mixer_OscillatorGain2,ModulationBlend,ModulationMatrix_Amount1,ModulationMatrix_Amount2,ModulationMatrix_Amount3,Modulation_Amount,Modulation_AmountFilter,Modulation_AmountTime,Modulation_DutyCycle,Modulation_EnvelopeAmount,Modulation_EnvelopeAttack,Modulation_EnvelopeRelease,Modulation_Frequency,Modulation_Frequency2,Modulation_LfoBlend,Modulation_PhaseOffset,Modulation_Spin,Oscillator1_Shape,Oscillator1_ShapeMod,Oscillator2_Detune,Output,OutputGain,Pan,PitchModulation_Amount1,PitchModulation_Amount2,PostDrive,PostFilterValue,PreDelay,PreDrive,QuantizerShape,Rate,Ratio,Release,RoomSize,SafeBassFrequency,SampleRate,Shaping,ShelfHiFreq,ShelfHiGain,ShelfLoFreq,ShelfLoGain,SideChainEq_Freq,SideChainEq_Gain,SideChainEq_Q,SizeModDepth,SizeModFreq,Spread,StereoSeparation,VibratoOffset,Voice_AmplitudeEnvelope_Attack,Voice_AmplitudeEnvelope_Decay,Voice_AmplitudeEnvelope_Release,Voice_AmplitudeEnvelope_Sustain,Voice_Detune,Voice_Envelope_Attack,Voice_Envelope_Decay,Voice_Envelope_Hold,Voice_Filter1_Drive,Voice_Filter1_Frequency,Voice_Filter1_Morph,Voice_Filter1_Resonance,Voice_Filter2_Drive,Voice_Filter2_Frequency,Voice_Filter2_Morph,Voice_Filter2_Resonance,Voice_FilterEnvelope_Attack,Voice_FilterEnvelope_Decay,Voice_FilterEnvelope_Release,Voice_FilterEnvelope_Sustain,Voice_Filter_Frequency,Voice_Filter_FrequencyModulationAmounts_LfoAmount,Voice_Filter_PeakGain,Voice_Filter_Resonance,Voice_Gain,Voice_Global_Glide,Voice_Lfo_Rate,Voice_ModulationAmount,Voice_Modulators_Amount,Voice_Modulators_AmpEnvelope_Slopes_Attack,Voice_Modulators_AmpEnvelope_Slopes_Decay,Voice_Modulators_AmpEnvelope_Slopes_Release,Voice_Modulators_AmpEnvelope_Sustain,Voice_Modulators_AmpEnvelope_Times_Attack,Voice_Modulators_AmpEnvelope_Times_Decay,Voice_Modulators_AmpEnvelope_Times_Release,Voice_Modulators_Envelope2_Slopes_Attack,Voice_Modulators_Envelope2_Slopes_Decay,Voice_Modulators_Envelope2_Slopes_Release,Voice_Modulators_Envelope2_Times_Attack,Voice_Modulators_Envelope2_Times_Decay,Voice_Modulators_Envelope2_Times_Release,Voice_Modulators_Envelope2_Values_Final,Voice_Modulators_Envelope2_Values_Initial,Voice_Modulators_Envelope2_Values_Peak,Voice_Modulators_Envelope2_Values_Sustain,Voice_Modulators_Envelope3_Slopes_Attack,Voice_Modulators_Envelope3_Slopes_Decay,Voice_Modulators_Envelope3_Slopes_Release,Voice_Modulators_Envelope3_Times_Attack,Voice_Modulators_Envelope3_Times_Decay,Voice_Modulators_Envelope3_Times_Release,Voice_Modulators_Envelope3_Values_Final,Voice_Modulators_Envelope3_Values_Initial,Voice_Modulators_Envelope3_Values_Peak,Voice_Modulators_Envelope3_Values_Sustain,Voice_Modulators_Lfo1_Shape_Amount,Voice_Modulators_Lfo1_Shape_PhaseOffset,Voice_Modulators_Lfo1_Shape_Shaping,Voice_Modulators_Lfo1_Time_AttackTime,Voice_Modulators_Lfo1_Time_Rate,Voice_Modulators_Lfo2_Shape_Amount,Voice_Modulators_Lfo2_Shape_PhaseOffset,Voice_Modulators_Lfo2_Shape_Shaping,Voice_Modulators_Lfo2_Time_AttackTime,Voice_Modulators_Lfo2_Time_Rate,Voice_Modulators_TimeScale,Voice_Oscillator1_Effects_Effect1,Voice_Oscillator1_Effects_Effect2,Voice_Oscillator1_Gain,Voice_Oscillator1_Pan,Voice_Oscillator1_Pitch_Detune,Voice_Oscillator1_Wavetables_WavePosition,Voice_Oscillator2_Effects_Effect1,Voice_Oscillator2_Effects_Effect2,Voice_Oscillator2_Gain,Voice_Oscillator2_Pan,Voice_Oscillator2_Pitch_Detune,Voice_Oscillator2_Wavetables_WavePosition,Voice_PlaybackLength,Voice_PlaybackStart,Voice_SubOscillator_Gain,Voice_SubOscillator_Tone,Voice_Unison_Amount,Voice_VelocityToVolume,Volume,Warmth,Width,WsCurve,WsDamp,WsDepth,WsDrive,WsLin,WsPeriod,amount,duration,end,globalGrooveAmount,offVelocity,pan,rangeMax,rangeMin,start,startTime,stepEditorScrollPosition,tempo,time,velocity,volume".split(','));
+const MV_INT=new Set("BitDepth,CyclingEnvelope_SyncedRate,Envelope_SahRate,Filter_VowelPitch,Global_PitchBendRange,Global_SerialNumber,Global_Transpose,Lfo_SahRate,Lfo_Sixteenth,Lfo_Steps,Lfo_SyncedRate,Modulation_SyncedRate2,Notches,Oscillator1_Transpose,Oscillator2_Transpose,Voice_Filter_FrequencyModulationAmounts_EnvelopeAmount,Voice_Global_Transpose,Voice_Modulators_Lfo1_Time_SyncedRate,Voice_Modulators_Lfo2_Time_SyncedRate,Voice_Oscillator1_Pitch_Transpose,Voice_Oscillator2_Pitch_Transpose,Voice_Transpose,Voice_Unison_VoiceCount,chokeGroup,color,grooveId,id,lockId,lockSeal,macroIndex,noteNumber,parameterId,receivingNote,sendingNote,rootNote,uiOctaveIndex".split(','));
+function mvFix(set){
+  set['$schema']='http://tech.ableton.com/schema/song/1.8.0/song.json';delete set.timeSignature;
+  set.tracks.forEach(t=>{const d=t.devices&&t.devices[0];if(d&&d.presetUri&&/Templates/.test(d.presetUri))d.presetUri='ableton:/packs/abl-core-library/Track%20Presets/Drums/Electronic/Caption%20Kit.json'});
+  (function w(o){if(Array.isArray(o))return o.forEach(w);if(o&&typeof o==='object'){
+    for(const k of Object.keys(o)){const v=o[k];
+      if(/^Effect_(LoopOffset|NoiseFrequency|PitchEnvelopeDecay|RingModFrequency|SubOscFrequency)$/.test(k)&&v&&typeof v==='object'&&'value' in v)o[k]=v.value;
+      else w(v)}}})(set);
+}
+function mvJson(o,ind,pk){
+  const sp='  '.repeat(ind),sp2='  '.repeat(ind+1);
+  if(o===null||o===undefined)return 'null';
+  if(typeof o==='number'){
+    const fl=MV_FLT.has(pk)||((pk==='value'||pk==='presetValue')&&!MV_INT.has(arguments[3]));
+    if(!isFinite(o))return '0.0';
+    let t=String(o);if(fl&&/^-?\d+$/.test(t))t+='.0';return t}
+  if(typeof o==='string'||typeof o==='boolean')return JSON.stringify(o);
+  if(Array.isArray(o)){if(!o.length)return '[]';return '[\n'+o.map(v=>sp2+mvJson(v,ind+1,pk,arguments[3])).join(',\n')+'\n'+sp+']'}
+  const ks=Object.keys(o);if(!ks.length)return '{}';
+  return '{\n'+ks.map(k=>sp2+JSON.stringify(k)+': '+mvJson(o[k],ind+1,k,pk)).join(',\n')+'\n'+sp+'}';
+}
 /* ---------- Ableton Move: set (.ablbundle) con una Drum Rack de 16 celdas ---------- */
 function moveBundle(items,name,tempo){
   const s=JSON.parse(JSON.stringify(MOVE_TPL));
@@ -4600,10 +4624,11 @@ function moveBundle(items,name,tempo){
     if(it){const d=JSON.parse(JSON.stringify(cellS));d.deviceData={sampleUri:'Samples/'+encodeURIComponent(it.file)};c.devices[0]=d;c.drumZoneSettings.chokeGroup=it.grp?it.grp:null;uris['Samples/'+encodeURIComponent(it.file)]='ableton:/user-library/Samples/SampledHead/'+encodeURIComponent(it.file)}
     else{const d=JSON.parse(JSON.stringify(cellE));d.deviceData={sampleUri:null};c.devices[0]=d;c.drumZoneSettings.chokeGroup=null}
   });
+  mvFix(s);
   const enc=new TextEncoder();
-  return zip([{name:'BundleInfo.json',data:enc.encode(JSON.stringify({originalSampleUris:uris},null,2))},
-    {name:'Song.abl',data:enc.encode(JSON.stringify(s,null,2))},
-    ...items.map(it=>({name:'Samples/'+it.file,data:it.data}))]);
+  return zip([...items.map(it=>({name:'Samples/'+it.file,data:it.data})),
+    {name:'Song.abl',data:enc.encode(mvJson(s,0,''))},
+    {name:'BundleInfo.json',data:enc.encode(JSON.stringify({originalSampleUris:uris},null,2))}]);
 }
 async function moveExport(src){
   const bs=src==='bass',ks=src==='keys';
@@ -6415,7 +6440,7 @@ function setLang(l,save){
 {const bx={'Dirección del editor (solo se pide una vez; abre antes el editor 1.16 para que se guarde sola):':'Editor address (asked only once; open editor 1.16 first so it is saved automatically):','Dirección no válida':'Invalid address','El editor no ha mandado nada todavía':'The editor has not sent anything yet','Elige un pad con sonido':'Choose a pad with sound','No se pudo enviar al editor':'Could not send to the editor','No se pudo leer el audio del editor':'Could not read the audio from the editor'};
 const bf={'Enviado al editor: ':'Sent to the editor: ','Recogido del editor: ':'Picked up from the editor: ','Hay un audio del editor («':'There is audio from the editor («','»): Más → Recoger del editor':'»): Menu → Pick up from editor'};
 Object.assign(I18N.x,bx);Object.assign(I18N.f,bf);I18N_FK.push(...Object.keys(bf));I18N_FK.sort((a,b)=>b.length-a.length);}
-/* v1.63 */
+/* v1.64: Move con tipos/esquema de los sets reales (probado en CrazyHead 1.8.6), zip con fecha */
 {const bx={'Recoger de CrazyHead':'Pick up from CrazyHead','CrazyHead no ha mandado nada todavía':'CrazyHead has not sent anything yet','No se pudo leer el audio de CrazyHead':'Could not read the audio from CrazyHead','Hay sonidos de CrazyHead: Más → Recoger de CrazyHead':'There are sounds from CrazyHead: More → Pick up from CrazyHead'};
 const bf={'Recogido de CrazyHead: ':'Picked up from CrazyHead: ',' largos (>10 s): solo el último en el editor':' long (>10 s): only the last one in the editor',' largo (>10 s) en el editor, arrastra para marcar':' long (>10 s) in the editor, drag to mark',' sin sitio)':' no room)'};
 for(const k in bx)if(!(k in I18N.x))I18N.x[k]=bx[k];Object.assign(I18N.f,bf);I18N_FK.push(...Object.keys(bf));I18N_FK.sort((a,b)=>b.length-a.length);}
