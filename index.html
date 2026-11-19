@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.66</title>
+<title>SampledHeadApp 1.67</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1167,7 +1167,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>40. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.66</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.67</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1386,7 +1386,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>40. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.66</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.67</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -3241,7 +3241,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.66';
+const APP_VERSION='1.67';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -7859,14 +7859,21 @@ function cvPlay(S,o,btn){
 }
 
 /* ---------- grabar el audio del sistema / de una pestaña ---------- */
-if($('#recsys'))$('#recsys').onclick=async()=>{
+if($('#recsys')){
+  const NOSYS=!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+  const warn=m=>{menu(false);status(m);setTimeout(()=>{try{alert(m)}catch{}},50)};
+  /* solo en ordenador (Windows/Mac/Linux con Chrome o Edge): en móvil no existe esta función, así que se oculta */
+  if(NOSYS||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)){const r=$('#recsys').closest('.kit');if(r){r.hidden=true;if(r.previousElementSibling&&r.previousElementSibling.tagName==='B')r.previousElementSibling.hidden=true}}
+  try{Object.assign(I18N.x,{'Este navegador o móvil no permite capturar el audio del sistema. En Android: graba la pantalla con el grabador del móvil (con audio interno) y súbela con Importar; el sampler saca el audio del vídeo.':'This browser or phone cannot capture system audio. On Android: record the screen with the phone recorder (with internal audio) and load it with Import; the sampler extracts the audio from the video.','No se compartió audio: elige una pestaña y marca «Compartir audio de la pestaña».':'No audio shared: choose a tab and tick «Share tab audio».'})}catch{}
+  $('#recsys').onclick=async()=>{
   ctx.resume();
   if(rec){rec.stop();return}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){status('Este navegador no puede capturar el audio del sistema: graba la pantalla y usa Importar');return}
+  if(NOSYS){warn('Este navegador o móvil no permite capturar el audio del sistema. En Android: graba la pantalla con el grabador del móvil (con audio interno) y súbela con Importar; el sampler saca el audio del vídeo.');return}
+  menu(false);
   try{
     const st=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
     const at=st.getAudioTracks();st.getVideoTracks().forEach(t=>t.stop());
-    if(!at.length){st.getTracks().forEach(t=>t.stop());status('No se compartió audio: elige una pestaña y marca «Compartir audio de la pestaña»');return}
+    if(!at.length){st.getTracks().forEach(t=>t.stop());warn('No se compartió audio: elige una pestaña y marca «Compartir audio de la pestaña».');return}
     const mr=new MediaRecorder(new MediaStream(at)),chunks=[];
     mr.ondataavailable=e=>chunks.push(e.data);
     mr.onstop=async()=>{
@@ -7878,9 +7885,10 @@ if($('#recsys'))$('#recsys').onclick=async()=>{
     at[0].onended=()=>{if(rec===mr&&mr.state!=='inactive')mr.stop()};
     mr.start();rec=mr;
     $('#rec').classList.add('live');$('#rec').textContent='Detener';$('#recsys').textContent='Detener';status('Grabando el audio del sistema…');
-    try{$('#sheet').hidden=true}catch{}
   }catch(err){status(err&&err.name==='NotAllowedError'?'Captura cancelada':'No se pudo capturar el audio: '+(err.name||err.message))}
-};
+  };
+}
+
 try{nameUI()}catch{}
 /* ---------- 1.61 · chopeo: pre-escucha del fragmento entre un corte y el siguiente ---------- */
 var chopAud=null;

@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.66)
+# SampledHead App — Hoja de proyecto (v1.67)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -72,6 +72,7 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.67** (19-11-2026): «Grabar audio del sistema» solo aparece en ordenador (Chrome/Edge en Windows y Mac; en Mac Chrome solo captura el audio de una pestaña); en móvil se oculta porque Chrome/WebView de Android no tienen getDisplayMedia. Al pulsarlo cierra el menú y avisa si algo falla; Extractor 1.0.1: en móviles/equipos de ≤4 GB descarga el modelo de separación al terminar y usa calidad «Rápida» por defecto (el cierre de la app al final del proceso era memoria); registro de sesión `sh_ex_crumb`: si la app se cierra sola, al volver avisa del paso y descarga un informe .txt.
 - **1.66** (19-11-2026): menú Más → «Copia de tus datos»: guarda o recupera kits y ajustes en un archivo `.shdatos` (para pasarlos a SampledHead de escritorio u otro navegador).
 - **1.65** (19-11-2026): pestaña **Extractor** (todas las funciones de la idea en una versión), «Enviar pad a…» y
   «Recibido» para todas las apps (sh-core), `sw.js` deja de borrar las cachés de las otras apps.
@@ -84,6 +85,8 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 - `sh-core.js` se edita solo en `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 
 ## Límites conocidos
+- Cierre de la app al final del Extractor en móvil (1.67): causa probable = memoria; **no reproducido ni confirmado en un móvil real**. El registro de sesión dirá el paso exacto si vuelve a pasar.
+- Audio del sistema: Windows (Chrome/Edge) captura una pestaña o todo el sistema; Mac solo el audio de una pestaña. Móvil: oculto. Alternativa = grabar pantalla e Importar. No probado en Windows/Mac reales ni en el escritorio SampledHead (Electron).
 - Probado en Chrome headless (Linux, sin GPU): separación htdemucs por WASM, Basic Pitch por CPU (notas exactas en una
   línea de bajo de prueba), Whisper base con tiempo por palabra (discurso de JFK mezclado con un bajo: frase encontrada y
   5 pads bien cortados), bandeja entre las 8 apps.

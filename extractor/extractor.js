@@ -13,7 +13,7 @@
  */
 (function () {
   'use strict';
-  const EXT_VERSION = '1.0.0';
+  const EXT_VERSION = '1.0.1';
   const BASE = new URL('extractor/', document.baseURI).href;
   const $x = s => document.querySelector(s);
   const SH = window.SH;
@@ -148,7 +148,7 @@
   /* ---------------- Progreso ---------------- */
   function steps(list) { X.steps = list.map(s => ({ t: s, st: 'wait', p: 0, info: '' })); drawSteps(); }
   function stepGo(i, info) { X.steps.forEach((s, k) => { if (k < i && s.st !== 'error') s.st = 'done'; }); if (X.steps[i]) { X.steps[i].st = 'run'; X.steps[i].info = info || ''; X.steps[i].p = 0; } drawSteps(); LOG('paso', X.steps[i] ? X.steps[i].t : i, info || ''); }
-  function stepProg(i, p, info) { const s = X.steps[i]; if (!s) return; s.p = p; if (info != null) s.info = info; drawSteps(); }
+  function stepProg(i, p, info) { const s = X.steps[i]; if (!s) return; s.p = p; if (info != null) s.info = info; drawSteps(); crumb(); }
   function stepsDone() { X.steps.forEach(s => { if (s.st !== 'error') s.st = 'done'; }); drawSteps(); }
   function drawSteps() {
     const box = $x('#exSteps'); if (!box) return;
@@ -163,6 +163,19 @@
   }
 
   /* ---------------- Separación ---------------- */
+  /* 1.67: en móviles y equipos con poca memoria el modelo de separación se descarga en cuanto termina (el cierre de la app al final del proceso era falta de memoria) */
+  const LOWMEM = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+  /* registro de la sesión: si la app se cierra sola, al volver se sabe en qué paso fue */
+  const CRUMB = 'sh_ex_crumb'; let crumbT = 0;
+  function crumb(force) {
+    const n = Date.now(); if (!force && n - crumbT < 1500) return; crumbT = n;
+    try {
+      const s = (X.steps || []).filter(x => x.st === 'run' || x.st === 'error').map(x => x.t + ' ' + Math.round(x.p * 100) + '% ' + (x.info || '')).join(' | ');
+      localStorage.setItem(CRUMB, JSON.stringify({ ts: n, step: s, file: X.srcName || '', secs: X.src ? Math.round(X.src.duration) : 0, model: X.stemModel || '', q: X.quality,
+        heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null, vis: document.visibilityState }));
+    } catch (e) {}
+  }
+  const crumbClear = () => { try { localStorage.removeItem(CRUMB); } catch (e) {} };
   let unblendMod = null, sepInst = null, sepKey = '';
   async function unblend() { if (!unblendMod) unblendMod = await import(BASE + 'vendor/unblend.js'); return unblendMod; }
   function webModelFor(stems) {
@@ -222,6 +235,7 @@
       sep = await tryLoad(mdl2, true);
       res = await attempt(sep);
     }
+    if (LOWMEM) { try { await sep.unload(); } catch (x) {} sepInst = null; sepKey = ''; LOG('modelo de separación descargado (poca memoria)'); }
     const out = {};
     for (const [k, v] of Object.entries(res.stems)) { const es = STEM_ES[k] || k; out[es] = fromInterleaved(v, 44100); }
     if (out.voz && (stems.includes('instrumental'))) {
@@ -547,7 +561,7 @@
     if (cmd.part === 'sel' && !X.sel) { flash('Has pedido «esta parte» pero no hay nada marcado: arrastra sobre la onda para marcarla.'); return; }
     if (!cmd.stems.length && !cmd.custom) cmd.stems = ['voz', 'bateria', 'bajo', 'otros'];
     $x('#exPlan').textContent = 'Entendido: ' + describe(cmd) + '.';
-    X.busy = true; X.cancel = false; setBusy(true);
+    X.busy = true; X.cancel = false; setBusy(true); crumb(true);
     await engineState(); await detectGpu();
     const plan = [];
     plan.push('Preparar el audio');
@@ -667,8 +681,10 @@
       X.view = cmd.chop || phraseRange ? 'chops' : (cmd.transcribe ? 'notes' : 'stems');
       X.selStem = target;
       render();
+      crumbClear();
       status('Extractor: ' + describe(cmd));
     } catch (e) {
+      crumbClear();
       const s = X.steps.find(x => x.st === 'run'); if (s) { s.st = 'error'; s.info = e.message; } drawSteps();
       LOG('error', e.message, e.stack || '');
       reportError('proceso del Extractor', e, cmd);
@@ -1000,7 +1016,7 @@
     $x('#exGo').onclick = () => { const t = $x('#exText').value.trim(); if (!t) return flash('Escribe qué quieres extraer.'); run(t); };
     $x('#exText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $x('#exGo').click(); });
     $x('#exStop').onclick = () => { X.cancel = true; flash('Se detendrá en cuanto termine el paso actual. Si tarda, recarga la página.'); };
-    $x('#exQual').onchange = e => { X.quality = e.target.value; sepInst = null; sepKey = ''; };
+    $x('#exQual').onchange = e => { X.quality = e.target.value; if (sepInst) { try { sepInst.unload(); } catch (x) {} } sepInst = null; sepKey = ''; };
     $x('#exReport').onclick = () => save(new Blob([X.lastReport || 'Sin errores registrados'], { type: 'text/plain' }), 'extractor-' + EXT_VERSION + '-informe.txt');
     const ex = $x('#exEx'); EXAMPLES.forEach(t => { const b = document.createElement('button'); b.textContent = t; b.onclick = () => { $x('#exText').value = t; }; ex.appendChild(b); });
     document.querySelectorAll('#extpanel .rtabs button').forEach(b => b.onclick = () => { X.view = b.dataset.v; render(); });
@@ -1058,7 +1074,12 @@
     let panel = $x('#extpanel'); if (!panel) { panel = document.createElement('div'); panel.id = 'extpanel'; $x('.unit').appendChild(panel); }
     panel.innerHTML = html();
     bind(); render(); drawEngine();
-    X.quality = 'max';
+    X.quality = LOWMEM ? 'fast' : 'max'; if (LOWMEM) { const q = $x('#exQual'); if (q) q.value = 'fast'; }
+    try {
+      const c = JSON.parse(localStorage.getItem(CRUMB) || 'null');
+      if (c) { crumbClear(); const msg = 'La sesión anterior se cerró sola durante el Extractor (paso: ' + (c.step || '?') + (c.file ? ' · ' + c.file : '') + (c.secs ? ' · ' + c.secs + ' s' : '') + '). Casi seguro fue falta de memoria del móvil. Ahora el modelo se descarga al terminar la separación y la calidad por defecto es «Rápida».';
+        flash(msg, true); reportError('Cierre inesperado de la sesión anterior', new Error(msg), c); }
+    } catch (e) {}
     if (location.protocol === 'file:') flash('Abierta desde un archivo: aquí los modelos de IA no pueden funcionar (el navegador no deja usar workers ni guardar modelos). Usa la web (sampledhead-dot.github.io/sampledhead-app) o la app de Windows/Mac.', true);
     if (SH) SH.bridge.watch('sampler', () => openInbox(true));
     LOG('Extractor ' + EXT_VERSION + ' listo · ' + (SH ? SH.platform : 'sin sh-core'));
