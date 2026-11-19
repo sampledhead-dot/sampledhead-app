@@ -1080,6 +1080,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <ul><li><b>Proyectos con generador</b>: al guardar un proyecto (o con el autoguardado) se guarda también el <b>Generador</b>: estilo, tempo, patrones de batería, bajo y teclas, presets y efectos de bajo y teclas, y el <b>sonido de los 4 huecos</b>. Los proyectos antiguos se abren igual que antes (sin tocar el generador).</li>
 <li><b>Looper → MIDI</b>: en las opciones de exportar del Looper, <b>Exportar a MIDI</b> guarda un .mid con el tempo del bucle: pads en el canal 10 (pad 1 del banco A = nota 36, C1), bajo en el canal 1 y teclas en el canal 2. Respeta mute y solo de las pistas.</li>
 <li><b>Conversor · Exportar .mid</b>: en la vista previa de «Convertir la batería del pad…» hay un botón <b>Exportar .mid</b> que guarda la rejilla tal como la ves (con tus cambios): bombo 36, caja 38, hat cerrado 42, hat abierto 46.</li>
+<li><b>Break troceado a CrazyHead</b>: si el pad tiene el <b>Chop</b> activo, «Enviar pad a CrazyHead» manda también tus cortes (por golpes, por breaks o editados a mano) y CrazyHead los usa tal cual en lugar de detectarlos.</li>
 <li><b>Audio → bajo</b>: en el Generador, <b>Convertir el bajo del pad…</b> analiza el pad (mejor un bajo solo o separado con el Extractor): detecta las notas, el tempo y la tonalidad, y las coloca en la rejilla del bajo en el grado más cercano de la escala. Puedes ajustar BPM y compases, quitar notas, oírlo con ▶ Play, aplicarlo al generador (el bajo queda bloqueado para que «Generar» no lo cambie) o exportarlo a .mid con las notas reales.</li></ul>
 </details>
 <details><summary>32. Novedades de la 1.60</summary>
@@ -1305,6 +1306,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <ul><li><b>Projects with the generator</b>: saving a project (or autosave) now also stores the <b>Generator</b>: style, tempo, drum, bass and keys patterns, bass and keys presets and effects, and the <b>sound of the 4 slots</b>. Older projects open as before (generator untouched).</li>
 <li><b>Looper → MIDI</b>: in the Looper export options, <b>Export to MIDI</b> saves a .mid at the loop tempo: pads on channel 10 (bank A pad 1 = note 36, C1), bass on channel 1 and keys on channel 2. Track mute and solo are respected.</li>
 <li><b>Converter · Export .mid</b>: the “Convert the pad's drums…” preview has an <b>Export .mid</b> button that saves the grid as you see it (with your edits): kick 36, snare 38, closed hat 42, open hat 46.</li>
+<li><b>Chopped break to CrazyHead</b>: if the pad has <b>Chop</b> on, “Send pad to CrazyHead” also sends your cuts (by hits, by breaks or hand-edited) and CrazyHead uses them as they are instead of detecting them.</li>
 <li><b>Audio → bass</b>: in the Generator, <b>Convert the pad's bass…</b> analyses the pad (best with a solo bass or one separated with the Extractor): it finds the notes, tempo and key and places them on the bass grid at the nearest scale degree. Adjust BPM and bars, remove notes, listen with ▶ Play, apply it to the generator (the bass is locked so “Generate” does not change it) or export a .mid with the real notes.</li></ul>
 </details>
 <details><summary>32. What is new in 1.60</summary>
@@ -8192,6 +8194,20 @@ function cbShow(an){
     saveMid(smf(S.bpm,[{name:'Bajo',ev:B}],S.cells.length*tpS,'SampledHead '+an.name),clean('conversor_bajo_'+an.name.replace(/\s+/g,'_')+'_'+Math.round(S.bpm)+'bpm')+'.mid')};
   calc();o.classList.add('show');o.scrollTop=0;
 }
+/* ---------- break troceado → CrazyHead: el pad viaja con los cortes del Chop ---------- */
+$('#tocrz').onclick=()=>{
+  const p=pads[sel];
+  if(!p||!p.buf){status('Elige un pad con sonido');return}
+  const b=p.buf,n=b.length,a=Math.max(0,Math.floor(p.s*n)),z=Math.min(n,Math.max(a+1,Math.ceil(p.e*n))),m=z-a,ch=Math.min(2,b.numberOfChannels);
+  const out=ctx.createBuffer(ch,m,b.sampleRate);for(let c=0;c<ch;c++)out.copyToChannel(b.getChannelData(c).subarray(a,z),c);
+  let cuts=null;
+  if(chop.on&&chop.pad===sel&&chop.n>1){
+    const ed=chop.edges&&chop.edges.length===chop.n+1?chop.edges:Array.from({length:chop.n+1},(_,k)=>p.s+(p.e-p.s)*k/chop.n);
+    cuts=ed.slice(1,-1).map(f=>(f*n-a)/b.sampleRate).filter(t=>t>0&&t<out.duration);
+    if(!cuts.length)cuts=null;
+  }
+  crzSend([{name:p.name||'Pad '+(sel+1),buf:out,cuts}],cuts?'pad con '+(cuts.length+1)+' cortes':'pad');
+};
 window.cbAnalyze=cbAnalyze;window.cbQuant=cbQuant;window.cbOpen=cbOpen;window.lpMidiBytes=lpMidiBytes;
 (function(){
   const c=document.createElement('style');c.textContent='.cbc i{display:flex;align-items:center;justify-content:center;font:700 10px system-ui;color:#0a0c0f}';document.head.append(c);
