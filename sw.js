@@ -1,9 +1,11 @@
-/* SampledHeadApp 1.64: funciona sin conexión.
+/* SampledHeadApp 1.65: funciona sin conexión.
    - Archivos de la app: primero la red (así siempre ves la última versión) y, si no hay conexión, la copia guardada.
    - Tipografías de Google: se guardan la primera vez y después salen de la copia.
    Los kits NO pasan por aquí: están en la base de datos local del navegador (IndexedDB). */
-const VERSION = 'sampledhead-v1.64';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest'];
+const VERSION = 'sampledhead-v1.65';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'sh-core.js', 'extractor/extractor.js', 'extractor/vendor/unblend.js',
+  'extractor/vendor/workers/onnx-worker.js', 'extractor/vendor/workers/stft-worker.js', 'extractor/vendor/workers/istft-worker.js',
+  'extractor/vendor/asr-worker.js', 'extractor/vendor/transformers.min.js', 'extractor/vendor/notes-worker.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
@@ -11,7 +13,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k))))
+    caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('sampledhead-v') && k !== VERSION).map(k => caches.delete(k))))   // 1.65: solo las suyas (antes borraba las de todas las apps y los modelos)
       .then(() => self.clients.claim())
   );
 });

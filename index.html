@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.64</title>
+<title>SampledHeadApp 1.65</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -581,6 +581,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
     <button id="tabM" role="tab" aria-selected="false">Mixer</button>
     <button id="tabF" role="tab" aria-selected="false">FX</button>
     <button id="tabG" role="tab" aria-selected="false">Gen</button>
+    <button id="tabE" role="tab" aria-selected="false">Extractor</button>
   </div>
 
   <div class="strip" id="strip"><button id="gundo" aria-label="Deshacer" title="Deshacer">↶ Deshacer</button><button id="gredo" aria-label="Rehacer" title="Rehacer">↷ Rehacer</button></div>
@@ -1166,7 +1167,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>40. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.64</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.65</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1385,7 +1386,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>40. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.64</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.65</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1421,6 +1422,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
   </div>
   <b>Aplicación</b>
   <div class="kit files"><button id="midibtn">MIDI…</button><button id="projbtn">Proyectos…</button></div>
+  <b>Todas las apps</b>
+  <div class="kit files"><button id="shsend">Enviar pad a…</button><button id="shinbox">Recibido de otras apps</button></div>
   <b>Editor de audio</b>
   <div class="kit files"><button id="toed">Enviar pad al editor</button><button id="fromed">Recoger del editor</button></div>
   <div class="kit"><button id="opened">Abrir editor</button></div>
@@ -3237,7 +3240,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.64';
+const APP_VERSION='1.65';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -4514,11 +4517,11 @@ function showTab(mode){
   bRelAll();kRelAll();
   if(mode!==1){bassView=false;keysView=false}
   const u=$('.unit');
-  u.classList.toggle('loop',mode===1);u.classList.toggle('bass',mode===2);u.classList.toggle('fxt',mode===3);u.classList.toggle('keys',mode===4);u.classList.toggle('mix',mode===5);u.classList.toggle('gen',mode===6);u.classList.toggle('lbass',mode===1&&bassView);u.classList.toggle('lkeys',mode===1&&keysView);
-  [['#tabS',0],['#tabL',1],['#tabB',2],['#tabF',3],['#tabK',4],['#tabM',5],['#tabG',6]].forEach(([id,m])=>{$(id).classList.toggle('on',mode===m);$(id).setAttribute('aria-selected',String(mode===m))});
+  u.classList.toggle('loop',mode===1);u.classList.toggle('bass',mode===2);u.classList.toggle('fxt',mode===3);u.classList.toggle('keys',mode===4);u.classList.toggle('mix',mode===5);u.classList.toggle('gen',mode===6);u.classList.toggle('ext',mode===7);u.classList.toggle('lbass',mode===1&&bassView);u.classList.toggle('lkeys',mode===1&&keysView);
+  [['#tabS',0],['#tabL',1],['#tabB',2],['#tabF',3],['#tabK',4],['#tabM',5],['#tabG',6],['#tabE',7]].forEach(([id,m])=>{$(id).classList.toggle('on',mode===m);$(id).setAttribute('aria-selected',String(mode===m))});
   bankMarks();
   fxRelNH();fx.tab=mode===3;fxNodes(fx.tab||fx.st.some(o=>o.down));
-  if(mode===0){draw();tuneLayout()}else if(mode===1)lpUI();else if(mode===2)bassDraw();else if(mode===4)kDraw();else if(mode===5)mixDraw();else if(mode===6)gDraw();
+  if(mode===0){draw();tuneLayout()}else if(mode===1)lpUI();else if(mode===2)bassDraw();else if(mode===4)kDraw();else if(mode===5)mixDraw();else if(mode===6)gDraw();else if(mode===7&&window.extShow)window.extShow();
   if(mode===2||mode===4||mode===6)gFxRefresh();
   fxDraw();
 }
@@ -4529,6 +4532,7 @@ $('#tabF').onclick=()=>showTab(3);
 $('#tabK').onclick=()=>showTab(4);
 $('#tabM').onclick=()=>showTab(5);
 $('#tabG').onclick=()=>showTab(6);
+$('#tabE').onclick=()=>showTab(7);
 (function lpFrame(){   // barra de progreso del bucle (solo se anima si la pestaña Looper está a la vista)
   if(typeof requestAnimationFrame==='function'){
     const f=()=>{if(lp.st==='playing'||lp.st==='rec1'){const u=$('.unit');if(u&&u.classList.contains('loop'))lpUI(true)}requestAnimationFrame(f)};
@@ -4676,7 +4680,7 @@ const MIDI_SECS=[
   ['Pads',[['pad','Pad 1']]],
   ['Perillas',[...Array.from({length:8},(_,j)=>['k'+j,'Perilla '+(j+1)]),['master','Master'],['grp','Rueda (grupo)']]],
   ['Transporte',[['rec','Rec looper'],['smp','Grabar sample'],['pstop','Play/Stop'],['play','Play'],['stop','Stop'],['loop','Cerrar loop'],['undo','Deshacer'],['redo','Rehacer']]],
-  ['Pestañas',[['tabS','Sampler'],['tabL','Looper'],['tabB','Bajo'],['tabK','Teclas'],['tabM','Mixer'],['tabF','FX'],['tabG','Generador']]],
+  ['Pestañas',[['tabS','Sampler'],['tabL','Looper'],['tabB','Bajo'],['tabK','Teclas'],['tabM','Mixer'],['tabF','FX'],['tabG','Generador'],['tabE','Extractor']]],
   ['Bancos',[['bkA','Banco A'],['bkB','Banco B'],['bkC','Banco C'],['bkD','Banco D']]],
   ['Looper',[['ltr1','Pista 1'],['ltr2','Pista 2'],['ltr3','Pista 3'],['ltr4','Pista 4'],['lmute','Mute'],['lsolo','Solo'],['lclr','Borrar pista'],['met','Metrónomo']]],
   ['Mixer',[['grpn','Grupo +'],['grpp','Grupo −']]],
@@ -7908,5 +7912,16 @@ Object.assign(I18N.x,{"＋ Corte": "＋ Cut", "− Corte": "− Cut", "Sensibili
 ksUI();
 select(0);status('Listo');
 </script>
+<script src="sh-core.js"></script>
+<script>
+/* 1.65: «Enviar pad a…» y «Recibido» para todas las apps (sh-core) */
+$('#shsend').onclick=()=>{const p=pads[sel];if(!p||!p.buf){status('Elige un pad con sonido');return}menu(false);
+  if(!window.SH){status('Falta sh-core.js');return}
+  SH.ui.sendSheet({from:'sampler',kinds:['pad','loop'],count:1,getItems:async()=>{const b=p.buf,n=b.length,a=Math.max(0,Math.floor(p.s*n)),z=Math.min(n,Math.max(a+1,Math.ceil(p.e*n)));
+    const out=ctx.createBuffer(b.numberOfChannels,z-a,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)out.copyToChannel(b.getChannelData(c).subarray(a,z),c);
+    return[{name:p.name||'Pad '+(sel+1),kind:out.duration>4?'loop':'pad',audio:out}]}})};
+$('#shinbox').onclick=()=>{menu(false);if(window.shSamplerInbox)window.shSamplerInbox(false)};
+</script>
+<script src="extractor/extractor.js"></script>
 </body>
 </html>
