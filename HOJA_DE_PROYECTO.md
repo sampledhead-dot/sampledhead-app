@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.65)
+# SampledHead App — Hoja de proyecto (v1.66)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -72,6 +72,7 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.66** (19-11-2026): menú Más → «Copia de tus datos»: guarda o recupera kits y ajustes en un archivo `.shdatos` (para pasarlos a SampledHead de escritorio u otro navegador).
 - **1.65** (19-11-2026): pestaña **Extractor** (todas las funciones de la idea en una versión), «Enviar pad a…» y
   «Recibido» para todas las apps (sh-core), `sw.js` deja de borrar las cachés de las otras apps.
 - 1.64 y anteriores: ver notas del proyecto (Move, CrazyHead, generador, MIDI medido…).

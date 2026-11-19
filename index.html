@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.65</title>
+<title>SampledHeadApp 1.66</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1167,7 +1167,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
 <details><summary>40. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.65</b></p>
+<p><b>SampledHead</b> · versión <b id='gver'>1.66</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1386,7 +1386,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
 <details><summary>40. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.65</b></p>
+<p><b>SampledHead</b> · version <b id='gver'>1.66</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -1424,6 +1424,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
   <div class="kit files"><button id="midibtn">MIDI…</button><button id="projbtn">Proyectos…</button></div>
   <b>Todas las apps</b>
   <div class="kit files"><button id="shsend">Enviar pad a…</button><button id="shinbox">Recibido de otras apps</button></div>
+  <div class="kit"><button id="shbak">Copia de tus datos (kits, ajustes…)</button></div>
   <b>Editor de audio</b>
   <div class="kit files"><button id="toed">Enviar pad al editor</button><button id="fromed">Recoger del editor</button></div>
   <div class="kit"><button id="opened">Abrir editor</button></div>
@@ -3240,7 +3241,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.65';
+const APP_VERSION='1.66';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -7921,6 +7922,7 @@ $('#shsend').onclick=()=>{const p=pads[sel];if(!p||!p.buf){status('Elige un pad 
     const out=ctx.createBuffer(b.numberOfChannels,z-a,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)out.copyToChannel(b.getChannelData(c).subarray(a,z),c);
     return[{name:p.name||'Pad '+(sel+1),kind:out.duration>4?'loop':'pad',audio:out}]}})};
 $('#shinbox').onclick=()=>{menu(false);if(window.shSamplerInbox)window.shSamplerInbox(false)};
+$('#shbak').onclick=()=>{menu(false);if(window.SH)SH.backup.sheet('sampler')};
 </script>
 <script src="extractor/extractor.js"></script>
 </body>

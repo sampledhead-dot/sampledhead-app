@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.0.1)
+/* sh-core.js — base común de las apps de Sampled Head (v1.1.0)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.0.1';
+  const VERSION = '1.1.0';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -189,6 +189,147 @@
     async run(task, input, params, onProgress) { if (!D || !D.engine) throw new Error('El motor local solo está en las apps de Windows y Mac'); return D.engine.run(task, input, params || {}, onProgress || (() => {})); }
   };
 
+  /* ---------------- Copia de los datos de una app (.shdatos) ----------------
+   * Para pasar una app de la web (o de otro navegador u ordenador) a la plataforma SampledHead de escritorio.
+   * En la web todas las apps comparten el dominio, así que cada app solo copia lo suyo (OWN).
+   * Formato: «SHDAT1» + u32 largo del JSON + JSON + datos binarios seguidos (ArrayBuffer, vistas tipadas y Blob). */
+  const OWN = {
+    sampler: { idb: ['sampler'], ls: k => (k.startsWith('sampledhead.') && !k.startsWith('sampledhead.tuner')) || k.startsWith('sh_') },
+    editor: { idb: [], ls: k => k.startsWith('shed.') },
+    crazyhead: { idb: ['crazyhead'], ls: k => k.startsWith('crazyhead.') },
+    fuzzhead: { idb: [], ls: k => k.startsWith('fuzzhead-') || k.startsWith('trazo-gs1-') },
+    tuner: { idb: [], ls: k => k.startsWith('sampledhead.tuner') },
+    tonopad: { idb: ['tonopad'], ls: k => k.startsWith('tonopad.') },
+    chuleta: { idb: [], ls: k => k.startsWith('chuleta') },
+    spb: { idb: [], ls: k => k.startsWith('spb') }
+  };
+  const TA = ['Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array'];
+  async function enc(v, bins) {
+    if (v == null || typeof v !== 'object') return v;
+    if (v instanceof ArrayBuffer) { bins.push(new Uint8Array(v)); return { __b: bins.length - 1 }; }
+    if (ArrayBuffer.isView(v)) { bins.push(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)); return { __t: v.constructor.name, __b: bins.length - 1 }; }
+    if (typeof Blob !== 'undefined' && v instanceof Blob) { bins.push(new Uint8Array(await v.arrayBuffer())); return { __blob: v.type || '', __b: bins.length - 1, __name: v.name || null }; }
+    if (v instanceof Date) return { __date: v.getTime() };
+    if (v instanceof Map) return { __map: await enc([...v.entries()], bins) };
+    if (v instanceof Set) return { __set: await enc([...v.values()], bins) };
+    if (Array.isArray(v)) { const o = []; for (const x of v) o.push(await enc(x, bins)); return o; }
+    const o = {}; for (const k of Object.keys(v)) o[k] = await enc(v[k], bins); return o;
+  }
+  function dec(v, bins) {
+    if (v == null || typeof v !== 'object') return v;
+    if (Array.isArray(v)) return v.map(x => dec(x, bins));
+    if (v.__b != null && v.__t) { const u = bins[v.__b], C = TA.includes(v.__t) ? G[v.__t] : Uint8Array, ab = u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength); return v.__t === 'DataView' ? new DataView(ab) : new C(ab); }
+    if (v.__b != null && v.__blob != null) { const u = bins[v.__b]; return v.__name ? new File([u], v.__name, { type: v.__blob }) : new Blob([u], { type: v.__blob }); }
+    if (v.__b != null && Object.keys(v).length === 1) { const u = bins[v.__b]; return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength); }
+    if (v.__date != null) return new Date(v.__date);
+    if (v.__map) return new Map(dec(v.__map, bins));
+    if (v.__set) return new Set(dec(v.__set, bins));
+    const o = {}; for (const k of Object.keys(v)) o[k] = dec(v[k], bins); return o;
+  }
+  const req = r => new Promise((ok, ko) => { r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
+  function openDb(name, version, upgrade) {
+    return new Promise((ok, ko) => {
+      const r = version ? indexedDB.open(name, version) : indexedDB.open(name);
+      let t = setTimeout(() => ko(new Error('La base «' + name + '» está ocupada: cierra las otras pestañas de esta app y vuelve a intentarlo')), 6000);
+      r.onupgradeneeded = e => { if (upgrade) upgrade(r.result, r.transaction, e.oldVersion); };
+      r.onsuccess = () => { clearTimeout(t); ok(r.result); }; r.onerror = () => { clearTimeout(t); ko(r.error); }; r.onblocked = () => {};
+    });
+  }
+  const backup = {
+    owned: me => OWN[me] || null,
+    /* Devuelve un Blob con los datos de la app «me» */
+    async export(me) {
+      const own = OWN[me]; if (!own) throw new Error('Esta app no tiene datos que copiar');
+      const bins = [], data = { app: me, core: VERSION, ts: Date.now(), from: location.href, ls: {}, idb: [] };
+      for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (own.ls(k)) data.ls[k] = localStorage.getItem(k); }
+      let have = null; try { if (indexedDB.databases) have = (await indexedDB.databases()).map(x => x.name); } catch (e) {}
+      for (const name of own.idb) {
+        if (have && !have.includes(name)) continue;          // no se crea una base vacía (la app no podría prepararla después)
+        let db; try { db = await openDb(name); } catch (e) { continue; }
+        const d = { name, version: db.version, stores: [] };
+        for (const sn of [...db.objectStoreNames]) {
+          const tx = db.transaction(sn, 'readonly'), st = tx.objectStore(sn);
+          const s = { name: sn, keyPath: st.keyPath, autoIncrement: st.autoIncrement, indexes: [...st.indexNames].map(n => { const ix = st.index(n); return { name: n, keyPath: ix.keyPath, unique: ix.unique, multiEntry: ix.multiEntry }; }), records: [] };
+          const keys = await req(st.getAllKeys()), vals = await req(st.getAll());
+          for (let k = 0; k < keys.length; k++) s.records.push({ k: await enc(keys[k], bins), v: await enc(vals[k], bins) });
+          d.stores.push(s);
+        }
+        db.close(); data.idb.push(d);
+      }
+      const js = new TextEncoder().encode(JSON.stringify(data)), hd = new Uint8Array(10);
+      hd.set([83, 72, 68, 65, 84, 49]); new DataView(hd.buffer).setUint32(6, js.length, true);
+      const lens = new Uint8Array(4 * bins.length); bins.forEach((b, i) => new DataView(lens.buffer).setUint32(i * 4, b.byteLength, true));
+      const cnt = new Uint8Array(4); new DataView(cnt.buffer).setUint32(0, bins.length, true);
+      return new Blob([hd, js, cnt, lens, ...bins], { type: 'application/octet-stream' });
+    },
+    parse(ab) {
+      const u = new Uint8Array(ab); if (String.fromCharCode(...u.slice(0, 6)) !== 'SHDAT1') throw new Error('No es una copia de datos de Sampled Head (.shdatos)');
+      const dv = new DataView(ab), n = dv.getUint32(6, true), data = JSON.parse(new TextDecoder().decode(u.slice(10, 10 + n)));
+      let o = 10 + n; const cnt = dv.getUint32(o, true); o += 4; const lens = []; for (let i = 0; i < cnt; i++) { lens.push(dv.getUint32(o, true)); o += 4; }
+      const bins = lens.map(l => { const b = u.subarray(o, o + l); o += l; return b; });
+      return { data, bins };
+    },
+    /* Sustituye los datos de la app por los de la copia. Devuelve un resumen. */
+    async restore(me, ab) {
+      const { data, bins } = backup.parse(ab), own = OWN[me];
+      if (data.app !== me) throw new Error('Esta copia es de otra app (' + data.app + ')');
+      for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (own.ls(k)) localStorage.removeItem(k); }
+      for (const [k, v] of Object.entries(data.ls)) localStorage.setItem(k, v);
+      let recs = 0;
+      for (const d of data.idb) {
+        let db = await openDb(d.name);
+        const missing = d.stores.some(s => !db.objectStoreNames.contains(s.name)) || db.version < d.version;
+        if (missing) {
+          const v = Math.max(d.version, db.version + 1); db.close();
+          db = await openDb(d.name, v, (udb, tx) => {
+            for (const s of d.stores) {
+              let st = udb.objectStoreNames.contains(s.name) ? tx.objectStore(s.name) : udb.createObjectStore(s.name, { keyPath: s.keyPath, autoIncrement: s.autoIncrement });
+              for (const ix of s.indexes) if (!st.indexNames.contains(ix.name)) st.createIndex(ix.name, ix.keyPath, { unique: ix.unique, multiEntry: ix.multiEntry });
+            }
+          });
+        }
+        for (const s of d.stores) {
+          await new Promise((ok, ko) => {
+            const tx = db.transaction(s.name, 'readwrite'), st = tx.objectStore(s.name); st.clear();
+            for (const r of s.records) { const v = dec(r.v, bins); if (s.keyPath != null) st.put(v); else st.put(v, dec(r.k, bins)); recs++; }
+            tx.oncomplete = ok; tx.onerror = () => ko(tx.error); tx.onabort = () => ko(tx.error);
+          });
+        }
+        db.close();
+      }
+      return { ajustes: Object.keys(data.ls).length, registros: recs, fecha: data.ts };
+    },
+    fileName(me) { const a = appById(me); return (a ? a.name : me).replace(/[^A-Za-z0-9]+/g, '-') + '-datos-' + new Date().toISOString().slice(0, 10) + '.shdatos'; },
+    download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); },
+    /* Interfaz común: hoja con «Guardar copia» y «Recuperar copia» */
+    sheet(me) {
+      const { sh, close } = ui.sheet('Copia de tus datos', 'Kits, presets, proyectos y ajustes de esta app. Sirve para pasarlos a SampledHead para Windows y Mac (Inicio → «Traer mis datos») o a otro navegador.');
+      const r1 = el('div', 'shc-row'), i1 = el('div'); i1.appendChild(el('b', null, 'Guardar copia (.shdatos)')); i1.appendChild(el('small', null, 'Descarga un archivo con todo lo que tiene guardado esta app'));
+      const b1 = el('button', 'shc-b pri', 'Guardar');
+      b1.onclick = async () => { b1.disabled = true; b1.textContent = 'Preparando…'; try { const bl = await backup.export(me); backup.download(bl, backup.fileName(me)); b1.textContent = 'Guardado (' + (bl.size / 1048576).toFixed(1) + ' MB)'; } catch (e) { b1.textContent = 'Error'; alert(e.message || e); b1.disabled = false; } };
+      r1.appendChild(i1); r1.appendChild(b1); sh.appendChild(r1);
+      const r2 = el('div', 'shc-row'), i2 = el('div'); i2.appendChild(el('b', null, 'Recuperar copia')); i2.appendChild(el('small', null, 'Sustituye los datos de esta app por los de un archivo .shdatos'));
+      const b2 = el('button', 'shc-b', 'Elegir archivo'), fi = el('input'); fi.type = 'file'; fi.accept = '.shdatos'; fi.hidden = true;
+      fi.onchange = async () => { const f = fi.files[0]; fi.value = ''; if (!f) return;
+        if (!confirm('Se sustituirán los datos de esta app por los de «' + f.name + '» y se recargará. ¿Seguir?')) return;
+        try { const r = await backup.restore(me, await f.arrayBuffer()); alert('Recuperado: ' + r.registros + ' elementos y ' + r.ajustes + ' ajustes.'); location.reload(); } catch (e) { alert('No se pudo recuperar: ' + (e.message || e)); } };
+      b2.onclick = () => fi.click();
+      r2.appendChild(i2); r2.appendChild(b2); r2.appendChild(fi); sh.appendChild(r2);
+      const foot = el('div', 'shc-foot'), c = el('button', 'shc-b', 'Cerrar'); c.onclick = close; foot.appendChild(c); sh.appendChild(foot);
+    }
+  };
+  /* En la plataforma de escritorio: si «Traer mis datos» dejó una copia para esta app, se aplica al abrirla */
+  if (D && D.backup && D.info) {
+    const tryPending = async () => {
+      try {
+        const info = await D.info(); const ab = await D.backup.pending(); if (!ab) return;
+        const r = await backup.restore(info.appId, ab);
+        console.log('[sh-core] copia aplicada', r); location.reload();
+      } catch (e) { console.error('[sh-core] no se pudo aplicar la copia', e); alert('No se pudieron traer los datos: ' + (e.message || e)); }
+    };
+    if (document.readyState === 'complete') setTimeout(tryPending, 800); else G.addEventListener('load', () => setTimeout(tryPending, 800));
+  }
+
   /* ---------------- Interfaz: hojas «Enviar a…» y «Recibido» ---------------- */
   const CSS = '.shc-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}' +
     '@media(min-width:640px){.shc-ov{align-items:center}}' +
@@ -287,11 +428,11 @@
       const b = el('button', 'shc-dock'); b.type = 'button'; b.title = 'Enviar a otras apps de Sampled Head o recoger lo recibido';
       b.style[opts.pos === 'right' ? 'right' : 'left'] = 'calc(14px + env(safe-area-inset-' + (opts.pos === 'right' ? 'right' : 'left') + '))';
       if (opts.bottom != null) b.style.setProperty('--shc-bottom', opts.bottom + 'px');
-      const paint = n => { b.textContent = '⇄ Apps'; if (n) { const i = el('i', null, String(n)); b.appendChild(i); } };
+      const paint = n => { b.textContent = opts.label || '⇄ Apps'; if (n) { const i = el('i', null, String(n)); b.appendChild(i); } };
       paint(0);
-      const refresh = async () => { try { paint((await bridge.inbox(opts.me)).length); } catch (e) {} };
+      const refresh = async () => { if (opts.backupOnly) return; try { paint((await bridge.inbox(opts.me)).length); } catch (e) {} };
       b.onclick = async () => {
-        const n = (await bridge.inbox(opts.me)).length;
+        const n = opts.backupOnly ? 0 : (await bridge.inbox(opts.me)).length;
         const { sh, close } = sheet('Apps de Sampled Head', n ? n + ' elemento' + (n === 1 ? '' : 's') + ' recibido' + (n === 1 ? '' : 's') : 'Bandeja vacía');
         const r1 = el('div', 'shc-row'), i1 = el('div'); i1.appendChild(el('b', null, 'Recibido')); i1.appendChild(el('small', null, 'Lo que te han enviado las otras apps'));
         const b1 = el('button', 'shc-b pri', 'Ver'); b1.disabled = !n; b1.onclick = async () => { close(); await ui.receiveSheet(opts.me, async l => { const ok = await opts.accept(l); setTimeout(refresh, 300); return ok; }); };
@@ -303,11 +444,13 @@
           if (!items || !items.length) { b2.textContent = 'No hay audio que enviar'; return; }
           close(); ui.sendSheet({ from: opts.me, kinds: opts.kinds || items.map(x => x.kind || 'pad'), count: items.length, getItems: async () => items });
         };
-        r2.appendChild(i2); r2.appendChild(b2); sh.appendChild(r2);
+        r2.appendChild(i2); r2.appendChild(b2); if (!opts.backupOnly) sh.appendChild(r2); else r1.remove();
+        if (OWN[opts.me]) { const r3 = el('div', 'shc-row'), i3 = el('div'); i3.appendChild(el('b', null, 'Copia de tus datos')); i3.appendChild(el('small', null, 'Guardar o recuperar kits, presets y proyectos (para pasarlos a SampledHead de escritorio u otro navegador)'));
+          const b3 = el('button', 'shc-b', 'Abrir'); b3.onclick = () => { close(); backup.sheet(opts.me); }; r3.appendChild(i3); r3.appendChild(b3); sh.appendChild(r3); }
         if (D && D.openFolder) { const r3 = el('div', 'shc-foot'), b3 = el('button', 'shc-b', 'Abrir la carpeta compartida'); b3.onclick = () => D.openFolder(); r3.appendChild(b3); sh.appendChild(r3); }
       };
       document.body.appendChild(b);
-      bridge.watch(opts.me, async items => { paint(items.length); if (opts.autoOpen !== false) await ui.receiveSheet(opts.me, async l => { const ok = await opts.accept(l); setTimeout(refresh, 300); return ok; }, items); });
+      if (!opts.backupOnly) bridge.watch(opts.me, async items => { paint(items.length); if (opts.autoOpen !== false) await ui.receiveSheet(opts.me, async l => { const ok = await opts.accept(l); setTimeout(refresh, 300); return ok; }, items); });
       return { refresh, button: b };
     },
     /* Convierte un elemento recibido en un File de audio (para las apps que cargan desde un <input type=file>) */
@@ -324,7 +467,7 @@
 
   G.SH = Object.assign(G.SH || {}, {
     core: VERSION, APPS, app: appById, isDesktop: !!D, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
-    bridge, open, models, engine, ui, wav: { encode, decode },
+    bridge, open, models, engine, ui, backup, wav: { encode, decode },
     toFile: it => ui.toFile(it), feedInput: (i, f) => ui.feedInput(i, f)
   });
 })(typeof window !== 'undefined' ? window : self);
