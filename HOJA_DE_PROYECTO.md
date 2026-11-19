@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.67)
+# SampledHead App — Hoja de proyecto (v1.68)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -16,7 +16,7 @@ con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, L
   - `asr-worker.js` + `transformers.min.js` — Whisper con tiempo por palabra (Transformers.js 3.8.1).
   - `notes-worker.js` — Basic Pitch 1.0.1 + TensorFlow.js (notas; modelo desde jsDelivr).
   - Se regeneran con esbuild (ver «Reconstruir vendor»).
-- `sw.js` — caché `sampledhead-v1.65`. **Solo borra sus propias cachés** (`sampledhead-v*`): antes borraba las de todas
+- `sw.js` — caché `sampledhead-v1.68`. **Solo borra sus propias cachés** (`sampledhead-v*`): antes borraba las de todas
   las apps del dominio y los modelos de IA.
 
 ## Extractor
@@ -72,6 +72,7 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.68** (19-11-2026): los **proyectos guardan el Generador** (`pjMeta.gen` = `scSnap()`, `pjCapture.genAu` = audio de los 4 huecos; los proyectos antiguos sin `gen` no tocan el generador); **Looper → MIDI** (`lpMidiBytes`: pads canal 10 nota 36+n, bajo canal 1, teclas canal 2, tempo del bucle o 120); **Exportar .mid** en la vista previa del conversor de batería (lee la rejilla tal como se ve); **conversor fase 2: audio → bajo** (`cbAnalyze`: paso bajo + YIN cada 12 ms, notas por estabilidad de tono y reataques; `cbTempo`: rejilla de corcheas 70–160 BPM; `cbKey`: tónica y mayor/menor por histograma; notas al grado más cercano de la escala del Bajo; aplica al generador con el bajo bloqueado o exporta .mid con las notas reales). Código en el bloque `1.68` al final de `index.html`.
 - **1.67** (19-11-2026): «Grabar audio del sistema» solo aparece en ordenador (Chrome/Edge en Windows y Mac; en Mac Chrome solo captura el audio de una pestaña); en móvil se oculta porque Chrome/WebView de Android no tienen getDisplayMedia. Al pulsarlo cierra el menú y avisa si algo falla; Extractor 1.0.1: en móviles/equipos de ≤4 GB descarga el modelo de separación al terminar y usa calidad «Rápida» por defecto (el cierre de la app al final del proceso era memoria); registro de sesión `sh_ex_crumb`: si la app se cierra sola, al volver avisa del paso y descarga un informe .txt.
 - **1.66** (19-11-2026): menú Más → «Copia de tus datos»: guarda o recupera kits y ajustes en un archivo `.shdatos` (para pasarlos a SampledHead de escritorio u otro navegador).
 - **1.65** (19-11-2026): pestaña **Extractor** (todas las funciones de la idea en una versión), «Enviar pad a…» y
@@ -85,6 +86,8 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 - `sh-core.js` se edita solo en `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 
 ## Límites conocidos
+- Conversor audio → bajo (1.68): monofónico; probado solo con un bajo sintético (8 notas a 100 BPM: notas, tempo y rejilla exactos). Con una mezcla completa conviene separar antes el bajo con el Extractor. El tempo se busca entre 70 y 160 BPM (÷2/×2 para corregir).
+- Proyectos con generador (1.68): el audio de los huecos ocupa espacio en el almacenamiento del navegador (máx. 6 s mono por hueco).
 - Cierre de la app al final del Extractor en móvil (1.67): causa probable = memoria; **no reproducido ni confirmado en un móvil real**. El registro de sesión dirá el paso exacto si vuelve a pasar.
 - Audio del sistema: Windows (Chrome/Edge) captura una pestaña o todo el sistema; Mac solo el audio de una pestaña. Móvil: oculto. Alternativa = grabar pantalla e Importar. No probado en Windows/Mac reales ni en el escritorio SampledHead (Electron).
 - Probado en Chrome headless (Linux, sin GPU): separación htdemucs por WASM, Basic Pitch por CPU (notas exactas en una

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.67</title>
+<title>SampledHeadApp 1.68</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1076,7 +1076,13 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Menú → Recoger de CrazyHead</b>: carga en pads libres lo que mande CrazyHead (mezcla, loops o cortes como kit; los cortes de cada loop van al banco A–D). Después puedes exportar el kit a MPC, Move, SP-404, Koala o Ableton como siempre. Los loops del Looper viajan con sus <b>cortes exactos</b>, así CrazyHead no tiene que detectarlos.</li>
 <li>La primera vez te pide la dirección de CrazyHead (se recuerda; si abres antes CrazyHead una vez, se guarda sola). Al abrirse, CrazyHead pregunta si cargar el audio en A–D.</li></ul>
 </details>
-<details><summary>31. Novedades de la 1.60</summary>
+<details><summary>31. Novedades de la 1.68</summary>
+<ul><li><b>Proyectos con generador</b>: al guardar un proyecto (o con el autoguardado) se guarda también el <b>Generador</b>: estilo, tempo, patrones de batería, bajo y teclas, presets y efectos de bajo y teclas, y el <b>sonido de los 4 huecos</b>. Los proyectos antiguos se abren igual que antes (sin tocar el generador).</li>
+<li><b>Looper → MIDI</b>: en las opciones de exportar del Looper, <b>Exportar a MIDI</b> guarda un .mid con el tempo del bucle: pads en el canal 10 (pad 1 del banco A = nota 36, C1), bajo en el canal 1 y teclas en el canal 2. Respeta mute y solo de las pistas.</li>
+<li><b>Conversor · Exportar .mid</b>: en la vista previa de «Convertir la batería del pad…» hay un botón <b>Exportar .mid</b> que guarda la rejilla tal como la ves (con tus cambios): bombo 36, caja 38, hat cerrado 42, hat abierto 46.</li>
+<li><b>Audio → bajo</b>: en el Generador, <b>Convertir el bajo del pad…</b> analiza el pad (mejor un bajo solo o separado con el Extractor): detecta las notas, el tempo y la tonalidad, y las coloca en la rejilla del bajo en el grado más cercano de la escala. Puedes ajustar BPM y compases, quitar notas, oírlo con ▶ Play, aplicarlo al generador (el bajo queda bloqueado para que «Generar» no lo cambie) o exportarlo a .mid con las notas reales.</li></ul>
+</details>
+<details><summary>32. Novedades de la 1.60</summary>
 <ul><li><b>Chop por golpes sin límite</b>: ya no se para en 16 fragmentos. Si hay más de 16, se reparten en los bancos siguientes (hasta el D).</li>
 <li><b>Cortes editables</b>: con Chop activo, <b>arrastra</b> cualquier corte para moverlo, <b>toca</b> uno para seleccionarlo y quítalo con <b>− Corte</b>, o añade uno nuevo con <b>＋ Corte</b> (aparece en el centro de la vista; acerca el zoom para colocarlo con precisión). Vale para partes iguales, golpes y breaks, antes de pulsar <b>Asignar</b>. Al soltar un corte (o tocarlo) suena el fragmento que va desde ese corte hasta el siguiente, con la línea de reproducción sobre la onda.</li>
 <li><b>Chop por breaks</b>: tras «Golpes», <b>Dividir</b> ofrece <b>Breaks</b>. Busca los cambios de sonido en una grabación larga con varios breaks seguidos y pone un corte en cada uno (pegado al golpe más cercano). El slider <b>Sensibilidad</b> añade o quita cortes. Es una detección aproximada: revisa y corrige los cortes.</li>
@@ -1084,7 +1090,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Conversor audio → batería</b>: botón <b>▶ Play</b> para pre-escuchar el patrón con su BPM, swing y desfases; suena con los sonidos de los huecos del generador (o sonidos básicos si están vacíos), sigue los cambios que hagas y marca el paso que suena.</li>
 <li><b>Grabar audio del sistema</b>: en <b>Más → Grabar audio del sistema</b> se captura el sonido de otra pestaña o app (solo audio). Funciona en Chrome de escritorio; en el móvil el navegador normalmente no lo permite: graba la pantalla e importa el vídeo.</li></ul>
 </details>
-<details><summary>32. Novedades de la 1.59</summary>
+<details><summary>33. Novedades de la 1.59</summary>
 <ul><li><b>Afinador completo</b>: botón <b>＋ Afinación propia</b>: pon nombre, sube o baja cada cuerda de medio en medio tono (suena la nota de referencia), añade o quita cuerdas y guarda. Aparece en el grupo «Mis afinaciones» de ese instrumento; con <b>✎ Editar</b> la cambias o la borras.</li>
 <li><b>Generador · bajo</b>: dos controles nuevos, <b>Bajo: notas fantasma</b> (notas muy suaves y cortas entre las principales) y <b>Bajo: slides</b> (algunas notas entran deslizando desde un tono vecino). Se aplican al generar o pulsar el dado; en la rejilla las fantasma se ven atenuadas y los slides con un borde blanco.</li>
 <li><b>Teclas</b>: mando <b>Detune lento</b> (en la fila Corte, reson., glide) que hace derivar el tono de cada nota como una cinta gastada, y preset <b>Cinta gastada</b> (categoría Eléctricos).</li>
@@ -1092,10 +1098,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → secuencia (batería)</b>: en el Generador, «Convertir la batería del pad…» analiza el pad seleccionado: detecta bombo, caja, hat cerrado y abierto, el tempo y el swing, cuantiza a 16 pasos y promedia las repeticiones. Puedes corregir el tempo (÷2 / ×2), los compases y cada celda antes de <b>Aplicar</b> o <b>Aplicar y guardar estilo</b> (incluye el desfase de caja y bombo y la humanización). Es una detección heurística: funciona mejor con baterías limpias.</li>
 <li><b>Estilos</b>: Questlove pasa a Bateristas.</li></ul>
 </details>
-<details><summary>33. Novedades de la 1.58</summary>
+<details><summary>34. Novedades de la 1.58</summary>
 <ul><li><b>Conexión con SampledHead Editor</b>: sección «Editor de audio» en el menú (enviar pad, recoger, abrir editor). Ver sección 29.</li></ul>
 </details>
-<details><summary>34. Novedades de la 1.57</summary>
+<details><summary>35. Novedades de la 1.57</summary>
 <ul><li><b>Vista de escritorio</b> (pantalla ancha con ratón; el móvil no cambia): Sampler y Looper con el editor a la izquierda y los pads grandes a la derecha; Bajo y Teclas con pads y piano a la vez y los ajustes a un lado; Mixer y Gen en columnas; FX con los 8 pads en una fila. Se adapta a un portátil de 14" y a un monitor de 27" (con ancho máximo y centrado).</li>
 <li><b>Teclas</b>: preset Theremin (seno, glide largo, vibrato lento; categoría Leads).</li></ul>
 <ul><li><b>Piano apaisado</b>: en Teclas solo se iluminan las teclas de Teclas (antes se encendían también las notas del bajo que sonaban), y viceversa en Bajo.</li></ul>
@@ -1142,23 +1148,23 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Grupo Breaks</b> en los estilos de batería: Amen (clásico, half-time, jungle, picado), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut y Ashley's Roachclip. Son recreaciones aproximadas por reglas, con el tempo y el swing de origen; no son las grabaciones. Usa tus sonidos o un kit sintetizado.</li>
 <li>La exportación MIDI del generador sigue en Generador → Exportar → MIDI.</li></ul>
 </details>
-<details><summary>35. Novedades de la 1.35</summary>
+<details><summary>36. Novedades de la 1.35</summary>
 <ul><li><b>Mixer</b>: vuelve a verse la barra de nivel de Bajo y Teclas cuando suenan desde el Generador.</li>
 </ul>
 </details>
-<details><summary>36. Novedades de la 1.33</summary>
+<details><summary>37. Novedades de la 1.33</summary>
 <ul><li><b>Estética unificada</b>: todas las pestañas usan el color de su pestaña como acento (botones activos, títulos, regla lateral de cada sección y deslizadores). Bajo, Teclas y Mixer tienen <b>secciones plegables</b> como el Generador; se recuerda cuáles cierras. Por defecto están cerrados los kits, el lo-fi, trémolo, chorus, ecualizador y compresor.</li></ul>
 </details>
-<details><summary>37. Novedades de la 1.32</summary>
+<details><summary>38. Novedades de la 1.32</summary>
 <ul><li><b>FX</b>: el <b>Filtro</b> va ahora al final y afecta a todo lo que suena (radio, vinilo, reverb, delays). Delay, Dub Delay y Repeat siguen el tempo del generador cuando está sonando, y el tiempo del eco cambia con transiciones suaves.</li>
 <li><b>Generador</b>: transporte (modo, Reproducir y BPM) fijo arriba, secciones plegables (se recuerda cuáles cierras) y un color por modo: batería rosa, bajo naranja, teclas violeta. Rejilla de pasos con brillo y halo en el paso actual.</li>
 <li><b>Pads de FX</b> con brillo, estela del dedo y borde de color mientras suenan. <b>Mixer</b>: color por canal, medidores más gruesos y marca de pico. Pestaña activa más destacada.</li></ul>
 </details>
-<details><summary>38. Novedades de la 1.31</summary>
+<details><summary>39. Novedades de la 1.31</summary>
 <ul><li><b>FX</b>: pad nuevo <b>Dub Delay</b> (eco de cinta oscuro; X = tiempo, Y = realimentación; al soltar el eco se apaga solo) junto al Delay, y pad <b>Radio</b> (radio antigua). Ahora son 8 efectos.</li>
 <li><b>Vinilo</b> con mucha menos saturación: nivel igual al original en el pad de FX, en el lo-fi de los pads y en el generador, con menos grave y crujido más suave.</li></ul>
 </details>
-<details><summary>39. Novedades de la 1.30</summary>
+<details><summary>40. Novedades de la 1.30</summary>
 <ul><li><b>Generador</b>: modo Teclas (acordes por grado de la escala con progresiones y ritmo de acompañamiento por estilo; el bajo puede seguir a las teclas). Interruptor «Tempo del estilo»: apagado, el tempo no cambia al cambiar de estilo.</li>
 <li><b>Mixer</b>: canal nuevo «Gen bat.» para la batería del generador. <b>Teclas</b> con estilo propio (independiente de batería y bajo). Con la pantalla bloqueada o la app en segundo plano el generador se recoloca al volver; en iPhone/iPad el sistema puede pausar el audio, así que al volver pulsa Reproducir si se detuvo.</li>
 <li><b>FX · Radio</b>: pad de radio antigua (banda estrecha tipo AM, válvula, estática y desvanecimiento). X = más estrecha hacia la derecha, Y = estática.</li>
@@ -1166,8 +1172,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>40. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.67</b></p>
+<details><summary>41. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.68</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1295,7 +1301,13 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Menu → Pick up from CrazyHead</b>: loads into free pads what CrazyHead sends (mix, loops or cuts as a kit; each loop's cuts go to bank A–D). You can then export the kit to MPC, Move, SP-404, Koala or Ableton as usual. Looper loops travel with their <b>exact cuts</b>, so CrazyHead does not have to detect them.</li>
 <li>The first time it asks for CrazyHead's address (remembered; if you open CrazyHead once first, it saves itself). When it opens, CrazyHead asks whether to load the audio into A–D.</li></ul>
 </details>
-<details><summary>31. What is new in 1.60</summary>
+<details><summary>31. What is new in 1.68</summary>
+<ul><li><b>Projects with the generator</b>: saving a project (or autosave) now also stores the <b>Generator</b>: style, tempo, drum, bass and keys patterns, bass and keys presets and effects, and the <b>sound of the 4 slots</b>. Older projects open as before (generator untouched).</li>
+<li><b>Looper → MIDI</b>: in the Looper export options, <b>Export to MIDI</b> saves a .mid at the loop tempo: pads on channel 10 (bank A pad 1 = note 36, C1), bass on channel 1 and keys on channel 2. Track mute and solo are respected.</li>
+<li><b>Converter · Export .mid</b>: the “Convert the pad's drums…” preview has an <b>Export .mid</b> button that saves the grid as you see it (with your edits): kick 36, snare 38, closed hat 42, open hat 46.</li>
+<li><b>Audio → bass</b>: in the Generator, <b>Convert the pad's bass…</b> analyses the pad (best with a solo bass or one separated with the Extractor): it finds the notes, tempo and key and places them on the bass grid at the nearest scale degree. Adjust BPM and bars, remove notes, listen with ▶ Play, apply it to the generator (the bass is locked so “Generate” does not change it) or export a .mid with the real notes.</li></ul>
+</details>
+<details><summary>32. What is new in 1.60</summary>
 <ul><li><b>Chop by hits, no limit</b>: it no longer stops at 16 slices. With more than 16, they spread over the next banks (up to D).</li>
 <li><b>Editable cuts</b>: with Chop on, <b>drag</b> any cut to move it, <b>tap</b> one to select it and remove it with <b>− Cut</b>, or add one with <b>＋ Cut</b> (it appears at the centre of the view; zoom in to place it precisely). Works for equal parts, hits and breaks, before you press <b>Assign</b>. When you release a cut (or tap it), the slice from that cut to the next one plays, with the playhead over the waveform.</li>
 <li><b>Chop by breaks</b>: after «Hits», <b>Split</b> offers <b>Breaks</b>. It looks for sound changes in a long recording with several breaks in a row and puts a cut at each one (snapped to the nearest hit). The <b>Sensitivity</b> slider adds or removes cuts. Detection is approximate: check and fix the cuts.</li>
@@ -1303,7 +1315,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → drums converter</b>: <b>▶ Play</b> button to preview the pattern with its BPM, swing and offsets; it plays the generator slot sounds (or basic sounds if empty), follows your edits and shows the playing step.</li>
 <li><b>Record system audio</b>: <b>More → Record system audio</b> captures the sound of another tab or app (audio only). It works in desktop Chrome; on phones the browser usually does not allow it: record the screen and import the video.</li></ul>
 </details>
-<details><summary>32. What is new in 1.59</summary>
+<details><summary>33. What is new in 1.59</summary>
 <ul><li><b>Full tuner</b>: <b>＋ Custom tuning</b> button: name it, raise or lower each string by semitones (the reference note plays), add or remove strings and save. It shows up in the «My tunings» group of that instrument; <b>✎ Edit</b> changes or deletes it.</li>
 <li><b>Generator · bass</b>: two new controls, <b>Bass: ghost notes</b> (very soft, short notes between the main ones) and <b>Bass: slides</b> (some notes slide in from a neighbouring pitch). They apply when you generate or roll the dice; in the grid ghosts look dimmed and slides have a white outline.</li>
 <li><b>Keys</b>: <b>Slow detune</b> knob (in the Cutoff, reson., glide row) that lets each note's pitch drift like worn tape, and a <b>Worn tape</b> preset (Electric category).</li>
@@ -1311,10 +1323,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → sequence (drums)</b>: in the Generator, «Convert the pad's drums…» analyses the selected pad: it detects kick, snare, closed and open hat, tempo and swing, quantises to 16 steps and averages repeats. You can fix the tempo (÷2 / ×2), the bars and any cell before <b>Apply</b> or <b>Apply and save style</b> (it keeps snare/kick offsets and humanisation). It is heuristic: it works best on clean drums.</li>
 <li><b>Styles</b>: Questlove moves to Drummers.</li></ul>
 </details>
-<details><summary>33. What is new in 1.58</summary>
+<details><summary>34. What is new in 1.58</summary>
 <ul><li><b>Connection with SampledHead Editor</b>: «Audio editor» section in the menu (send pad, pick up, open editor). See section 29.</li></ul>
 </details>
-<details><summary>34. What is new in 1.57</summary>
+<details><summary>35. What is new in 1.57</summary>
 <ul><li><b>Desktop view</b> (wide screen with mouse; mobile unchanged): Sampler and Looper with the editor on the left and big pads on the right; Bass and Keys with pads and piano together and settings aside; Mixer and Gen in columns; FX with the 8 pads in one row. Fits a 14" laptop and a 27" monitor (max width, centred).</li>
 <li><b>Keys</b>: Theremin preset (sine, long glide, slow vibrato; Leads category).</li></ul>
 <ul><li><b>Landscape piano</b>: in Keys only the Keys notes light up (bass notes playing used to light it too), and vice versa in Bass.</li></ul>
@@ -1361,23 +1373,23 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Breaks group</b> in the drum styles: Amen (classic, half-time, jungle, chopped), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut and Ashley's Roachclip. They are approximate rule-based re-creations with the original tempo and swing, not the recordings. Use your sounds or a synthesized kit.</li>
 <li>The generator MIDI export is still in Generator → Export → MIDI.</li></ul>
 </details>
-<details><summary>35. What is new in 1.35</summary>
+<details><summary>36. What is new in 1.35</summary>
 <ul><li><b>Mixer</b>: the Bass and Keys level bars show again when they play from the Generator.</li>
 </ul>
 </details>
-<details><summary>36. What is new in 1.33</summary>
+<details><summary>37. What is new in 1.33</summary>
 <ul><li><b>Unified look</b>: every tab uses its tab colour as the accent (active buttons, titles, a side rule on each section and sliders). Bass, Keys and Mixer now have <b>collapsible sections</b> like the Generator; it remembers which ones you close. Kits, lo-fi, tremolo, chorus, equalizer and compressor are closed by default.</li></ul>
 </details>
-<details><summary>37. What is new in 1.32</summary>
+<details><summary>38. What is new in 1.32</summary>
 <ul><li><b>FX</b>: the <b>Filter</b> now sits at the end and affects everything that sounds (radio, vinyl, reverb, delays). Delay, Dub Delay and Repeat follow the generator tempo while it plays, and the echo time changes smoothly.</li>
 <li><b>Generator</b>: transport (mode, Play and BPM) pinned at the top, collapsible sections (it remembers which you close) and one colour per mode: drums pink, bass orange, keys violet. Step grid with glow and a halo on the current step.</li>
 <li><b>FX pads</b> with glow, finger trail and a coloured border while active. <b>Mixer</b>: colour per channel, thicker meters and a peak mark. Active tab stands out more.</li></ul>
 </details>
-<details><summary>38. What is new in 1.31</summary>
+<details><summary>39. What is new in 1.31</summary>
 <ul><li><b>FX</b>: new <b>Dub Delay</b> pad (dark tape echo; X = time, Y = feedback; the echo fades out on its own when released) next to Delay, and the <b>Radio</b> pad (old radio). There are now 8 effects.</li>
 <li><b>Vinyl</b> with much less saturation: same level as the original in the FX pad, the pad lo-fi and the generator, with less rumble and softer crackle.</li></ul>
 </details>
-<details><summary>39. What is new in 1.30</summary>
+<details><summary>40. What is new in 1.30</summary>
 <ul><li><b>Generator</b>: Keys mode (chords by scale degree with progressions and a comping rhythm per style; the bass can follow the keys). «Style tempo» switch: when off, the tempo does not change when the style changes.</li>
 <li><b>Mixer</b>: new «Gen drums» channel for the generator drums. <b>Keys</b> can have their own style (independent of drums and bass). With the screen locked or the app in the background the generator resyncs on return; on iPhone/iPad the system may pause audio, so press Play again if it stopped.</li>
 <li><b>FX · Radio</b>: old-radio pad (narrow AM-style band, tube saturation, static and fading). X = narrower to the right, Y = static.</li>
@@ -1385,8 +1397,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>40. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.67</b></p>
+<details><summary>41. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.68</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -3241,7 +3253,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.67';
+const APP_VERSION='1.68';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -7933,5 +7945,266 @@ $('#shinbox').onclick=()=>{menu(false);if(window.shSamplerInbox)window.shSampler
 $('#shbak').onclick=()=>{menu(false);if(window.SH)SH.backup.sheet('sampler')};
 </script>
 <script src="extractor/extractor.js"></script>
+<script>
+/* =================== 1.68 ===================
+   - El generador (ajustes, patrones, presets de bajo/teclas y sonidos de los 4 huecos) se guarda en los proyectos.
+   - Looper → MIDI (.mid): pads en el canal 10, bajo en el 1 y teclas en el 2.
+   - Conversor: exportar .mid desde la vista previa (batería) y fase 2: audio → línea de bajo. */
+(function(){
+/* ---------- MIDI estándar ---------- */
+const vlq=n=>{const b=[n&127];while((n>>=7)>0)b.unshift((n&127)|128);return b};
+const u32=n=>[n>>>24&255,n>>>16&255,n>>>8&255,n&255],u16=n=>[n>>8&255,n&255];
+const chunk=(id,d)=>[...[...id].map(c=>c.charCodeAt(0)),...u32(d.length),...d];
+const txt=s=>[...unescape(encodeURIComponent(s))].map(c=>c.charCodeAt(0));
+const PPQ=480;
+function smf(bpm,tracks,endTick,title){
+  const trk=(list,name)=>{
+    list.sort((a,b)=>a.t-b.t||a.o-b.o);
+    const d=[0,255,3,...vlq(txt(name).length),...txt(name)];let last=0;
+    for(const e of list){d.push(...vlq(e.t-last),...e.b);last=e.t}
+    d.push(...vlq(Math.max(0,endTick-last)),255,47,0);return chunk('MTrk',d);
+  };
+  const mpq=Math.round(60000000/bpm);
+  const all=[trk([{t:0,o:0,b:[255,81,3,mpq>>16&255,mpq>>8&255,mpq&255]},{t:0,o:0,b:[255,88,4,4,2,24,8]}],title||'SampledHead')];
+  tracks.forEach(t=>{if(t.ev.length)all.push(trk(t.ev,t.name))});
+  return new Uint8Array([...chunk('MThd',[...u16(1),...u16(all.length),...u16(PPQ)]),...all.flat()]);
+}
+const note=(list,ch,n,vel,t0,t1)=>{n=Math.max(0,Math.min(127,Math.round(n)));list.push({t:t0,o:1,b:[0x90|ch,n,Math.max(1,Math.min(127,Math.round(vel)))]},{t:Math.max(t0+1,t1),o:0,b:[0x80|ch,n,0]})};
+const saveMid=(bytes,name)=>{save(new Blob([bytes],{type:'audio/midi'}),name);status('Exportado: '+name)};
+window.SH168={smf,note};
+
+/* ---------- Looper → MIDI ---------- */
+function lpMidiBytes(){
+  const bpm=lpBpm()||120,tk=s=>Math.max(0,Math.round(s*bpm/60*PPQ)),end=tk(lp.len);
+  const P=[],B=[],K=[],open=new Map();
+  const evs=lp.ev.filter(e=>lpAud(e.trk)).slice().sort((a,b)=>a.t-b.t||(a.k==='r')-(b.k==='r'));
+  const close=(i,t)=>{const o=open.get(i);if(!o)return;open.delete(i);o.ns.forEach(n=>note(o.list,o.ch,n,o.vel,o.t,t))};
+  for(const e of evs){
+    const t=Math.min(end,tk(e.t));
+    if(e.k==='h'){
+      close(e.i,t);
+      const vT=lp.vol[e.trk]==null?1:lp.vol[e.trk],vel=Math.min(127,(e.v==null?.8:e.v)*vT*127);
+      let ns,ch,list;
+      if(e.i>=80){ns=kNotes(e.i-80);ch=1;list=K}
+      else if(e.i>=64){ns=[bMidi(e.i-64)];ch=0;list=B}
+      else{if(!pads[e.i]||!pads[e.i].buf)continue;ns=[36+e.i];ch=9;list=P}
+      open.set(e.i,{ns,ch,list,vel,t});
+    }else close(e.i,t);
+  }
+  for(const [i,o] of [...open])close(i,i<64?Math.min(end,o.t+PPQ/2):end);
+  return smf(bpm,[{name:'Pads',ev:P},{name:'Bajo',ev:B},{name:'Teclas',ev:K}],end,'SampledHead Looper');
+}
+function lpToMidi(){
+  if(!lp.len||!lp.ev.length){status('Grabar un bucle primero');return}
+  if(!lp.ev.some(e=>lpAud(e.trk))){status('No hay nada que exportar');return}
+  const bp=lpBpmTxt();saveMid(lpMidiBytes(),clean('looper'+(bp?'_'+bp+'bpm':''))+'.mid');
+}
+(function(){
+  const box=$('#lpexp');if(!box||$('#lptomid'))return;
+  const b=document.createElement('button');b.id='lptomid';b.disabled=true;b.textContent='Exportar a MIDI';
+  b.setAttribute('aria-label','Exportar el bucle como archivo MIDI (.mid)');b.onclick=lpToMidi;
+  const w=$('#lptowav');w.after(b);
+  const crz=$('#lptocrz');if(crz)crz.style.gridColumn='';
+  const o=lpUI;lpUI=function(t){o(t);if(!t){const has=lp.len>0&&lp.ev.length>0;b.disabled=!has||lpBusy}};
+  lpUI();
+})();
+
+/* ---------- Generador dentro de los proyectos ---------- */
+(function(){
+  const oMeta=pjMeta,oSig=pjSig,oCap=pjCapture,oApply=pjApply;
+  pjMeta=function(){const m=oMeta();try{m.gen=scSnap()}catch{}return m};
+  pjSig=function(){return oSig()+'|'+G.sl.map(s=>s.buf?pjId(s.buf):0).join(',')};
+  pjCapture=function(){
+    const c=oCap();
+    try{c.genAu=G.sl.map(s=>s.buf?{sr:s.buf.sampleRate,d:s.buf.getChannelData(0).slice(),name:s.name}:null)}catch{}
+    return c;
+  };
+  pjApply=async function(d){
+    await oApply(d);
+    if(!d)return;
+    if(d.gen){try{scApply(d.gen)}catch(e){console.warn('gen',e)}}
+    if(d.genAu){
+      d.genAu.forEach((r,i)=>{
+        const S=G.sl[i];if(!S)return;
+        if(r&&r.d&&r.d.length){const b=ctx.createBuffer(1,r.d.length,r.sr);b.copyToChannel(r.d instanceof Float32Array?r.d:Float32Array.from(r.d),0);S.buf=b;S.name=r.name||S.name}
+        else S.buf=null;
+        S.pk='';S.pb=null;gSlotStore(i);
+      });
+      try{gCards();gSave()}catch{}
+    }
+  };
+})();
+
+/* ---------- Conversor batería → .mid ---------- */
+function drumMidi(res,bpm,name){
+  const tpS=PPQ/4,L=res.pat.k.length,P=[];
+  GDRUM.forEach(D=>res.pat[D.id].forEach((v,i)=>{if(v)note(P,9,D.m,v,i*tpS,i*tpS+tpS/2)}));
+  saveMid(smf(bpm,[{name:'Batería',ev:P}],L*tpS,'SampledHead '+name),clean('conversor_'+name.replace(/\s+/g,'_')+'_'+Math.round(bpm)+'bpm')+'.mid');
+}
+const oShow=cvShow;
+cvShow=function(an){
+  oShow(an);
+  const o=$('#cvt');if(!o||o.querySelector('#cvmid'))return;
+  const b=document.createElement('button');b.id='cvmid';b.textContent='Exportar .mid';
+  b.onclick=()=>{const bpm=+o.querySelector('#cvbpm').value||an.bpm;drumMidi({pat:gridPat(o)},bpm,an.name)};
+  o.querySelector('#cvsv').after(b);
+};
+/* Lee la rejilla de la vista previa tal como se ve (con los cambios hechos a mano). */
+function gridPat(o){
+  const rows=[...o.querySelectorAll('#cvgrid .cvc')],pat={k:[],s:[],h:[],o:[]},ord=['k','s','h','o'];
+  rows.forEach((row,r)=>{const b=Math.floor(r/4),l=ord[r%4];[...row.children].forEach((c,i)=>{const cl=c.classList;pat[l][b*16+i]=cl.contains('a')?100:cl.contains('n')?85:cl.contains('g')?50:0})});
+  return pat;
+}
+
+/* ---------- Conversor fase 2: audio → línea de bajo ---------- */
+const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const nName=m=>NN[((m%12)+12)%12]+(Math.floor(m/12)-1);
+function cbAnalyze(x,sr){
+  const f=Math.max(1,Math.floor(sr/11025)),r=sr/f,n=Math.floor(x.length/f),y=new Float32Array(n);
+  for(let i=0;i<n;i++){let s=0;for(let j=0;j<f;j++)s+=x[i*f+j];y[i]=s/f}
+  const a=Math.exp(-2*Math.PI*420/r);let z1=0,z2=0;                      // paso bajo ~420 Hz (dos polos)
+  for(let i=0;i<n;i++){z1=(1-a)*y[i]+a*z1;z2=(1-a)*z1+a*z2;y[i]=z2}
+  const W=Math.round(r*.045),TM=Math.round(r/32),hop=Math.round(r*.012),fr=[];
+  let mx=0;
+  for(let p=0;p+W+TM<n;p+=hop){
+    let e=0;for(let j=0;j<W;j++)e+=y[p+j]*y[p+j];e=Math.sqrt(e/W);if(e>mx)mx=e;
+    fr.push({t:(p+W/2)/r,e,f:null});
+  }
+  if(!mx)return [];
+  const th=mx*.08;
+  for(let k=0;k<fr.length;k++){if(fr[k].e<th)continue;const p=k*hop,q=yinWin(y,p,W,TM,r,.15);if(q&&q.f>=30&&q.f<=420&&q.c>.45)fr[k].f=q.f}
+  const notes=[];let cur=null;
+  const end=(t)=>{if(cur&&cur.ms.length>=4){const ms=cur.ms.slice().sort((p,q)=>p-q);cur.m=Math.round(ms[ms.length>>1]);cur.dur=Math.max(.05,t-cur.t);notes.push(cur)}cur=null};
+  for(let k=0;k<fr.length;k++){
+    const F=fr[k],prev=fr[k-1];
+    if(!F.f){if(cur){cur.dip=Math.min(cur.dip,F.e);if(++cur.gap>2)end(F.t)}continue}
+    const m=69+12*Math.log2(F.f/440);
+    const onset=cur&&((prev&&prev.e>0&&F.e>prev.e*1.7&&F.e>th*2)||(cur.dip<cur.pk*.5&&F.e>cur.dip*1.5&&F.e>th*2));
+    if(cur&&Math.abs(m-cur.ref)<.7&&!onset){cur.ms.push(m);cur.gap=0;cur.ref=cur.ref*.8+m*.2;if(F.e>cur.pk){cur.pk=F.e;cur.dip=F.e}else cur.dip=Math.min(cur.dip,F.e);continue}
+    end(F.t);cur={t:F.t-W/2/r,ms:[m],ref:m,gap:0,pk:F.e,dip:F.e};
+  }
+  end(fr.length?fr[fr.length-1].t:0);
+  notes.forEach(q=>q.v=Math.max(40,Math.min(120,Math.round(60+60*q.pk/mx))));
+  return notes;
+}
+function cbTempo(notes){   // tempo que mejor encaja los inicios de nota en una rejilla de corcheas (preferencia suave por ~100 BPM)
+  if(notes.length<3)return 0;const t0=notes[0].t;let best=0,bs=1e9;
+  for(let b=70;b<=160;b+=.25){const g=30/b;let e=0;notes.forEach(q=>{const u=(q.t-t0)/g,d=u-Math.round(u);e+=d*d});e=e/notes.length+.02*Math.abs(Math.log2(b/100));if(e<bs){bs=e;best=b}}
+  return Math.round(best*10)/10;
+}
+function cbKey(notes){
+  const h=new Array(12).fill(0);notes.forEach(q=>h[((q.m%12)+12)%12]+=q.dur);
+  let root=0;h.forEach((v,i)=>{if(v>h[root])root=i});
+  const minor=h[(root+3)%12]>=h[(root+4)%12];
+  const want=minor?/Eólica|menor natural/i:/Jónica|^Mayor/i;
+  let sc=BSCALES.findIndex(s=>want.test(s.full));if(sc<0)sc=BS.scale;
+  return {root,sc,minor};
+}
+const cbCell=m=>{let best=0,bd=1e9;for(const sh of [0,-12,12,-24,24])for(let k=0;k<16;k++){const d=Math.abs(bMidi(k)-(m+sh))+Math.abs(sh)/24;if(d<bd){bd=d;best=k}}return best};
+function cbQuant(notes,bpm,bars){
+  const st=15/bpm,t0=notes.length?notes[0].t:0,N=bars*16,cells=new Array(N).fill(0);
+  notes.forEach(q=>{const s=Math.round((q.t-t0)/st);if(s<0||s>=N)return;const c={k:cbCell(q.m),m:q.m,v:q.v,len:Math.max(1,Math.round(q.dur/st))};if(!cells[s]||cells[s].v<c.v)cells[s]=c});
+  return cells;
+}
+let cbPl=null;
+function cbStop(){if(cbPl){cbPl.stop();cbPl=null}}
+function cbPlay(S,btn){
+  cbStop();
+  const bo=mkBass(ctx,bassBus,{...BP}),st=15/S.bpm,N=S.cells.length,t0=ctx.currentTime+.08;let alive=true,timer=0,rep=0;
+  const sched=()=>{if(!alive)return;const base=t0+rep*N*st;
+    S.cells.forEach((c,i)=>{if(!c)return;const a=base+i*st;bo.on(i,a,bMidi(c.k));bo.off(i,a+Math.min(c.len,16)*st*.92)});
+    rep++;timer=setTimeout(sched,Math.max(50,(base+N*st-ctx.currentTime-.15)*1000))};
+  try{ctx.resume()}catch{}
+  sched();btn.textContent='■ Stop';
+  cbPl={stop(){alive=false;clearTimeout(timer);try{bo.silence(ctx.currentTime)}catch{}btn.textContent='▶ Play'}};
+}
+function cbApply(S,setKey){
+  if(G.play)gStop();
+  if(setKey&&S.key){BS.root=S.key.root;BS.scale=S.key.sc;try{bScaleUI();bassDraw()}catch{}S.cells=cbQuant(S.notes,S.bpm,S.bars)}
+  G.ts='4/4';G.bTsOwn=false;G.bars=S.bars;G.bpm=Math.max(40,Math.min(240,Math.round(S.bpm)));G.page=0;
+  try{gResizeLocked()}catch{}
+  const spb=gBspb(),A=new Array(spb*G.bars).fill(0);
+  S.cells.forEach((c,i)=>{if(c&&i<A.length)A[i]={k:c.k,v:c.v}});
+  G.bas=A;G.lock.b=1;G.useB=true;G.mode='b';
+  gUI();gGrid();gSave();
+}
+function cbOpen(){
+  const p=pads[sel];
+  if(!p||!p.buf){status('Elige antes un pad con la línea de bajo a convertir');return}
+  status('Analizando el bajo del pad…');
+  setTimeout(()=>{
+    try{
+      const b=p.buf,n=b.length,sr=b.sampleRate,a=Math.max(0,Math.floor(p.s*n)),z=Math.min(n,Math.max(a+1,Math.ceil(p.e*n)),a+60*sr);
+      const x=new Float32Array(z-a),chn=b.numberOfChannels;
+      for(let c=0;c<chn;c++){const d=b.getChannelData(c);for(let i=0;i<x.length;i++)x[i]+=d[a+i]/chn}
+      const notes=cbAnalyze(x,sr);
+      if(notes.length<2){status('No encuentro notas de bajo claras en este pad');return}
+      const bpm=cbTempo(notes)||G.bpm;
+      cbShow({name:p.name||('Pad '+(sel+1)),notes,bpm});
+    }catch(e){console.warn(e);status('No se pudo analizar el audio')}
+  },40);
+}
+function cbShow(an){
+  cbStop();try{cvStop()}catch{}
+  let o=$('#cvt');if(!o){o=document.createElement('div');o.id='cvt';o.setAttribute('role','dialog');document.body.append(o)}
+  o.setAttribute('aria-label','Convertir audio en línea de bajo');
+  const D=an.notes[an.notes.length-1].t+an.notes[an.notes.length-1].dur-an.notes[0].t,nb=D/(an.bpm/60>0?16*15/an.bpm:1)+.05;
+  const key=cbKey(an.notes);
+  const S={bpm:an.bpm,bars:nb>=3.2?4:nb>=1.6?2:1,notes:an.notes,key,cells:null};
+  o.innerHTML=`<div class="cvb"><h2>Audio → bajo</h2>
+<div class="cvi" id="cbinfo"></div>
+<div class="cvr"><label>BPM <input id="cbbpm" type="number" step="0.1" min="40" max="240" inputmode="decimal"></label><button id="cbh" aria-label="Mitad de tempo">÷2</button><button id="cbd" aria-label="Doble de tempo">×2</button>
+<label>Compases <select id="cbbars"><option>1</option><option>2</option><option>4</option></select></label></div>
+<label class="cvi"><input type="checkbox" id="cbkey" checked> Ajustar la raíz y la escala del Bajo a lo detectado (<b id="cbkn"></b>)</label>
+<div id="cbgrid"></div>
+<div class="cvi">Cada casilla es una semicorchea. Toca una nota para quitarla. Las notas se colocan en el grado más cercano de la escala del Bajo.</div>
+<div class="cvr"><button id="cbpl">▶ Play</button><button class="pri" id="cbap">Aplicar al generador</button><button id="cbmid">Exportar .mid</button><button id="cbx">Cancelar</button></div></div>`;
+  const q=id=>o.querySelector('#'+id);
+  q('cbkn').textContent=NN[key.root]+' '+(key.minor?'menor':'mayor');
+  const calc=()=>{
+    if(q('cbkey').checked){const r0=BS.root,s0=BS.scale;BS.root=key.root;BS.scale=key.sc;S.cells=cbQuant(S.notes,S.bpm,S.bars);BS.root=r0;BS.scale=s0}
+    else S.cells=cbQuant(S.notes,S.bpm,S.bars);
+    draw()};
+  function draw(){
+    q('cbbpm').value=S.bpm;q('cbbars').value=String(S.bars);
+    const used=S.cells.filter(Boolean).length;
+    q('cbinfo').textContent=an.name+' · '+S.notes.length+' notas detectadas · '+used+' en la rejilla';
+    const g=q('cbgrid');g.replaceChildren();
+    for(let b=0;b<S.bars;b++){
+      const hd=document.createElement('div');hd.className='cvt-h';hd.textContent='COMPÁS '+(b+1);g.append(hd);
+      const cs=document.createElement('div');cs.className='cvc cbc';
+      for(let i=0;i<16;i++){const c=S.cells[b*16+i],e=document.createElement('i');
+        if(c){e.className='n';e.textContent=nName(c.m).replace(/-?\d+$/,'');e.title=nName(c.m)}
+        e.onclick=()=>{if(S.cells[b*16+i]){S.cells[b*16+i]=0;draw()}};cs.append(e)}
+      g.append(cs);
+    }
+  }
+  q('cbbpm').onchange=()=>{S.bpm=Math.max(40,Math.min(240,+q('cbbpm').value||S.bpm));calc()};
+  q('cbh').onclick=()=>{S.bpm=Math.max(40,Math.round(S.bpm/2*10)/10);calc()};
+  q('cbd').onclick=()=>{S.bpm=Math.min(240,Math.round(S.bpm*2*10)/10);calc()};
+  q('cbbars').onchange=()=>{S.bars=+q('cbbars').value;calc()};
+  q('cbkey').onchange=calc;
+  q('cbx').onclick=()=>{cbStop();o.classList.remove('show')};
+  q('cbpl').onclick=()=>{if(cbPl){cbStop();return}
+    if(q('cbkey').checked){const r0=BS.root,s0=BS.scale;BS.root=key.root;BS.scale=key.sc;cbPlay(S,q('cbpl'));setTimeout(()=>{BS.root=r0;BS.scale=s0},0)}else cbPlay(S,q('cbpl'))};
+  q('cbap').onclick=()=>{cbStop();const keep=S.cells;cbApply(S,q('cbkey').checked);if(!q('cbkey').checked)S.cells=keep;o.classList.remove('show');status('Bajo aplicado al generador: '+Math.round(S.bpm)+' BPM')};
+  q('cbmid').onclick=()=>{const tpS=PPQ/4,B=[];S.cells.forEach((c,i)=>{if(c)note(B,0,c.m,c.v,i*tpS,(i+Math.min(c.len,16))*tpS-10)});
+    saveMid(smf(S.bpm,[{name:'Bajo',ev:B}],S.cells.length*tpS,'SampledHead '+an.name),clean('conversor_bajo_'+an.name.replace(/\s+/g,'_')+'_'+Math.round(S.bpm)+'bpm')+'.mid')};
+  calc();o.classList.add('show');o.scrollTop=0;
+}
+window.cbAnalyze=cbAnalyze;window.cbQuant=cbQuant;window.cbOpen=cbOpen;window.lpMidiBytes=lpMidiBytes;
+(function(){
+  const c=document.createElement('style');c.textContent='.cbc i{display:flex;align-items:center;justify-content:center;font:700 10px system-ui;color:#0a0c0f}';document.head.append(c);
+  const g=$('#gcvt');if(!g||$('#gcvb'))return;
+  const b=document.createElement('button');b.id='gcvb';b.style.width='100%';b.style.marginTop='6px';b.textContent='Convertir el bajo del pad…';b.onclick=cbOpen;g.after(b);
+})();
+
+{const bx={"Exportar a MIDI":"Export to MIDI","Exportar .mid":"Export .mid","Convertir el bajo del pad…":"Convert the pad's bass…","Audio → bajo":"Audio → bass","Aplicar al generador":"Apply to generator","Grabar un bucle primero":"Record a loop first","No hay nada que exportar":"Nothing to export","Elige antes un pad con la línea de bajo a convertir":"First choose a pad with the bass line to convert","Analizando el bajo del pad…":"Analysing the pad's bass…","No encuentro notas de bajo claras en este pad":"No clear bass notes found in this pad","No se pudo analizar el audio":"Could not analyse the audio","Exportar el bucle como archivo MIDI (.mid)":"Export the loop as a MIDI file (.mid)"};
+const bf={"Bajo aplicado al generador: ":"Bass applied to generator: "," notas detectadas · ":" notes detected · "," en la rejilla":" on the grid","Ajustar la raíz y la escala del Bajo a lo detectado":"Set the Bass root and scale to what was detected","Cada casilla es una semicorchea.":"Each cell is a 16th note.","Toca una nota para quitarla.":"Tap a note to remove it.","Las notas se colocan en el grado más cercano de la escala del Bajo.":"Notes go to the nearest degree of the Bass scale."};
+for(const k in bx)if(!(k in I18N.x))I18N.x[k]=bx[k];Object.assign(I18N.f,bf);I18N_FK.push(...Object.keys(bf));I18N_FK.sort((a,b)=>b.length-a.length);
+try{if(LANG==='en')i18nWalk(document.body)}catch{}}
+})();
+
+</script>
 </body>
 </html>
