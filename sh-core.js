@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.1.0';
+  const VERSION = '1.2.0';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -194,9 +194,10 @@
    * En la web todas las apps comparten el dominio, así que cada app solo copia lo suyo (OWN).
    * Formato: «SHDAT1» + u32 largo del JSON + JSON + datos binarios seguidos (ArrayBuffer, vistas tipadas y Blob). */
   const OWN = {
-    sampler: { idb: ['sampler'], ls: k => (k.startsWith('sampledhead.') && !k.startsWith('sampledhead.tuner')) || k.startsWith('sh_') },
+    sampler: { idb: ['sampler'], ls: k => (k.startsWith('sampledhead.') && !k.startsWith('sampledhead.tuner')) || k.startsWith('sh_'),
+      state: (db, st, k) => k === 'proj:__auto__' || /^gen:\d+$/.test(String(k)) },   // autoguardado y sonidos actuales del generador
     editor: { idb: [], ls: k => k.startsWith('shed.') },
-    crazyhead: { idb: ['crazyhead'], ls: k => k.startsWith('crazyhead.') },
+    crazyhead: { idb: ['crazyhead'], ls: k => k.startsWith('crazyhead.'), state: (db, st) => st === 'aud' },   // loops A–D que están cargados ahora
     fuzzhead: { idb: [], ls: k => k.startsWith('fuzzhead-') || k.startsWith('trazo-gs1-') },
     tuner: { idb: [], ls: k => k.startsWith('sampledhead.tuner') },
     tonopad: { idb: ['tonopad'], ls: k => k.startsWith('tonopad.') },
@@ -235,6 +236,44 @@
       r.onsuccess = () => { clearTimeout(t); ok(r.result); }; r.onerror = () => { clearTimeout(t); ko(r.error); }; r.onblocked = () => {};
     });
   }
+  const keyStr = k => (typeof k) + ':' + (typeof k === 'object' ? JSON.stringify(k) : String(k));
+  const copyName = (n, i) => String(n) + (i > 1 ? ' (copia ' + i + ')' : ' (copia)');
+  const strip = (v, kp) => { if (!v || typeof v !== 'object' || ArrayBuffer.isView(v) || v instanceof ArrayBuffer || (typeof Blob !== 'undefined' && v instanceof Blob)) return v; const o = Object.assign({}, v); if (typeof kp === 'string') delete o[kp]; delete o.name; delete o.nombre; return o; };
+  function setPath(v, kp, val) { if (typeof kp !== 'string') return v; const o = Object.assign({}, v); if (val === undefined) delete o[kp]; else o[kp] = val; return o; }
+  async function same(a, b) {   // comparación profunda (también binarios y Blob)
+    const bA = [], bB = []; const ja = JSON.stringify(await enc(a, bA)), jb = JSON.stringify(await enc(b, bB));
+    if (ja !== jb || bA.length !== bB.length) return false;
+    for (let i = 0; i < bA.length; i++) { const x = bA[i], y = bB[i]; if (x.byteLength !== y.byteLength) return false; for (let j = 0; j < x.length; j++) if (x[j] !== y[j]) return false; }
+    return true;
+  }
+  function putAll(db, s, recs, clear) {
+    return new Promise((ok, ko) => {
+      const tx = db.transaction(s.name, 'readwrite'), st = tx.objectStore(s.name); if (clear) st.clear();
+      for (const r of recs) { if (s.keyPath != null || r.k === undefined) st.put(r.v); else st.put(r.v, r.k); }
+      tx.oncomplete = ok; tx.onerror = () => ko(tx.error); tx.onabort = () => ko(tx.error);
+    });
+  }
+  /* Ajustes de localStorage: si ambos son listas o colecciones de objetos (escenas, presets propios, afinaciones…) se
+     suman; cualquier otro ajuste se queda como está en este dispositivo. */
+  function mergeLs(cur, inc) {
+    let a, b; try { a = JSON.parse(cur); b = JSON.parse(inc); } catch (e) { return null; }
+    const isObj = x => x && typeof x === 'object' && !Array.isArray(x);
+    if (Array.isArray(a) && Array.isArray(b) && b.length && b.every(isObj) && a.every(isObj)) {
+      const seen = new Set(a.map(x => JSON.stringify(x))), out = a.slice();
+      for (const x of b) { if (seen.has(JSON.stringify(x))) continue; let y = x;
+        const nm = ['name', 'nombre', 'n', 'title'].find(f => typeof x[f] === 'string');
+        let dup = false;
+        if (nm) for (let n = 1; out.some(z => z[nm] === y[nm]) && n < 500; n++) { y = Object.assign({}, x, { [nm]: copyName(x[nm], n) }); if (seen.has(JSON.stringify(y))) { dup = true; break; } }
+        if (dup) continue; out.push(y); seen.add(JSON.stringify(y)); }
+      return JSON.stringify(out);
+    }
+    if (isObj(a) && isObj(b) && Object.keys(b).length && Object.values(b).every(isObj) && Object.values(a).every(isObj)) {
+      const out = Object.assign({}, a);
+      for (const [k, v] of Object.entries(b)) { if (!(k in out)) out[k] = v; else if (JSON.stringify(out[k]) !== JSON.stringify(v)) { for (let n = 1; n < 500; n++) { const nk = copyName(k, n); if (!(nk in out)) { out[nk] = v; break; } if (JSON.stringify(out[nk]) === JSON.stringify(v)) break; } } }
+      return JSON.stringify(out);
+    }
+    return null;
+  }
   const backup = {
     owned: me => OWN[me] || null,
     /* Devuelve un Blob con los datos de la app «me» */
@@ -269,13 +308,24 @@
       const bins = lens.map(l => { const b = u.subarray(o, o + l); o += l; return b; });
       return { data, bins };
     },
-    /* Sustituye los datos de la app por los de la copia. Devuelve un resumen. */
-    async restore(me, ab) {
-      const { data, bins } = backup.parse(ab), own = OWN[me];
+    /* Añade los datos de la copia a los de la app (sh-core 1.2.0: por defecto NO se borra ni se sobrescribe nada).
+       - Proyectos, kits, presets…: lo que no existe se añade; lo idéntico se salta; si hay algo con el mismo nombre pero
+         distinto, se guarda aparte con «(copia)» en el nombre.
+       - Estado de trabajo (autoguardado, loops cargados…, ver OWN.state) y ajustes: se quedan los de este dispositivo
+         (solo se añaden si faltan).
+       - Listas guardadas en ajustes (escenas, presets propios, afinaciones…): se suman.
+       Con { replace: true } hace lo de antes (sustituir). Devuelve un resumen. */
+    async restore(me, ab, opt) {
+      const { data, bins } = backup.parse(ab), own = OWN[me], replace = !!(opt && opt.replace);
       if (data.app !== me) throw new Error('Esta copia es de otra app (' + data.app + ')');
-      for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (own.ls(k)) localStorage.removeItem(k); }
-      for (const [k, v] of Object.entries(data.ls)) localStorage.setItem(k, v);
-      let recs = 0;
+      const res = { nuevos: 0, iguales: 0, copias: 0, ajustes: 0, fecha: data.ts, modo: replace ? 'sustituir' : 'sumar' };
+      if (replace) for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (own.ls(k)) localStorage.removeItem(k); }
+      for (const [k, v] of Object.entries(data.ls)) {
+        const cur = localStorage.getItem(k);
+        if (replace || cur == null) { localStorage.setItem(k, v); res.ajustes++; continue; }
+        if (cur === v) continue;
+        const m = mergeLs(cur, v); if (m != null && m !== cur) { localStorage.setItem(k, m); res.ajustes++; }
+      }
       for (const d of data.idb) {
         let db = await openDb(d.name);
         const missing = d.stores.some(s => !db.objectStoreNames.contains(s.name)) || db.version < d.version;
@@ -288,17 +338,47 @@
             }
           });
         }
-        for (const s of d.stores) {
-          await new Promise((ok, ko) => {
-            const tx = db.transaction(s.name, 'readwrite'), st = tx.objectStore(s.name); st.clear();
-            for (const r of s.records) { const v = dec(r.v, bins); if (s.keyPath != null) st.put(v); else st.put(v, dec(r.k, bins)); recs++; }
-            tx.oncomplete = ok; tx.onerror = () => ko(tx.error); tx.onabort = () => ko(tx.error);
-          });
+        const ren = new Map();   // claves cambiadas (p. ej. id de proyecto) para mover con ellas lo que cuelga de esa clave en otros almacenes
+        const stores = d.stores.slice().sort((a, b) => (a.keyPath == null) - (b.keyPath == null));   // primero los de clave interna (proyectos)
+        for (const s of stores) {
+          const recs = s.records.map(r => ({ k: dec(r.k, bins), v: dec(r.v, bins) }));
+          if (replace) { await putAll(db, s, recs, true); res.nuevos += recs.length; continue; }
+          const ex = await new Promise((ok, ko) => { const tx = db.transaction(s.name, 'readonly'), st = tx.objectStore(s.name); const a = st.getAllKeys(), b = st.getAll(); tx.oncomplete = () => ok({ keys: a.result, vals: b.result }); tx.onerror = () => ko(tx.error); });
+          const have = new Map(); ex.keys.forEach((k, i) => have.set(keyStr(k), ex.vals[i]));
+          const out = [];
+          for (const r of recs) {
+            let k = r.k, v = r.v;
+            for (const [o, n] of ren) if (typeof k === 'string' && (k === o || k.startsWith(o + '#'))) { k = n + k.slice(o.length); break; }   // audio de un proyecto renombrado
+            const cur = have.get(keyStr(k));
+            if (cur === undefined) { out.push({ k, v }); have.set(keyStr(k), v); res.nuevos++; continue; }
+            if (await same(cur, v)) { res.iguales++; continue; }
+            if (own.state && own.state(d.name, s.name, k)) { res.iguales++; continue; }   // estado de trabajo: manda este dispositivo
+            if (typeof k === 'number' && s.autoIncrement) { if (s.keyPath != null) v = setPath(v, s.keyPath, undefined); out.push({ k: undefined, v }); res.copias++; continue; }
+            let nk = null, dup = false;
+            if (typeof k === 'number') { nk = Math.max(k, ...[...have.keys()].filter(x => x.startsWith('number:')).map(x => +x.slice(7))) + 1; }
+            else for (let n = 1; n < 500; n++) {   // ¿ya se añadió antes como «(copia)»? (importar la misma copia dos veces no duplica)
+              const ck = copyName(String(k), n), hv = have.get(keyStr(ck));
+              if (hv === undefined) { nk = ck; break; }
+              if (await same(strip(hv, s.keyPath), strip(v, s.keyPath))) { nk = ck; dup = true; break; }
+            }
+            if (typeof k === 'string' && s.keyPath != null) ren.set(k, nk);
+            if (dup) { res.iguales++; continue; }
+            if (v && typeof v === 'object' && !ArrayBuffer.isView(v) && !(v instanceof ArrayBuffer) && !(typeof Blob !== 'undefined' && v instanceof Blob)) {
+              v = Object.assign({}, v);
+              if (s.keyPath != null) v = setPath(v, s.keyPath, nk);
+              if (typeof v.name === 'string') v.name = v.name === String(k) ? String(nk) : copyName(v.name);
+              else if (typeof v.nombre === 'string') v.nombre = copyName(v.nombre);
+            }
+            out.push({ k: s.keyPath != null ? undefined : nk, v }); have.set(keyStr(nk), v); res.copias++;
+          }
+          await putAll(db, s, out, false);
         }
         db.close();
       }
-      return { ajustes: Object.keys(data.ls).length, registros: recs, fecha: data.ts };
+      res.registros = res.nuevos + res.copias;   // compatibilidad con quien leía «registros»
+      return res;
     },
+    summary(r) { return 'Copia añadida: ' + r.nuevos + ' elementos nuevos' + (r.copias ? ', ' + r.copias + ' guardados como «(copia)» porque ya tenías uno distinto con el mismo nombre' : '') + (r.iguales ? ', ' + r.iguales + ' que ya tenías' : '') + (r.ajustes ? ' y ' + r.ajustes + ' listas o ajustes que faltaban' : '') + '. No se ha borrado nada.'; },
     fileName(me) { const a = appById(me); return (a ? a.name : me).replace(/[^A-Za-z0-9]+/g, '-') + '-datos-' + new Date().toISOString().slice(0, 10) + '.shdatos'; },
     download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); },
     /* Interfaz común: hoja con «Guardar copia» y «Recuperar copia» */
@@ -308,11 +388,11 @@
       const b1 = el('button', 'shc-b pri', 'Guardar');
       b1.onclick = async () => { b1.disabled = true; b1.textContent = 'Preparando…'; try { const bl = await backup.export(me); backup.download(bl, backup.fileName(me)); b1.textContent = 'Guardado (' + (bl.size / 1048576).toFixed(1) + ' MB)'; } catch (e) { b1.textContent = 'Error'; alert(e.message || e); b1.disabled = false; } };
       r1.appendChild(i1); r1.appendChild(b1); sh.appendChild(r1);
-      const r2 = el('div', 'shc-row'), i2 = el('div'); i2.appendChild(el('b', null, 'Recuperar copia')); i2.appendChild(el('small', null, 'Sustituye los datos de esta app por los de un archivo .shdatos'));
+      const r2 = el('div', 'shc-row'), i2 = el('div'); i2.appendChild(el('b', null, 'Añadir una copia')); i2.appendChild(el('small', null, 'Suma a esta app los proyectos, kits y presets de un archivo .shdatos (de la web, del móvil o de otro ordenador). No se borra ni se sobrescribe nada: lo que se llame igual pero sea distinto se guarda como «(copia)».'));
       const b2 = el('button', 'shc-b', 'Elegir archivo'), fi = el('input'); fi.type = 'file'; fi.accept = '.shdatos'; fi.hidden = true;
       fi.onchange = async () => { const f = fi.files[0]; fi.value = ''; if (!f) return;
-        if (!confirm('Se sustituirán los datos de esta app por los de «' + f.name + '» y se recargará. ¿Seguir?')) return;
-        try { const r = await backup.restore(me, await f.arrayBuffer()); alert('Recuperado: ' + r.registros + ' elementos y ' + r.ajustes + ' ajustes.'); location.reload(); } catch (e) { alert('No se pudo recuperar: ' + (e.message || e)); } };
+        if (!confirm('Se añadirá lo que trae «' + f.name + '» a lo que ya tienes en esta app (sin borrar nada) y se recargará. ¿Seguir?')) return;
+        try { const r = await backup.restore(me, await f.arrayBuffer()); alert(backup.summary(r)); location.reload(); } catch (e) { alert('No se pudo recuperar: ' + (e.message || e)); } };
       b2.onclick = () => fi.click();
       r2.appendChild(i2); r2.appendChild(b2); r2.appendChild(fi); sh.appendChild(r2);
       const foot = el('div', 'shc-foot'), c = el('button', 'shc-b', 'Cerrar'); c.onclick = close; foot.appendChild(c); sh.appendChild(foot);
@@ -323,8 +403,9 @@
     const tryPending = async () => {
       try {
         const info = await D.info(); const ab = await D.backup.pending(); if (!ab) return;
-        const r = await backup.restore(info.appId, ab);
-        console.log('[sh-core] copia aplicada', r); location.reload();
+        let r, n = 0; const all = [];
+        for (let buf = ab; buf && n < 20; buf = await D.backup.pending(), n++) { r = await backup.restore(info.appId, buf); all.push(r); }   // pueden venir varias (web, móvil…)
+        console.log('[sh-core] copias añadidas', all); alert(all.map(backup.summary).join('\n')); location.reload();
       } catch (e) { console.error('[sh-core] no se pudo aplicar la copia', e); alert('No se pudieron traer los datos: ' + (e.message || e)); }
     };
     if (document.readyState === 'complete') setTimeout(tryPending, 800); else G.addEventListener('load', () => setTimeout(tryPending, 800));
