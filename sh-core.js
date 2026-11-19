@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.0.0)
+/* sh-core.js — base común de las apps de Sampled Head (v1.0.1)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -33,8 +33,7 @@
     { id: 'fuzzhead', name: 'FuzzHead', path: 'FuzzHead/', takes: ['stem', 'loop', 'phrase', 'pad'], desc: 'Convertir bajo o guitarra en sinte' },
     { id: 'spb', name: 'Sample Pack Builder', path: 'spb-head/', takes: ['stem', 'loop'], desc: 'Hacer un pack de samples' },
     { id: 'tuner', name: 'SampledHead Tuner', path: 'Sampledhead-tuner/', takes: ['stem', 'loop', 'notes'], desc: 'Acordes y línea de bajo' },
-    { id: 'tonopad', name: 'TonoPad', path: 'Tono-Pad/', takes: ['stem', 'loop', 'pad', 'notes'], desc: 'Tono, escala y pads afinados' },
-    { id: 'poppads', name: 'Pop!Pads', path: 'poppads/', takes: ['pad', 'phrase', 'kit'], desc: 'Beat maker de pads' }
+    { id: 'tonopad', name: 'TonoPad', path: 'Tono-Pad/', takes: ['stem', 'loop', 'pad', 'notes'], desc: 'Tono, escala y pads afinados' }
   ];
   APPS.forEach(a => { a.url = BASE + a.path; });
   const appById = id => APPS.find(a => a.id === id) || null;
