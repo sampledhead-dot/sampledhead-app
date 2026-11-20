@@ -12,7 +12,7 @@
  */
 (function () {
   'use strict';
-  const MB_VERSION = '1.4.0';
+  const MB_VERSION = '1.5.0';
   const $m = s => document.querySelector(s);
   const SH = window.SH;
   const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -56,6 +56,7 @@
     try { const s = JSON.parse(localStorage.getItem(SETKEY) || 'null'); if (s) ['bpm', 'bars', 'metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'exp', 'monRec', 'noise', 'spk', 'aec', 'latMeasured'].forEach(k => { if (s[k] != null) M[k] = s[k]; }); } catch (e) {}
     try { const c = JSON.parse(localStorage.getItem(CALKEY) || 'null'); if (c) LANES.forEach(L => { if (Array.isArray(c[L.id])) M.cal[L.id] = c[L.id]; }); } catch (e) {}
     if (M.comp == null) M.comp = defComp();
+    if (M.noise && M.noise.env && 20 * Math.log10(M.noise.env) > -35) M.noise = null;   // medida mala (con algo sonando): taparía los golpes flojos
     if (M.spk == null) M.spk = matchMedia('(pointer:coarse)').matches;   // en el móvil se supone altavoz hasta que digas lo contrario
   }
   function saveSettings() { try { const s = {}; ['bpm', 'bars', 'metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'exp', 'monRec', 'noise', 'spk', 'aec', 'latMeasured'].forEach(k => s[k] = M[k]); localStorage.setItem(SETKEY, JSON.stringify(s)); } catch (e) {} }
@@ -73,18 +74,21 @@
   }
   const BANDS = [40, 120, 250, 500, 1000, 2000, 4000, 8000, 16000];
   /* umbrales: sensibilidad 1 = solo golpes muy fuertes (−19 dBFS) … 10 = todo (−60 dBFS); nunca por debajo del ruido medido */
-  const drumGate = () => Math.max(Math.pow(10, (-14.4 - 4.6 * M.sens) / 20), M.noise ? M.noise.env * 2 : 0);
-  const drumGateH = () => Math.max(Math.pow(10, (-14.4 - 4.6 * M.sens) / 20), M.noise ? M.noise.envH * 2 : 0);
+  /* al analizar una toma o un audio entero, el umbral sale de la propia grabación (GATE_OVR): relativo a su golpe más fuerte y a su ruido real */
+  let GATE_OVR = 0;
+  const drumGate = () => GATE_OVR || Math.max(Math.pow(10, (-14.4 - 4.6 * M.sens) / 20), M.noise ? M.noise.env * 2 : 0);
+  const drumGateH = () => GATE_OVR || Math.max(Math.pow(10, (-14.4 - 4.6 * M.sens) / 20), M.noise ? M.noise.envH * 2 : 0);
   const voiceGate = () => Math.max(Math.pow(10, (-20 - 4 * M.sens) / 20), M.noise ? M.noise.rms * 2.2 : 0);
   /* soplido o aire contra el micro: sube despacio o es flojo → no es un golpe */
   /* cola de un golpe fuerte (o aire justo detrás): muy flojo y pegado al anterior */
-  const masked = (prev, t, peak) => prev && t - prev.t < .18 && peak < prev.peak * .33;
+  const masked = (prev, t, peak) => prev && t - prev.t < .1 && peak < prev.peak * .25;
   /* clic del metrónomo oído por el altavoz: tono puro entre 1 y 2 kHz */
   const clickLike = f => M.spk && f.frac[5] > .7;
   const noiseLike = (f, W, sr) => clickLike(f) || f.att > (W / sr) * 1000 * .5 || f.decay >= 1.3 || f.peak < drumGate() * 1.6;
   const winSec = mode => mode === 'precise' ? 0.045 : 0.025;
   /* seg: muestras desde el inicio del golpe (al menos W) */
-  function feats(seg, sr, W) {
+  /* pre: lo que sonaba justo antes del golpe (misma ventana): su espectro se resta, para no confundir la cola de un bombo con el golpe nuevo */
+  function feats(seg, sr, W, pre) {
     W = Math.min(W, seg.length);
     const N = W > 2048 ? 4096 : 2048, re = new Float32Array(N), im = new Float32Array(N);
     let pk = 0, zc = 0, e1 = 0, e3 = 0, tot2 = 0; const th = Math.floor(W / 3);
@@ -96,9 +100,16 @@
     }
     let att = 0; { const F = Math.max(8, Math.round(sr * .003)), ev = []; for (let i = 0; i + F <= W; i += F) { let q = 0; for (let j = 0; j < F; j++) q += seg[i + j] * seg[i + j]; ev.push(q); } const mx = Math.max(...ev); att = ev.findIndex(q => q >= mx * .5) * F / sr * 1000; }
     fft(re, im);
+    // ataque: energía de los 6 ms siguientes frente a los 6 anteriores (señal y derivada = agudos). Un golpe arranca de golpe; un soplido sube poco a poco
+    let sharp = Infinity, sharpH = Infinity;
+    if (pre && pre.length >= 2) { const n6 = Math.max(4, Math.round(sr * .006)), b0 = pre.length - n6; let a = 0, b = 0, ah = 0, bh = 0;
+      for (let i = 1; i < n6; i++) { const v = seg[i], u = seg[i - 1]; a += v * v; ah += (v - u) * (v - u); const p1 = pre[b0 + i], p0 = pre[b0 + i - 1]; b += p1 * p1; bh += (p1 - p0) * (p1 - p0); }
+      sharp = Math.sqrt(a / (b + 1e-12)); sharpH = Math.sqrt(ah / (bh + 1e-12)); }
+    let pr = null, pi = null;
+    if (pre && pre.length >= W) { pr = new Float32Array(N); pi = new Float32Array(N); const o = pre.length - W; for (let i = 0; i < W; i++) pr[i] = pre[o + i] * (0.5 - 0.5 * Math.cos(2 * Math.PI * (i + .5) / W)); fft(pr, pi); }
     const bw = sr / N, be = new Float64Array(8); let sc = 0, se = 0;
     for (let k = 1; k < N / 2; k++) {
-      const f = k * bw, e = re[k] * re[k] + im[k] * im[k];
+      const f = k * bw, e = Math.max(0, re[k] * re[k] + im[k] * im[k] - (pr ? pr[k] * pr[k] + pi[k] * pi[k] : 0));
       sc += f * e; se += e;
       for (let b = 0; b < 8; b++) if (f >= BANDS[b] && f < BANDS[b + 1]) { be[b] += e; break; }
     }
@@ -106,7 +117,7 @@
     const cent = sc / (se || 1e-12), decay = clamp(Math.sqrt(e3 / (e1 || 1e-12)), 0, 1.5);
     return {
       v: [...frac.map(Math.sqrt), Math.log2(Math.max(50, cent)) / 14, Math.min(1, zc / W * 2), decay],
-      frac, cent, decay, att, zc: zc / W, peak: pk, rms: Math.sqrt(tot2 / W),
+      frac, cent, decay, att, sharp, sharpH, zc: zc / W, peak: pk, rms: Math.sqrt(tot2 / W),
       low: frac[0] + frac[1] + frac[2], high: frac[6] + frac[7]
     };
   }
@@ -191,16 +202,38 @@
     };
   }
   /* audio completo → golpes [{t (s), id, vel, f, dur}] */
-  function analyzeDrums(x, sr) {
-    const ons = []; const det = DrumDet(sr, s0 => ons.push(s0));
-    for (let i = 0; i < x.length; i += 1024) det.push(x.subarray(i, Math.min(x.length, i + 1024)));
-    const W = Math.round(sr * winSec('precise'));
-    let prev = null;
-    return ons.map((s0, i) => {
-      const seg = x.subarray(s0, Math.min(x.length, s0 + W)); if (seg.length < W * .6) return null;
-      const f = feats(seg, sr, W); if (noiseLike(f, W, sr) || masked(prev, s0 / sr, f.peak)) return null; prev = { t: s0 / sr, peak: f.peak }; const dur = hitDur(x, s0, sr, i + 1 < ons.length ? ons[i + 1] : x.length), id = classify(f, dur, 'precise');
-      return { t: s0 / sr, id, vel: velOf(id, f.peak), f, dur };
-    }).filter(Boolean);
+  /* umbral de una grabación entera: sensibilidad 1 = 24 dB por debajo del golpe más fuerte … 10 = 51 dB; y 3× su ruido de fondo.
+     low = umbral para proponer candidatos (los que no llegan al de la sensibilidad salen en gris, para añadirlos a mano) */
+  function takeGate(x, sr, low) {
+    const F = Math.round(sr * .01), r = []; let pk = 0;
+    for (let i = 0; i + F <= x.length; i += F) { let q = 0, m = 0; for (let j = 0; j < F; j++) { const v = x[i + j]; q += v * v; const a = v < 0 ? -v : v; if (a > m) m = a; } r.push(Math.sqrt(q / F)); if (m > pk) pk = m; }
+    if (!r.length) return 0; const sorted = r.slice().sort((a, b) => a - b), floor = sorted[Math.floor(sorted.length * .1)] || 0;
+    return Math.max(floor * (low ? 2.2 : 3), pk * Math.pow(10, -(low ? 56 : 21 + 3 * M.sens) / 20), 1e-4);
+  }
+  /* audio completo → golpes; o.force/o.drop = tiempos (s) que el usuario añadió o quitó a mano en la onda. res.rej = descartados */
+  function analyzeDrums(x, sr, o) {
+    o = o || {}; const near = (list, t) => (list || []).some(v => Math.abs(v - t) < .02);
+    const old = GATE_OVR, gS = takeGate(x, sr); GATE_OVR = takeGate(x, sr, true);
+    try {
+      const ons = []; const det = DrumDet(sr, s0 => ons.push(s0));
+      for (let i = 0; i < x.length; i += 1024) det.push(x.subarray(i, Math.min(x.length, i + 1024)));
+      // candidatos flojos que el detector no marcó pero el usuario añadió a mano
+      (o.force || []).forEach(t => { const s0 = Math.max(0, Math.round(t * sr)); if (!ons.some(q => Math.abs(q / sr - t) < .02)) ons.push(s0); });
+      ons.sort((a, b) => a - b);
+      const W = Math.round(sr * winSec('precise')), rej = [], hits = [];
+      let prev = null;
+      ons.forEach((s0, i) => {
+        const t = s0 / sr, seg = x.subarray(s0, Math.min(x.length, s0 + W)); if (seg.length < W * .6) return;
+        const f = feats(seg, sr, W, s0 >= W ? x.subarray(s0 - W, s0) : null), forced = near(o.force, t);
+        let why = '';
+        if (near(o.drop, t)) why = 'quitado'; else if (!forced && f.peak < gS) why = 'flojo'; else if (!forced && noiseLike(f, W, sr)) why = 'soplido'; else if (!forced && masked(prev, t, f.peak)) why = 'cola';
+        if (why) { rej.push({ t, why }); return; }
+        prev = { t, peak: f.peak };
+        const dur = hitDur(x, s0, sr, i + 1 < ons.length ? ons[i + 1] : x.length), id = classify(f, dur, 'precise');
+        hits.push({ t, id, vel: velOf(id, f.peak), f, dur, forced });
+      });
+      hits.rej = rej; return hits;
+    } finally { GATE_OVR = old; }
   }
 
   /* ---------------- Altura (YIN) y notas de bajo ---------------- */
@@ -292,6 +325,34 @@
     M.ls = 0;
     const ns = M[part].notes.slice().sort((a, b) => a.t - b.t); if (ns.length < 2) { M.bars = autoBars(endBeats()); return ''; }
     const key = n => part === 'd' ? n.l : n.p, last = ns[ns.length - 1].t;
+    // 0) periodo en segundos: el desfase al que más golpes se repiten iguales (no depende de acertar el tempo antes)
+    if (allowTempo) {
+      const sp = spb(), ts = ns.map(n => ({ t: n.t * sp, k: key(n) })), tot = ts[ts.length - 1].t, lags = [];
+      for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) if (ts[i].k === ts[j].k) { const d = ts[j].t - ts[i].t; if (d > .8 && d < tot / 1.2) lags.push(d); }
+      lags.sort((a, b) => a - b);
+      let best = 0;
+      for (const T of lags) {
+        if (best && T > best * 1.02) break;
+        const el = ts.filter(a => a.t + T <= tot + .03); if (el.length < 4) continue;
+        const hit = el.filter(a => ts.some(b => b.k === a.k && Math.abs(b.t - a.t - T) < .03)).length;
+        // otro golpe en el mismo sitio pero de otro tipo = variación (no es una repetición). Con solo dos vueltas se exige casi todo igual
+        const sub = el.filter(a => !ts.some(b => b.k === a.k && Math.abs(b.t - a.t - T) < .03) && ts.some(b => b.k !== a.k && Math.abs(b.t - a.t - T) < .03)).length;
+        const need = tot / T >= 2.6 ? .85 : .95;
+        if (!sub && hit / el.length >= need) { // afinar: media de los desfases que casan
+          const ds = []; el.forEach(a => { const b = ts.find(b => b.k === a.k && Math.abs(b.t - a.t - T) < .03); if (b) ds.push(b.t - a.t); });
+          best = ds.reduce((x, y) => x + y, 0) / ds.length; break;
+        }
+      }
+      if (best) {
+        const ref = estTempo(ts.map(a => a.t)) || M.bpm; let N = 1, bd = 1e9;
+        [1, 2, 3, 4, 6, 8].forEach(n => { const b = n * 240 / best; if (b < 65 || b > 170) return; const d = Math.abs(Math.log(b / ref)); if (d < bd) { bd = d; N = n; } });
+        const bpm = Math.round(N * 240 / best * 4) / 4, reps = Math.round(tot / best + .4);
+        M.bpm = bpm; const sp2 = 60 / bpm;
+        M[part].notes.forEach(n => { n.t = n.t * sp / sp2; if (n.d != null) n.d = n.d * sp / sp2; });
+        M[part].notes = M[part].notes.filter(n => n.t < N * 4 - .2); M.bars = N;
+        return 'Has repetido el loop ' + (reps > 1 ? reps + ' veces' : '') + ': me quedo con la primera vuelta (' + barsTxt() + ' a ' + bpm + ' BPM, por lo que tardaste en repetirlo).';
+      }
+    }
     const rescale = (L, real) => { const k = L / real; if (!allowTempo || Math.abs(1 - k) > .08) return false; M.bpm = Math.round(M.bpm / k * 4) / 4; M[part].notes.forEach(n => { n.t *= k; if (n.d != null) n.d *= k; }); return true; };
     for (const P of [1, 2, 3, 4, 6, 8]) {
       const L = P * 4; if (last < L * 1.35) continue;
@@ -415,7 +476,7 @@
       L.det.push(x); L.ns += x.length;
       const W = Math.round(m.sr * winSec(M.resp));
       while (L.pend.length && L.det.n >= L.pend[0] + W) {
-        const s0 = L.pend.shift(), seg = L.det.read(s0, W), f = feats(seg, m.sr, W);
+        const s0 = L.pend.shift(), seg = L.det.read(s0, W), f = feats(seg, m.sr, W, s0 >= W ? L.det.read(s0 - W, W) : null);
         if (noiseLike(f, W, m.sr) || masked(L.prev, s0 / m.sr, f.peak)) { LOG('descartado (soplido, cola o flojo)', Math.round(f.att) + ' ms', f.peak.toFixed(3)); continue; }
         if (isEcho(L.t0 + (s0 - L.n0) / m.sr)) { M.echoes = (M.echoes || 0) + 1; LOG('descartado: eco del altavoz'); continue; }
         L.prev = { t: s0 / m.sr, peak: f.peak };
@@ -461,15 +522,17 @@
   function takeClose(tc) { const T = M.take; if (!T || !T.pendOpen) return; const o = T.pendOpen; T.pendOpen = null; o.d = Math.max(.03, tc - (M.comp || 0) / 1000 - o.t); if (T.end != null && o.t + o.d > T.end) o.d = T.end - o.t; if (o.d >= .04) T.notes.push(o); }
   function recTick() { const T = M.take; if (T && T.rec && T.end != null && ctx.currentTime > T.end + .15) recStop(); }
   /* análisis completo de un audio de voz → notas en segundos del propio audio */
-  function analyzeX(x, sr, part) {
-    const raw = part === 'd' ? analyzeDrums(x, sr) : analyzeBass(x, sr);
-    return raw.map(n => part === 'd' ? { t: n.t, l: LANES.findIndex(q => q.id === n.id), vel: n.vel } : { t: n.t, p: n.p, d: n.d, vel: n.vel });
+  function analyzeX(x, sr, part, o) {
+    const raw = part === 'd' ? analyzeDrums(x, sr, o) : analyzeBass(x, sr);
+    const out = raw.map(n => part === 'd' ? { t: n.t, l: LANES.findIndex(q => q.id === n.id), vel: n.vel } : { t: n.t, p: n.p, d: n.d, vel: n.vel });
+    out.rej = raw.rej || []; return out;
   }
   /* toma o audio (src) → notas en tiempos, siempre con el análisis completo */
   function srcRaw(src, part) {
     const x = src.buf.getChannelData(0), sr = src.buf.sampleRate;
-    let raw = analyzeX(src.norm ? normCopy(x) : x, sr, part);
-    if (src.own && src.own.length) raw = raw.filter(n => !isEcho(src.capT0 + n.t, src.own));   // ecos del altavoz grabados en la toma
+    let raw = analyzeX(src.norm ? normCopy(x) : x, sr, part, { force: src.force, drop: src.drop }); const rej = raw.rej;
+    if (src.own && src.own.length) raw = raw.filter(n => { const e = isEcho(src.capT0 + n.t, src.own) && !(src.force || []).some(v => Math.abs(v - n.t) < .02); if (e) rej.push({ t: n.t, why: 'eco' }); return !e; });
+    src.rej = rej;   // ecos del altavoz grabados en la toma
     src.ons = raw.map(n => ({ t: n.t, l: n.l, p: n.p }));   // para el editor de la toma
     return raw;
   }
@@ -540,12 +603,13 @@
     const d = src.buf.duration, X = t => t / d * W, sel = tkSel(src), pk = tkPeaks(src, W);
     g.fillStyle = '#0b0d10'; g.fillRect(0, 0, W, H);
     g.fillStyle = '#5b6573'; for (let i = 0; i < W; i++) { const h = pk[i] * (H - 22) / 2; g.fillRect(i, 14 + (H - 14) / 2 - h, 1, Math.max(1, h * 2)); }
-    (src.ons || []).forEach(o => { g.fillStyle = M.part === 'd' && o.l != null && LANES[o.l] ? LANES[o.l].c : '#9be564'; g.fillRect(X(o.t), 14, 1.5, H - 14); });
+    (src.rej || []).forEach(o => { g.fillStyle = 'rgba(255,255,255,.45)'; for (let y = 16; y < H; y += 6) g.fillRect(X(o.t), y, 1.5, 3); });   // descartados: gris discontinuo
+    (src.ons || []).forEach(o => { g.fillStyle = M.part === 'd' && o.l != null && LANES[o.l] ? LANES[o.l].c : '#9be564'; g.fillRect(X(o.t), 14, 2, H - 14); });
     const xs = X(sel.s), xe = X(sel.e);
     g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, 14, xs, H - 14); g.fillRect(xe, 14, W - xe, H - 14);
     [[xs, '#4fe3a0', 's'], [xe, '#c08bff', 'e']].forEach(([x, c, k]) => { g.strokeStyle = c; g.lineWidth = TK.act === k ? 3 : 2; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); g.fillStyle = c; g.fillRect(x - 7, 0, 14, 12); });
     if (TK.node && TK.node.pos != null) { g.fillStyle = '#fff'; g.fillRect(X(TK.node.pos), 14, 2, H - 14); }
-    const inf = $m('#mbTakeInfo'); if (inf) { const dur = sel.e - sel.s, N = tkBars(dur); inf.textContent = 'Inicio ' + sel.s.toFixed(3).replace('.', ',') + ' s · duración ' + dur.toFixed(3).replace('.', ',') + ' s' + (N ? ' → ' + N + (N === 1 ? ' compás' : ' compases') + ' a ' + (Math.round(N * 240 / dur * 4) / 4) + ' BPM' : ' → ' + (Math.round(dur / spb() * 4) / 4) + ' tiempos a ' + M.bpm + ' BPM'); }
+    const inf = $m('#mbTakeInfo'); if (inf) { const dur = sel.e - sel.s, N = tkBars(dur), nr = (src.rej || []).length; inf.textContent = (src.ons || []).length + (M.part === 'd' ? ' golpes' : ' notas') + (M.part === 'd' ? ' · ' + nr + ' descartado' + (nr === 1 ? '' : 's') + ' (toca una marca gris para añadirla, una de color para quitarla)' : '') + ' · Inicio ' + sel.s.toFixed(3).replace('.', ',') + ' s · duración ' + dur.toFixed(3).replace('.', ',') + ' s' + (N ? ' → ' + N + (N === 1 ? ' compás' : ' compases') + ' a ' + (Math.round(N * 240 / dur * 4) / 4) + ' BPM' : ' → ' + (Math.round(dur / spb() * 4) / 4) + ' tiempos a ' + M.bpm + ' BPM'); }
   }
   /* cuántos compases hay en la selección (auto: los que dan el tempo más parecido al actual, entre 65 y 170 BPM). 0 = mantener tempo */
   function tkBars(dur) {
@@ -561,6 +625,12 @@
     const snapOn = t => { const src = P().src; if (!$m('#mbTakeSnap').checked || !src.ons) return t; const r = cv.getBoundingClientRect(), tol = 14 / r.width * src.buf.duration; let best = t, bd = tol; src.ons.forEach(o => { const v = Math.max(0, o.t - .004); if (Math.abs(v - t) < bd) { bd = Math.abs(v - t); best = v; } }); return best; };
     cv.addEventListener('pointerdown', e => { const src = P().src; if (!src) return; const sel = tkSel(src), t = tAt(e), r = cv.getBoundingClientRect(), px = 1 / r.width * src.buf.duration;
       const ds = Math.abs(t - sel.s), de = Math.abs(t - sel.e); cv.setPointerCapture(e.pointerId);
+      if (M.part === 'd' && Math.min(ds, de) > 16 * px && e.clientY - r.top > 14) {   // tocar una marca: añadir (gris) o quitar (color)
+        const pick = list => { let b = null, bd = 9 * px; (list || []).forEach(o => { const d = Math.abs(o.t - t); if (d < bd) { bd = d; b = o; } }); return b; };
+        const g = pick(src.rej), c = pick(src.ons);
+        if (g && (!c || Math.abs(g.t - t) < Math.abs(c.t - t))) { src.drop = (src.drop || []).filter(v => Math.abs(v - g.t) > .02); src.force = (src.force || []).concat(g.t); tkRedo('Golpe añadido'); return; }
+        if (c) { src.force = (src.force || []).filter(v => Math.abs(v - c.t) > .02); src.drop = (src.drop || []).concat(c.t); tkRedo('Golpe quitado'); return; }
+      }
       if (Math.min(ds, de) < 22 * px) TK.drag = { k: ds < de ? 's' : 'e' }; else if (t > sel.s && t < sel.e) TK.drag = { k: 'm', t0: t, s: sel.s, e: sel.e }; else TK.drag = { k: t < sel.s ? 's' : 'e' };
       if (TK.drag.k !== 'm') TK.act = TK.drag.k; tkMove(e); });
     const tkMove = e => { const D = TK.drag, src = P().src; if (!D || !src) return; const sel = tkSel(src), t = tAt(e), d = src.buf.duration;
@@ -575,7 +645,13 @@
     document.querySelectorAll('#mbxpanel [data-tk]').forEach(b => b.addEventListener('click', () => { TK.act = b.dataset.tk; tkDraw(); }));
     const bs = $m('#mbTakeBars'); if (bs) bs.addEventListener('change', tkDraw);
     on('#mbTakeUse', safe('usar selección', tkApply));
-    on('#mbTakeAuto', () => { const src = P().src; if (!src) return; src.sel = null; srcRaw(src, M.part); tkDraw(); });
+    on('#mbTakeAuto', () => { const src = P().src; if (!src) return; src.sel = null; src.applied = false; src.force = []; src.drop = []; srcRaw(src, M.part); tkDraw(); });
+  }
+  /* tras añadir/quitar a mano: se vuelve a sacar la secuencia igual que estaba (selección marcada o automática) */
+  function tkRedo(msg) {
+    const src = P().src; if (!src) return;
+    if (src.applied) tkApply(true); else regenerate(true);
+    flash(msg + ': ' + (src.ons || []).length + ' golpes en la toma. «Deshacer» lo devuelve.'); tkDraw();
   }
   function tkLoopPts() { const n = TK.node, src = P().src; if (!n || !src) return; const sel = tkSel(src); n.src.loopStart = sel.s; n.src.loopEnd = sel.e; }
   function tkPlay() {
@@ -587,8 +663,8 @@
   }
   function tkStop() { const n = TK.node; TK.node = null; if (n) try { n.src.stop(); } catch (e) {} const pb = $m('#mbTakePlay'); if (pb) pb.textContent = '▶ Escuchar la selección'; tkDraw(); }
   /* ✓ Usar esta selección: el loop es exactamente lo marcado. Las notas se sacan del audio de dentro, desde el inicio marcado */
-  function tkApply() {
-    const part = M.part, src = P().src; if (!src || !src.buf) return; const sel = tkSel(src), dur = sel.e - sel.s; tkStop();
+  function tkApply(quiet) {
+    const part = M.part, src = P().src; if (!src || !src.buf) return; const sel = tkSel(src), dur = sel.e - sel.s; if (!quiet) tkStop(); src.applied = true;
     const raw = srcRaw(src, part).filter(n => n.t >= sel.s - .03 && n.t < sel.e - .03);
     if (!raw.length) return flash('No hay golpes dentro de la selección.', true);
     pushUndo();
@@ -596,20 +672,21 @@
     if (N) { M.bpm = Math.round(N * 240 / dur * 4) / 4; beats = N * 4; } else beats = Math.max(.25, Math.round(dur / spb() * 4) / 4);
     const conv = toBeats(raw, sel.s, part);
     M[part].notes = (src.base || []).map(n => Object.assign({}, n, { id: M.nid++ })).concat(conv);
-    M.ls = 0; M.bars = beats / 4; M.barsAuto = false; M.sel.clear(); M.lastTake = M.lastTake; saveSettings(); ui(); draw(); tkDraw();
-    flash('Loop marcado: ' + conv.length + (part === 'd' ? ' golpes' : ' notas') + ' · ' + barsTxt() + ' a ' + M.bpm + ' BPM, empezando en lo que marcaste. Ajusta más en el editor de abajo o «Deshacer».');
+    M.ls = 0; M.bars = beats / 4; M.barsAuto = false; M.sel.clear(); saveSettings(); ui(); draw(); tkDraw();
+    if (!quiet) flash('Loop marcado: ' + conv.length + (part === 'd' ? ' golpes' : ' notas') + ' · ' + barsTxt() + ' a ' + M.bpm + ' BPM, empezando en lo que marcaste. Ajusta más en el editor de abajo o «Deshacer».');
     step('usar selección', sel.s.toFixed(3) + '–' + sel.e.toFixed(3) + ' s · ' + barsTxt() + ' · ' + M.bpm);
   }
   /* ⟳ Regenerar: vuelve a analizar el audio guardado con los ajustes actuales (sensibilidad, ruido, calibración, octava, escala) */
-  async function regenerate() {
+  async function regenerate(quiet) {
     const part = M.part, src = M[part].src; if (!src || !src.buf) return flash('No hay toma ni audio guardado que regenerar.');
+    if (src.applied && quiet !== true) { tkApply(true); flash('Regenerado con sensibilidad ' + M.sens + ' dentro de la selección marcada: ' + (src.ons || []).length + ' golpes. «Deshacer» vuelve al anterior.'); return; }
     const { conv } = notesFromSrc(src, part, true);
     if (!conv.length) return flash('Con estos ajustes no sale nada: sube la sensibilidad y vuelve a pulsar ⟳ Regenerar.', true);
     pushUndo();
     M[part].notes = (src.base || []).map(n => Object.assign({}, n, { id: M.nid++ })).concat(conv);
     M.sel.clear(); ui(); draw();
     const cnt = {}; if (part === 'd') conv.forEach(n => cnt[n.l] = (cnt[n.l] || 0) + 1);
-    flash('Regenerado con sensibilidad ' + M.sens + ': ' + (part === 'd' ? conv.length + ' golpes (' + LANES.map((L, i) => (cnt[i] || 0) + ' ' + L.n.toLowerCase()).join(', ') + ')' : conv.length + ' notas') + '. «Deshacer» vuelve al anterior.');
+    if (quiet !== true) flash('Regenerado con sensibilidad ' + M.sens + ': ' + (part === 'd' ? conv.length + ' golpes (' + LANES.map((L, i) => (cnt[i] || 0) + ' ' + L.n.toLowerCase()).join(', ') + ')' : conv.length + ' notas') + '. «Deshacer» vuelve al anterior.');
     step('regenerar', conv.length + ' notas · sens ' + M.sens);
   }
   /* ↺ Descartar la toma: todo como antes de grabarla */
@@ -630,6 +707,7 @@
     for (let i = 0; i < x.length; i++) { const a = Math.abs(x[i]), d = Math.abs(x[i] - pv); pv = x[i]; e = a > e ? e + (a - e) * kA : e * kR; eh = d > eh ? eh + (d - eh) * kA : eh * kR; if (i > skip) { if (e > me) me = e; if (eh > mh) mh = eh; } }
     for (let i = skip; i + F <= x.length; i += F) { let q = 0; for (let j = 0; j < F; j++) q += x[i + j] * x[i + j]; mr = Math.max(mr, Math.sqrt(q / F)); }
     if (!me) return flash('No llega sonido del micro.', true);
+    if (20 * Math.log10(me) > -35) { ui(); return flash('Ruido muy alto (' + (20 * Math.log10(me)).toFixed(0) + ' dB): ¿estaba sonando algo o respiraste fuerte? No lo guardo, porque taparía tus golpes flojos. Repite en silencio.', true); }
     M.noise = { env: me, envH: mh, rms: mr }; saveSettings(); if (M.mic) resetLive(); ui();
     flash('Ruido medido: ' + (20 * Math.log10(me)).toFixed(0) + ' dB. Ya no se dispara nada por debajo del doble de eso. Si ahora cuesta que entren los golpes suaves, sube la sensibilidad o pulsa «Quitar».');
     step('ruido', JSON.stringify(M.noise));
@@ -1225,7 +1303,7 @@
   const packAu = b => b ? { sr: b.sampleRate, d: mono(b) } : null;
   const unpackAu = r => { if (!r || !r.d || !r.d.length) return null; const b = ctx.createBuffer(1, r.d.length, r.sr); b.copyToChannel(r.d instanceof Float32Array ? r.d : Float32Array.from(r.d), 0); return b; };
   function pjMb() {
-    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, timed: !!x.timed, len: x.len == null ? null : x.len, name: x.name || '', sel: x.sel || null, base: (x.base || []).map(n => k === 'd' ? { t: n.t, l: n.l, v: n.v } : { t: n.t, p: n.p, d: n.d, v: n.v }), au: x.buf.duration <= SRC_MAX } : null; };
+    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, timed: !!x.timed, len: x.len == null ? null : x.len, name: x.name || '', sel: x.sel || null, force: x.force || [], drop: x.drop || [], applied: !!x.applied, base: (x.base || []).map(n => k === 'd' ? { t: n.t, l: n.l, v: n.v } : { t: n.t, p: n.p, d: n.d, v: n.v }), au: x.buf.duration <= SRC_MAX } : null; };
     return { v: 1, part: M.part, bpm: M.bpm, bars: M.bars, ls: M.ls, barsAuto: !!M.barsAuto, exp: M.exp, playD: M.playD, playB: M.playB,
       d: M.d.notes.map(n => ({ t: n.t, l: n.l, v: n.v })), b: M.b.notes.map(n => ({ t: n.t, p: n.p, d: n.d, v: n.v })),
       slots: M.slots.map(x => x.buf ? x.name || '' : null), src: { d: src('d'), b: src('b') },
@@ -1240,7 +1318,7 @@
     M.b.notes = (o.b || []).map(n => ({ id: M.nid++, t: n.t, p: n.p, d: n.d, v: n.v }));
     au = au || {};
     LANES.forEach((L, i) => { const b = unpackAu(au.slots && au.slots[i]); if (b) M.slots[i] = { buf: b, name: (o.slots && o.slots[i]) || L.n }; });   // huecos sin sonido en el proyecto: se quedan los tuyos
-    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, sel: m.sel || null, offset: m.offset, live: m.live, timed: m.timed != null ? m.timed : !!m.live, len: m.len == null ? null : m.len, name: m.name, base: (m.base || []).map(n => Object.assign({ id: M.nid++ }, n)) } : null; }); M.lastTake = null;
+    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, sel: m.sel || null, force: m.force || [], drop: m.drop || [], applied: !!m.applied, offset: m.offset, live: m.live, timed: m.timed != null ? m.timed : !!m.live, len: m.len == null ? null : m.len, name: m.name, base: (m.base || []).map(n => Object.assign({ id: M.nid++ }, n)) } : null; }); M.lastTake = null;
     if (o.set) ['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'monRec', 'noise', 'spk', 'aec', 'latMeasured'].forEach(k => { if (o.set[k] != null) M[k] = o.set[k]; });
     if (o.cal && !LANES.some(L => M.cal[L.id].length)) { LANES.forEach(L => M.cal[L.id] = o.cal[L.id] || []); saveCal(); }   // la calibración del proyecto solo entra si no hay otra
     saveSettings();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>SampledHeadApp 1.74</title>
+<title>SampledHeadApp 1.75</title>
 <meta name="theme-color" content="#d65f00">
 <meta name="description" content="Sampler de pads en el navegador: graba, edita y toca sonidos.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1083,20 +1083,27 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Menú → Recoger de CrazyHead</b>: carga en pads libres lo que mande CrazyHead (mezcla, loops o cortes como kit; los cortes de cada loop van al banco A–D). Después puedes exportar el kit a MPC, Move, SP-404, Koala o Ableton como siempre. Los loops del Looper viajan con sus <b>cortes exactos</b>, así CrazyHead no tiene que detectarlos.</li>
 <li>La primera vez te pide la dirección de CrazyHead (se recuerda; si abres antes CrazyHead una vez, se guarda sola). Al abrirse, CrazyHead pregunta si cargar el audio en A–D.</li></ul>
 </details>
-<details><summary>31. Novedades de la 1.74 · Glitch (GlitchHead)</summary><p>Pestaña <b>Glitch</b>: tres efectos en cadena, los mismos del plugin <b>GlitchHead</b>. <b>SHRED</b> corta el sonido en cada cruce por cero y reordena los trozos al azar (repite, salta al pasado, mete silencios); <b>HAZE</b> crea texturas con memoria (halos, sostenidos, drones); <b>SPLIT</b> separa lo que pasa del umbral y lo que queda debajo y los ensucia por separado. <b>En vivo</b>: elige Máster o un canal del mixer y suena mientras tocas (también al grabar y remuestrear). <b>Procesar</b>: aplica los ajustes a la región del pad seleccionado y la deja en el mismo pad (con Deshacer) o en el siguiente libre; también ⬇ WAV y Enviar a…. Toca un mando para ver qué hace; 🎲 da ajustes al azar.</p></details>
-<details><summary>32. Novedades de la 1.73 · mid-box y Generador</summary>
+<details><summary>31. Novedades de la 1.75 · mid-box</summary>
+<ul><li><b>Ya no se pierden golpes al grabar</b>: la toma se analiza con un umbral sacado de la propia grabación (relativo a tu golpe más fuerte y al ruido real), no del ruido medido ni del umbral del directo. La sensibilidad baja ya no tira los golpes flojos.</li>
+<li>Los hats flojos justo después de un bombo ya no se confunden con bombos ni se tiran como «cola»: se resta lo que aún sonaba antes de cada golpe.</li>
+<li><b>Golpes a mano en la onda</b>: lo descartado sale en gris discontinuo. Toca una marca gris para añadir ese golpe, o una de color para quitarlo; la secuencia se rehace al momento.</li>
+<li><b>Tempo y largo más fiables</b>: se busca cada cuántos segundos se repite tu patrón y de ahí salen los compases y el tempo. Si la segunda vuelta cambia algo (por ejemplo, un hat abierto), se respeta como variación.</li>
+<li>Una medida de ruido muy alta (por encima de −35 dB, con algo sonando) ya no se guarda.</li></ul>
+</details>
+<details><summary>32. Novedades de la 1.74 · Glitch (GlitchHead)</summary><p>Pestaña <b>Glitch</b>: tres efectos en cadena, los mismos del plugin <b>GlitchHead</b>. <b>SHRED</b> corta el sonido en cada cruce por cero y reordena los trozos al azar (repite, salta al pasado, mete silencios); <b>HAZE</b> crea texturas con memoria (halos, sostenidos, drones); <b>SPLIT</b> separa lo que pasa del umbral y lo que queda debajo y los ensucia por separado. <b>En vivo</b>: elige Máster o un canal del mixer y suena mientras tocas (también al grabar y remuestrear). <b>Procesar</b>: aplica los ajustes a la región del pad seleccionado y la deja en el mismo pad (con Deshacer) o en el siguiente libre; también ⬇ WAV y Enviar a…. Toca un mando para ver qué hace; 🎲 da ajustes al azar.</p></details>
+<details><summary>33. Novedades de la 1.73 · mid-box y Generador</summary>
 <ul><li><b>Toma grabada · marca el loop</b> (mid-box): después de grabar o convertir, ves la onda de tu voz con cada golpe marcado en su color. Arrastra el <b>inicio</b> (verde) y el <b>final</b> (morado); con <b>Imán a los golpes</b> se pegan a ellos, y ◀▶ 2/10 ms afinan. <b>▶ Escuchar la selección</b> la repite en bucle. Elige cuántos compases hay dentro (o «auto») y pulsa <b>✓ Usar esta selección</b>: el loop es justo eso y el tempo sale de lo que dura.</li>
 <li><b>Inicio de la secuencia</b> (editor): además del final ▼, ahora se arrastra el <b>inicio ▶</b> (o con ◀ 1 tiempo, ◀ 1/16, 1/16 ▶, 1 tiempo ▶). Solo suena y se exporta lo que queda entre los dos.</li>
 <li><b>✂ Consolidar</b> (o <b>Ctrl+J</b>, como en Ableton): lo que hay entre el inicio y el final pasa a ser la secuencia definitiva, empezando en 0; lo de fuera se borra. «Deshacer» lo devuelve.</li>
 <li><b>Los sonidos se recuerdan</b>: los que elijas para la batería de mid-box se guardan y siguen ahí al volver a abrir la app. ↺ vuelve al sonido por defecto.</li>
 <li><b>Sonidos por defecto nuevos</b> (DFB: bombo, caja, hat cerrado y hat abierto) en mid-box y en los huecos vacíos del Generador.</li></ul>
 </details>
-<details><summary>33. Novedades de la 1.72 · mid-box</summary>
+<details><summary>34. Novedades de la 1.72 · mid-box</summary>
 <ul><li><b>Uso el altavoz, sin cascos</b> (marcada de serie en el móvil): lo que suena por el altavoz vuelve al micro y creaba un bucle que no paraba. Ahora mid-box ignora el eco de lo que él mismo acaba de hacer sonar (llega al cabo de la latencia; pulsa <b>⏱ Medir latencia</b> para que sea exacto) y los clics del metrónomo. Si aun así se cuela algo: baja el volumen, prueba <b>Cancelación de eco del navegador</b> (quita más, pero cambia el sonido del micro: calibra con ella puesta) o usa cascos.</li>
 <li><b>Duración del loop al terminar</b>: el loop empieza en tu primer sonido y, al pulsar ■ (o al convertir un audio), se busca dónde acaba: si repetiste el patrón, se queda con la primera vuelta y ajusta el tempo a lo que tardaste; si acabaste con el «uno» de la vuelta siguiente, lo quita y cierra ahí; si no, redondea al compás siguiente. Ya no se fuerza a 1, 2, 4 u 8 compases (puede ser 3, 5…).</li>
 <li><b>Largo editable</b>: arrastra el final ▼ en la parte de arriba del editor (con Imán, a la rejilla; sin Imán, por tiempos) o usa −1 compás / −1 tiempo / +1 tiempo / +1 compás. Lo que queda en sombra no suena ni se exporta. <b>Buscar el final</b> vuelve a calcularlo.</li></ul>
 </details>
-<details><summary>34. Novedades de la 1.71 · mid-box</summary>
+<details><summary>35. Novedades de la 1.71 · mid-box</summary>
 <ul><li><b>⟳ Regenerar</b>: vuelve a analizar la última toma (o el audio convertido) con los ajustes de ahora. Si salen golpes de más o de menos, cambia la sensibilidad (o mide el ruido, calibra, cambia la octava…) y pulsa Regenerar las veces que quieras. «Deshacer» vuelve al resultado anterior.</li>
 <li><b>↺ Descartar la toma</b>: deja todo como antes de grabarla, para repetirla.</li>
 <li><b>Grabar sin oírlo</b>: casilla <b>Oír mientras grabo</b> (desmarcada de serie). Sin ella, al grabar no suena la batería ni el bajo de tu voz (el metrónomo y la otra parte sí), así el retraso no te despista. Al terminar, la toma se analiza entera, que es más preciso que el directo.</li>
@@ -1105,10 +1112,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>⏱ Medir latencia</b>: suenan 6 clics por el altavoz y el micro los oye; el retraso de ida y vuelta queda puesto en el ajuste de latencia (hasta 500 ms), así las tomas a tempo caen en su sitio también en el móvil. El retraso al tocar en directo no se puede quitar desde el navegador: para grabar, mejor sin oírlo. Los auriculares Bluetooth añaden mucho retraso; con cable, mucho menos.</li>
 <li>Si el micro se encendió solo para grabar, se apaga al terminar la toma.</li></ul>
 </details>
-<details><summary>35. Novedades de la 1.70</summary>
+<details><summary>36. Novedades de la 1.70</summary>
 <ul><li><b>mid-box en los proyectos</b>: al guardar un proyecto (y con el autoguardado) se guardan también las tomas de mid-box (batería y bajo, sin cuantizar), el tempo y los compases, los ajustes, la calibración de tu voz, los sonidos de la batería y el audio de la última toma de cada parte (hasta 90 s) para poder <b>Reconvertir</b> después. Los proyectos antiguos se abren igual que antes.</li></ul>
 </details>
-<details><summary>36. Novedades de la 1.69 · pestaña mid-box</summary>
+<details><summary>37. Novedades de la 1.69 · pestaña mid-box</summary>
 <ul><li><b>mid-box</b> convierte tu voz en <b>batería</b> (bombo, caja, hat cerrado y hat abierto) o en <b>bajo</b>. Arriba eliges 🥁 Batería o 🎸 Bajo, el tempo y los compases.</li>
 <li><b>🎤 Directo</b>: haz beatbox y suena la batería al momento (o tararea y suena el bajo de la pestaña Bajo). Usa auriculares para que el altavoz no dispare golpes.</li>
 <li><b>● Grabar</b>: guarda la toma. Con <b>Metrónomo</b> (y <b>Cuenta</b> de un compás) graba a tempo; sin metrónomo ni otra parte grabada, la toma empieza en tu primer golpe y el tempo se detecta solo. <b>Sobregrabar</b> añade a lo que ya hay (por ejemplo, primero el bombo y la caja y luego los hats). Mientras grabas el bajo suena la batería, y al revés.</li>
@@ -1118,14 +1125,14 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Bajo</b>: elige la octava (−1 por defecto: de voz a bajo) y si las notas se ajustan a la escala de la pestaña Bajo. Botones −8va, −1, +1, +8va para transportar.</li>
 <li><b>Llevar a…</b>: <b>pad</b> (WAV en bucle), <b>Looper</b> (secuencia: batería en la pista 1 con sus sonidos en pads libres, bajo en la pista 2), <b>Generador</b> (cuantizado a semicorcheas, para usar dado, swing y efectos), <b>MIDI</b>, <b>WAV</b> y <b>Enviar a…</b> otras apps.</li></ul>
 </details>
-<details><summary>37. Novedades de la 1.68</summary>
+<details><summary>38. Novedades de la 1.68</summary>
 <ul><li><b>Proyectos con generador</b>: al guardar un proyecto (o con el autoguardado) se guarda también el <b>Generador</b>: estilo, tempo, patrones de batería, bajo y teclas, presets y efectos de bajo y teclas, y el <b>sonido de los 4 huecos</b>. Los proyectos antiguos se abren igual que antes (sin tocar el generador).</li>
 <li><b>Looper → MIDI</b>: en las opciones de exportar del Looper, <b>Exportar a MIDI</b> guarda un .mid con el tempo del bucle: pads en el canal 10 (pad 1 del banco A = nota 36, C1), bajo en el canal 1 y teclas en el canal 2. Respeta mute y solo de las pistas.</li>
 <li><b>Conversor · Exportar .mid</b>: en la vista previa de «Convertir la batería del pad…» hay un botón <b>Exportar .mid</b> que guarda la rejilla tal como la ves (con tus cambios): bombo 36, caja 38, hat cerrado 42, hat abierto 46.</li>
 <li><b>Break troceado a CrazyHead</b>: si el pad tiene el <b>Chop</b> activo, «Enviar pad a CrazyHead» manda también tus cortes (por golpes, por breaks o editados a mano) y CrazyHead los usa tal cual en lugar de detectarlos.</li>
 <li><b>Audio → bajo</b>: en el Generador, <b>Convertir el bajo del pad…</b> analiza el pad (mejor un bajo solo o separado con el Extractor): detecta las notas, el tempo y la tonalidad, y las coloca en la rejilla del bajo en el grado más cercano de la escala. Puedes ajustar BPM y compases, quitar notas, oírlo con ▶ Play, aplicarlo al generador (el bajo queda bloqueado para que «Generar» no lo cambie) o exportarlo a .mid con las notas reales.</li></ul>
 </details>
-<details><summary>38. Novedades de la 1.60</summary>
+<details><summary>39. Novedades de la 1.60</summary>
 <ul><li><b>Chop por golpes sin límite</b>: ya no se para en 16 fragmentos. Si hay más de 16, se reparten en los bancos siguientes (hasta el D).</li>
 <li><b>Cortes editables</b>: con Chop activo, <b>arrastra</b> cualquier corte para moverlo, <b>toca</b> uno para seleccionarlo y quítalo con <b>− Corte</b>, o añade uno nuevo con <b>＋ Corte</b> (aparece en el centro de la vista; acerca el zoom para colocarlo con precisión). Vale para partes iguales, golpes y breaks, antes de pulsar <b>Asignar</b>. Al soltar un corte (o tocarlo) suena el fragmento que va desde ese corte hasta el siguiente, con la línea de reproducción sobre la onda.</li>
 <li><b>Chop por breaks</b>: tras «Golpes», <b>Dividir</b> ofrece <b>Breaks</b>. Busca los cambios de sonido en una grabación larga con varios breaks seguidos y pone un corte en cada uno (pegado al golpe más cercano). El slider <b>Sensibilidad</b> añade o quita cortes. Es una detección aproximada: revisa y corrige los cortes.</li>
@@ -1133,7 +1140,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Conversor audio → batería</b>: botón <b>▶ Play</b> para pre-escuchar el patrón con su BPM, swing y desfases; suena con los sonidos de los huecos del generador (o sonidos básicos si están vacíos), sigue los cambios que hagas y marca el paso que suena.</li>
 <li><b>Grabar audio del sistema</b>: en <b>Más → Grabar audio del sistema</b> se captura el sonido de otra pestaña o app (solo audio). Funciona en Chrome de escritorio; en el móvil el navegador normalmente no lo permite: graba la pantalla e importa el vídeo.</li></ul>
 </details>
-<details><summary>39. Novedades de la 1.59</summary>
+<details><summary>40. Novedades de la 1.59</summary>
 <ul><li><b>Afinador completo</b>: botón <b>＋ Afinación propia</b>: pon nombre, sube o baja cada cuerda de medio en medio tono (suena la nota de referencia), añade o quita cuerdas y guarda. Aparece en el grupo «Mis afinaciones» de ese instrumento; con <b>✎ Editar</b> la cambias o la borras.</li>
 <li><b>Generador · bajo</b>: dos controles nuevos, <b>Bajo: notas fantasma</b> (notas muy suaves y cortas entre las principales) y <b>Bajo: slides</b> (algunas notas entran deslizando desde un tono vecino). Se aplican al generar o pulsar el dado; en la rejilla las fantasma se ven atenuadas y los slides con un borde blanco.</li>
 <li><b>Teclas</b>: mando <b>Detune lento</b> (en la fila Corte, reson., glide) que hace derivar el tono de cada nota como una cinta gastada, y preset <b>Cinta gastada</b> (categoría Eléctricos).</li>
@@ -1141,10 +1148,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → secuencia (batería)</b>: en el Generador, «Convertir la batería del pad…» analiza el pad seleccionado: detecta bombo, caja, hat cerrado y abierto, el tempo y el swing, cuantiza a 16 pasos y promedia las repeticiones. Puedes corregir el tempo (÷2 / ×2), los compases y cada celda antes de <b>Aplicar</b> o <b>Aplicar y guardar estilo</b> (incluye el desfase de caja y bombo y la humanización). Es una detección heurística: funciona mejor con baterías limpias.</li>
 <li><b>Estilos</b>: Questlove pasa a Bateristas.</li></ul>
 </details>
-<details><summary>40. Novedades de la 1.58</summary>
+<details><summary>41. Novedades de la 1.58</summary>
 <ul><li><b>Conexión con SampledHead Editor</b>: sección «Editor de audio» en el menú (enviar pad, recoger, abrir editor). Ver sección 29.</li></ul>
 </details>
-<details><summary>41. Novedades de la 1.57</summary>
+<details><summary>42. Novedades de la 1.57</summary>
 <ul><li><b>Vista de escritorio</b> (pantalla ancha con ratón; el móvil no cambia): Sampler y Looper con el editor a la izquierda y los pads grandes a la derecha; Bajo y Teclas con pads y piano a la vez y los ajustes a un lado; Mixer y Gen en columnas; FX con los 8 pads en una fila. Se adapta a un portátil de 14" y a un monitor de 27" (con ancho máximo y centrado).</li>
 <li><b>Teclas</b>: preset Theremin (seno, glide largo, vibrato lento; categoría Leads).</li></ul>
 <ul><li><b>Piano apaisado</b>: en Teclas solo se iluminan las teclas de Teclas (antes se encendían también las notas del bajo que sonaban), y viceversa en Bajo.</li></ul>
@@ -1191,23 +1198,23 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Grupo Breaks</b> en los estilos de batería: Amen (clásico, half-time, jungle, picado), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut y Ashley's Roachclip. Son recreaciones aproximadas por reglas, con el tempo y el swing de origen; no son las grabaciones. Usa tus sonidos o un kit sintetizado.</li>
 <li>La exportación MIDI del generador sigue en Generador → Exportar → MIDI.</li></ul>
 </details>
-<details><summary>42. Novedades de la 1.35</summary>
+<details><summary>43. Novedades de la 1.35</summary>
 <ul><li><b>Mixer</b>: vuelve a verse la barra de nivel de Bajo y Teclas cuando suenan desde el Generador.</li>
 </ul>
 </details>
-<details><summary>43. Novedades de la 1.33</summary>
+<details><summary>44. Novedades de la 1.33</summary>
 <ul><li><b>Estética unificada</b>: todas las pestañas usan el color de su pestaña como acento (botones activos, títulos, regla lateral de cada sección y deslizadores). Bajo, Teclas y Mixer tienen <b>secciones plegables</b> como el Generador; se recuerda cuáles cierras. Por defecto están cerrados los kits, el lo-fi, trémolo, chorus, ecualizador y compresor.</li></ul>
 </details>
-<details><summary>44. Novedades de la 1.32</summary>
+<details><summary>45. Novedades de la 1.32</summary>
 <ul><li><b>FX</b>: el <b>Filtro</b> va ahora al final y afecta a todo lo que suena (radio, vinilo, reverb, delays). Delay, Dub Delay y Repeat siguen el tempo del generador cuando está sonando, y el tiempo del eco cambia con transiciones suaves.</li>
 <li><b>Generador</b>: transporte (modo, Reproducir y BPM) fijo arriba, secciones plegables (se recuerda cuáles cierras) y un color por modo: batería rosa, bajo naranja, teclas violeta. Rejilla de pasos con brillo y halo en el paso actual.</li>
 <li><b>Pads de FX</b> con brillo, estela del dedo y borde de color mientras suenan. <b>Mixer</b>: color por canal, medidores más gruesos y marca de pico. Pestaña activa más destacada.</li></ul>
 </details>
-<details><summary>45. Novedades de la 1.31</summary>
+<details><summary>46. Novedades de la 1.31</summary>
 <ul><li><b>FX</b>: pad nuevo <b>Dub Delay</b> (eco de cinta oscuro; X = tiempo, Y = realimentación; al soltar el eco se apaga solo) junto al Delay, y pad <b>Radio</b> (radio antigua). Ahora son 8 efectos.</li>
 <li><b>Vinilo</b> con mucha menos saturación: nivel igual al original en el pad de FX, en el lo-fi de los pads y en el generador, con menos grave y crujido más suave.</li></ul>
 </details>
-<details><summary>46. Novedades de la 1.30</summary>
+<details><summary>47. Novedades de la 1.30</summary>
 <ul><li><b>Generador</b>: modo Teclas (acordes por grado de la escala con progresiones y ritmo de acompañamiento por estilo; el bajo puede seguir a las teclas). Interruptor «Tempo del estilo»: apagado, el tempo no cambia al cambiar de estilo.</li>
 <li><b>Mixer</b>: canal nuevo «Gen bat.» para la batería del generador. <b>Teclas</b> con estilo propio (independiente de batería y bajo). Con la pantalla bloqueada o la app en segundo plano el generador se recoloca al volver; en iPhone/iPad el sistema puede pausar el audio, así que al volver pulsa Reproducir si se detuvo.</li>
 <li><b>FX · Radio</b>: pad de radio antigua (banda estrecha tipo AM, válvula, estática y desvanecimiento). X = más estrecha hacia la derecha, Y = estática.</li>
@@ -1215,8 +1222,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Efectos nuevos en Bajo y Teclas</b>: wah, phaser, flanger, trémolo, chorus y vinilo.</li>
 <li><b>Sonidos nuevos</b>: 11 de bajo (Fender, fretless, contrabajo, púa, muted, 808 con caída, FM DX7, vinilo, wobble, nu soul, Dilla) y 13 de teclas.</li></ul>
 </details>
-<details><summary>46. Contacto y versión</summary>
-<p><b>SampledHead</b> · versión <b id='gver'>1.74</b></p>
+<details><summary>47. Contacto y versión</summary>
+<p><b>SampledHead</b> · versión <b id='gver'>1.75</b></p>
 <ul><li>Contacto: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>perfil de artista de SampledHead</a></li></ul>
 </details>
 </template><template id="guide-en"><details open><summary>1. Getting started</summary>
@@ -1344,27 +1351,32 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Menu → Pick up from CrazyHead</b>: loads into free pads what CrazyHead sends (mix, loops or cuts as a kit; each loop's cuts go to bank A–D). You can then export the kit to MPC, Move, SP-404, Koala or Ableton as usual. Looper loops travel with their <b>exact cuts</b>, so CrazyHead does not have to detect them.</li>
 <li>The first time it asks for CrazyHead's address (remembered; if you open CrazyHead once first, it saves itself). When it opens, CrazyHead asks whether to load the audio into A–D.</li></ul>
 </details>
-<details><summary>31. What is new in 1.74 · Glitch (GlitchHead)</summary><p><b>Glitch</b> tab: three effects in a chain, the same as the <b>GlitchHead</b> plugin. <b>SHRED</b> cuts the sound at every zero crossing and reorders the pieces at random; <b>HAZE</b> builds textures from memory (halos, sustains, drones); <b>SPLIT</b> splits what goes over the threshold from what stays below and dirties each side. <b>Live</b>: pick Master or a mixer channel and it plays while you jam (also when recording and resampling). <b>Process</b>: applies the settings to the selected pad’s region and puts the result in the same pad (with Undo) or the next free one; also ⬇ WAV and Send to…. Touch a knob to see what it does; 🎲 gives random settings.</p></details>
-<details><summary>32. What is new in 1.73 · mid-box and Generator</summary>
+<details><summary>31. What is new in 1.75 · mid-box</summary>
+<ul><li>Recorded takes no longer lose hits: the threshold comes from the take itself. Soft hats right after a kick are kept and classified correctly.</li>
+<li>Rejected hits show as grey dashed marks on the waveform: tap one to add it, tap a coloured one to remove it.</li>
+<li>Tempo and loop length come from how often your pattern repeats; a changed second pass is kept as a variation.</li></ul>
+</details>
+<details><summary>32. What is new in 1.74 · Glitch (GlitchHead)</summary><p><b>Glitch</b> tab: three effects in a chain, the same as the <b>GlitchHead</b> plugin. <b>SHRED</b> cuts the sound at every zero crossing and reorders the pieces at random; <b>HAZE</b> builds textures from memory (halos, sustains, drones); <b>SPLIT</b> splits what goes over the threshold from what stays below and dirties each side. <b>Live</b>: pick Master or a mixer channel and it plays while you jam (also when recording and resampling). <b>Process</b>: applies the settings to the selected pad’s region and puts the result in the same pad (with Undo) or the next free one; also ⬇ WAV and Send to…. Touch a knob to see what it does; 🎲 gives random settings.</p></details>
+<details><summary>33. What is new in 1.73 · mid-box and Generator</summary>
 <ul><li><b>Recorded take · mark the loop</b>: waveform of your take with start (green) and end (purple) handles, snap to hits, loop preview and <b>✓ Use this selection</b> (tempo from its length).</li>
 <li>Draggable <b>loop start ▶</b> in the editor and <b>✂ Consolidate</b> (<b>Ctrl+J</b>, like Ableton): the region becomes the final sequence.</li>
 <li>Chosen drum sounds are <b>remembered</b> between sessions; new <b>default sounds</b> (DFB kick, snare, closed and open hat) in mid-box and in empty Generator slots.</li></ul>
 </details>
-<details><summary>33. What is new in 1.72 · mid-box</summary>
+<details><summary>34. What is new in 1.72 · mid-box</summary>
 <ul><li><b>I use the speaker, no headphones</b> (on by default on phones): mid-box ignores the echo of its own sounds coming back into the mic (no more endless loop) and the metronome clicks. Optional browser echo cancellation.</li>
 <li><b>Loop length on stop</b>: the loop starts on your first sound; repeated patterns keep the first pass (tempo adjusted), a final downbeat is removed, otherwise it rounds up to the next bar (any number of bars).</li>
 <li><b>Editable length</b>: drag the ▼ end marker or use −/+ bar and beat; <b>Find the end</b> recalculates it.</li></ul>
 </details>
-<details><summary>34. What is new in 1.71 · mid-box</summary>
+<details><summary>35. What is new in 1.71 · mid-box</summary>
 <ul><li><b>⟳ Regenerate</b> re-analyses the last take with the current settings; <b>↺ Discard take</b> restores everything as before it.</li>
 <li><b>Hear while recording</b> checkbox (off by default): record without hearing the triggered sounds; the whole take is analysed when it ends.</li>
 <li>Stricter sensitivity; breath/air on the mic and weak tails are ignored. <b>🤫 Measure noise</b> sets a floor above the background noise.</li>
 <li><b>⏱ Measure latency</b>: 6 clicks through the speaker are heard by the mic and the round trip becomes the latency adjustment (up to 500 ms).</li></ul>
 </details>
-<details><summary>35. What is new in 1.70</summary>
+<details><summary>36. What is new in 1.70</summary>
 <ul><li><b>mid-box in projects</b>: saving a project (and autosave) also stores the mid-box takes (drums and bass, unquantized), tempo and bars, the settings, your voice calibration, the drum sounds and the audio of the last take of each part (up to 90 s) so you can <b>Reconvert</b> later. Older projects open as before.</li></ul>
 </details>
-<details><summary>36. What is new in 1.69 · mid-box tab</summary>
+<details><summary>37. What is new in 1.69 · mid-box tab</summary>
 <ul><li><b>mid-box</b> turns your voice into <b>drums</b> (kick, snare, closed hat, open hat) or a <b>bass line</b>. Choose 🥁 Drums or 🎸 Bass, tempo and bars at the top.</li>
 <li><b>🎤 Live</b>: beatbox and the drums play instantly (or hum and the Bass tab sound plays). Use headphones so the speaker does not trigger hits.</li>
 <li><b>● Record</b> keeps the take. With the metronome (and a one-bar count-in) it records in time; without metronome and with nothing else recorded, the take starts on your first hit and the tempo is detected. <b>Overdub</b> adds to what is there.</li>
@@ -1373,14 +1385,14 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Calibrate your voice</b> (drums): 5–6 examples of each sound make recognition use your own voice.</li>
 <li><b>Send to</b>: a <b>pad</b> (looped WAV), the <b>Looper</b> (sequence), the <b>Generator</b> (16th-note steps), <b>MIDI</b>, <b>WAV</b> and <b>Send to…</b> other apps.</li></ul>
 </details>
-<details><summary>37. What is new in 1.68</summary>
+<details><summary>38. What is new in 1.68</summary>
 <ul><li><b>Projects with the generator</b>: saving a project (or autosave) now also stores the <b>Generator</b>: style, tempo, drum, bass and keys patterns, bass and keys presets and effects, and the <b>sound of the 4 slots</b>. Older projects open as before (generator untouched).</li>
 <li><b>Looper → MIDI</b>: in the Looper export options, <b>Export to MIDI</b> saves a .mid at the loop tempo: pads on channel 10 (bank A pad 1 = note 36, C1), bass on channel 1 and keys on channel 2. Track mute and solo are respected.</li>
 <li><b>Converter · Export .mid</b>: the “Convert the pad's drums…” preview has an <b>Export .mid</b> button that saves the grid as you see it (with your edits): kick 36, snare 38, closed hat 42, open hat 46.</li>
 <li><b>Chopped break to CrazyHead</b>: if the pad has <b>Chop</b> on, “Send pad to CrazyHead” also sends your cuts (by hits, by breaks or hand-edited) and CrazyHead uses them as they are instead of detecting them.</li>
 <li><b>Audio → bass</b>: in the Generator, <b>Convert the pad's bass…</b> analyses the pad (best with a solo bass or one separated with the Extractor): it finds the notes, tempo and key and places them on the bass grid at the nearest scale degree. Adjust BPM and bars, remove notes, listen with ▶ Play, apply it to the generator (the bass is locked so “Generate” does not change it) or export a .mid with the real notes.</li></ul>
 </details>
-<details><summary>38. What is new in 1.60</summary>
+<details><summary>39. What is new in 1.60</summary>
 <ul><li><b>Chop by hits, no limit</b>: it no longer stops at 16 slices. With more than 16, they spread over the next banks (up to D).</li>
 <li><b>Editable cuts</b>: with Chop on, <b>drag</b> any cut to move it, <b>tap</b> one to select it and remove it with <b>− Cut</b>, or add one with <b>＋ Cut</b> (it appears at the centre of the view; zoom in to place it precisely). Works for equal parts, hits and breaks, before you press <b>Assign</b>. When you release a cut (or tap it), the slice from that cut to the next one plays, with the playhead over the waveform.</li>
 <li><b>Chop by breaks</b>: after «Hits», <b>Split</b> offers <b>Breaks</b>. It looks for sound changes in a long recording with several breaks in a row and puts a cut at each one (snapped to the nearest hit). The <b>Sensitivity</b> slider adds or removes cuts. Detection is approximate: check and fix the cuts.</li>
@@ -1388,7 +1400,7 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → drums converter</b>: <b>▶ Play</b> button to preview the pattern with its BPM, swing and offsets; it plays the generator slot sounds (or basic sounds if empty), follows your edits and shows the playing step.</li>
 <li><b>Record system audio</b>: <b>More → Record system audio</b> captures the sound of another tab or app (audio only). It works in desktop Chrome; on phones the browser usually does not allow it: record the screen and import the video.</li></ul>
 </details>
-<details><summary>39. What is new in 1.59</summary>
+<details><summary>40. What is new in 1.59</summary>
 <ul><li><b>Full tuner</b>: <b>＋ Custom tuning</b> button: name it, raise or lower each string by semitones (the reference note plays), add or remove strings and save. It shows up in the «My tunings» group of that instrument; <b>✎ Edit</b> changes or deletes it.</li>
 <li><b>Generator · bass</b>: two new controls, <b>Bass: ghost notes</b> (very soft, short notes between the main ones) and <b>Bass: slides</b> (some notes slide in from a neighbouring pitch). They apply when you generate or roll the dice; in the grid ghosts look dimmed and slides have a white outline.</li>
 <li><b>Keys</b>: <b>Slow detune</b> knob (in the Cutoff, reson., glide row) that lets each note's pitch drift like worn tape, and a <b>Worn tape</b> preset (Electric category).</li>
@@ -1396,10 +1408,10 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Audio → sequence (drums)</b>: in the Generator, «Convert the pad's drums…» analyses the selected pad: it detects kick, snare, closed and open hat, tempo and swing, quantises to 16 steps and averages repeats. You can fix the tempo (÷2 / ×2), the bars and any cell before <b>Apply</b> or <b>Apply and save style</b> (it keeps snare/kick offsets and humanisation). It is heuristic: it works best on clean drums.</li>
 <li><b>Styles</b>: Questlove moves to Drummers.</li></ul>
 </details>
-<details><summary>40. What is new in 1.58</summary>
+<details><summary>41. What is new in 1.58</summary>
 <ul><li><b>Connection with SampledHead Editor</b>: «Audio editor» section in the menu (send pad, pick up, open editor). See section 29.</li></ul>
 </details>
-<details><summary>41. What is new in 1.57</summary>
+<details><summary>42. What is new in 1.57</summary>
 <ul><li><b>Desktop view</b> (wide screen with mouse; mobile unchanged): Sampler and Looper with the editor on the left and big pads on the right; Bass and Keys with pads and piano together and settings aside; Mixer and Gen in columns; FX with the 8 pads in one row. Fits a 14" laptop and a 27" monitor (max width, centred).</li>
 <li><b>Keys</b>: Theremin preset (sine, long glide, slow vibrato; Leads category).</li></ul>
 <ul><li><b>Landscape piano</b>: in Keys only the Keys notes light up (bass notes playing used to light it too), and vice versa in Bass.</li></ul>
@@ -1446,23 +1458,23 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>Breaks group</b> in the drum styles: Amen (classic, half-time, jungle, chopped), Funky Drummer, Funky President, Impeach the President, Apache, Think, Hot Pants, When the Levee Breaks, Synthetic Substitution, Cissy Strut and Ashley's Roachclip. They are approximate rule-based re-creations with the original tempo and swing, not the recordings. Use your sounds or a synthesized kit.</li>
 <li>The generator MIDI export is still in Generator → Export → MIDI.</li></ul>
 </details>
-<details><summary>42. What is new in 1.35</summary>
+<details><summary>43. What is new in 1.35</summary>
 <ul><li><b>Mixer</b>: the Bass and Keys level bars show again when they play from the Generator.</li>
 </ul>
 </details>
-<details><summary>43. What is new in 1.33</summary>
+<details><summary>44. What is new in 1.33</summary>
 <ul><li><b>Unified look</b>: every tab uses its tab colour as the accent (active buttons, titles, a side rule on each section and sliders). Bass, Keys and Mixer now have <b>collapsible sections</b> like the Generator; it remembers which ones you close. Kits, lo-fi, tremolo, chorus, equalizer and compressor are closed by default.</li></ul>
 </details>
-<details><summary>44. What is new in 1.32</summary>
+<details><summary>45. What is new in 1.32</summary>
 <ul><li><b>FX</b>: the <b>Filter</b> now sits at the end and affects everything that sounds (radio, vinyl, reverb, delays). Delay, Dub Delay and Repeat follow the generator tempo while it plays, and the echo time changes smoothly.</li>
 <li><b>Generator</b>: transport (mode, Play and BPM) pinned at the top, collapsible sections (it remembers which you close) and one colour per mode: drums pink, bass orange, keys violet. Step grid with glow and a halo on the current step.</li>
 <li><b>FX pads</b> with glow, finger trail and a coloured border while active. <b>Mixer</b>: colour per channel, thicker meters and a peak mark. Active tab stands out more.</li></ul>
 </details>
-<details><summary>45. What is new in 1.31</summary>
+<details><summary>46. What is new in 1.31</summary>
 <ul><li><b>FX</b>: new <b>Dub Delay</b> pad (dark tape echo; X = time, Y = feedback; the echo fades out on its own when released) next to Delay, and the <b>Radio</b> pad (old radio). There are now 8 effects.</li>
 <li><b>Vinyl</b> with much less saturation: same level as the original in the FX pad, the pad lo-fi and the generator, with less rumble and softer crackle.</li></ul>
 </details>
-<details><summary>46. What is new in 1.30</summary>
+<details><summary>47. What is new in 1.30</summary>
 <ul><li><b>Generator</b>: Keys mode (chords by scale degree with progressions and a comping rhythm per style; the bass can follow the keys). «Style tempo» switch: when off, the tempo does not change when the style changes.</li>
 <li><b>Mixer</b>: new «Gen drums» channel for the generator drums. <b>Keys</b> can have their own style (independent of drums and bass). With the screen locked or the app in the background the generator resyncs on return; on iPhone/iPad the system may pause audio, so press Play again if it stopped.</li>
 <li><b>FX · Radio</b>: old-radio pad (narrow AM-style band, tube saturation, static and fading). X = narrower to the right, Y = static.</li>
@@ -1470,8 +1482,8 @@ canvas.eqg{display:block;width:100%;height:210px;border-radius:8px;background:#1
 <li><b>New effects in Bass and Keys</b>: wah, phaser, flanger, tremolo, chorus and vinyl.</li>
 <li><b>New sounds</b>: 11 bass (Fender, fretless, upright, pick, muted, 808 drop, FM DX7, vinyl, wobble, nu soul, Dilla) and 13 keys.</li></ul>
 </details>
-<details><summary>46. Contact and version</summary>
-<p><b>SampledHead</b> · version <b id='gver'>1.74</b></p>
+<details><summary>47. Contact and version</summary>
+<p><b>SampledHead</b> · version <b id='gver'>1.75</b></p>
 <ul><li>Contact: <a href='mailto:sampledhead@gmail.com'>sampledhead@gmail.com</a></li><li>Instagram: <a href='https://www.instagram.com/aukan_is_sampled_head/' target='_blank' rel='noopener'>@aukan_is_sampled_head</a></li><li>Bandcamp: <a href='https://aukan.bandcamp.com' target='_blank' rel='noopener'>www.aukan.bandcamp.com</a></li><li>Spotify: <a href='https://open.spotify.com/artist/1eQcsfR8UzJDN1OkYEquvF' target='_blank' rel='noopener'>SampledHead artist profile</a></li></ul>
 </details>
 </template>
@@ -3326,7 +3338,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.74';
+const APP_VERSION='1.75';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;

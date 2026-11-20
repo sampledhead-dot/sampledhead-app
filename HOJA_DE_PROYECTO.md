@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.74)
+# SampledHead App — Hoja de proyecto (v1.75)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -124,6 +124,18 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.75** (20-11-2026, mid-box 1.5.0). Captura del usuario: en la toma se veían ~20 golpes y solo se marcaron 8 (tenía
+  sensibilidad baja, ruido medido −25 dB y cancelación de eco). Cambios: **umbral de la grabación** (`takeGate`: 3× el
+  ruido de la propia toma (percentil 10 de 10 ms) y 21 + 3·sens dB por debajo del pico; candidatos con 2,2× ruido / −56 dB
+  para mostrarlos en gris); `GATE_OVR` mientras se analiza un audio entero; regla de colas `masked` más corta (100 ms,
+  < 25 %); **resta espectral** de la ventana anterior al golpe en `feats(seg, sr, W, pre)` (cola de bombo bajo un hat flojo);
+  marcas grises de descartados (`src.rej`) y **toque para añadir/quitar** (`src.force` / `src.drop`, se rehace con
+  `tkApply(true)` si la selección estaba marcada o `regenerate(true)`); `fitLoop` busca primero el **periodo en segundos**
+  (desfase al que más golpes del mismo tipo se repiten; ≥ 85 % con 3+ vueltas, ≥ 95 % con 2, ninguna sustitución de tipo)
+  y de él saca compases y tempo; medida de ruido > −35 dB se rechaza (y se borra si estaba guardada).
+  Probado: toma sintética de 30 golpes a 82 BPM con hats a −20…−35 dB pegados a bombos → 30/30 y bien clasificados con
+  sensibilidad 3, 5 y 8 (antes 13/30 con sensibilidad 3); 1 compás a 82 BPM exactos. Con soplidos sintéticos se cuela uno
+  pegado a un bombo (17 de 16): se quita con un toque.
 - **1.74** (20-11-2026): pestaña **Glitch** con GlitchHead 1.0.0 (en vivo en el máster o en un canal del mixer; procesar
   el pad seleccionado al mismo pad o a uno libre, WAV, Enviar a…). En ordenador las 10 pestañas van en una fila.
   sh-core 1.2.1 (GlitchHead en «Enviar a…»).
