@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.71)
+# SampledHead App — Hoja de proyecto (v1.72)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -108,6 +108,18 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.72** (20-11-2026, mid-box 1.3.0). Vídeo del usuario: con el altavoz del móvil y sin cascos, un «bum» disparaba una
+  cadena sin fin (cada ~0,35 s = latencia de ida y vuelta medida, 346 ms): el altavoz vuelve al micro. **Modo altavoz**
+  (`M.spk`, de serie en pantallas táctiles): cada sonido propio en directo (`ownSound`) abre una ventana de eco
+  [lat − 70 ms, lat + 170 ms] (lat = latencia medida; sin medir, estimada con margen) y los golpes que caen ahí se ignoran
+  (`isEcho`, también al analizar la toma con `src.own`); los clics del metrónomo (tono 1–2 kHz) se ignoran
+  (`clickLike`). Opción `M.aec` = `echoCancellation` del navegador (de serie no: en la prueba quitó graves al bombo y lo
+  convirtió en caja); «Medir latencia» siempre sin cancelación. **Duración del loop** (`fitLoop`, al parar una toma libre o
+  al convertir): repetición de 1/2/3/4/6/8 compases (≥ 90 % de coincidencia en los dos sentidos → primera vuelta y tempo
+  ajustado con el «uno» de la 2.ª), «uno» final (cae a ±0,35 tiempos de un compás y es como el primero o un bombo → se quita
+  y el tempo se ajusta si cambia < 8 %), si no compás entero siguiente (ya no solo 1/2/4/8/16). **Largo editable**:
+  `M.bars` admite fracciones (largo en tiempos = `M.bars*4`), final ▼ arrastrable en la cabecera del editor, botones
+  ±1 compás / ±1 tiempo, «Buscar el final»; el editor muestra un compás más en sombra. Al Generador: 1, 2 o 4 compases.
 - **1.71** (20-11-2026, mid-box 1.2.0, a petición del usuario tras probarlo): **⟳ Regenerar** (vuelve a analizar el audio
   guardado de la toma o del archivo con los ajustes actuales; en sobregrabación conserva lo que había antes: `src.base`),
   **↺ Descartar la toma** (`M.lastTake.before`), **Oír mientras grabo** (`M.monRec`, desmarcado de serie: al grabar no
@@ -143,6 +155,9 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 - `sh-core.js` se edita solo en `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 
 ## Límites conocidos
+- mid-box 1.72: probado con eco sintético (bombo + «ecos» a 350 y 700 ms en el micro falso): con modo altavoz y latencia
+  346 ms se ignora el eco de 350 ms; detección del largo con 1 compás ×3, 2 compases + «uno» final (88 BPM exactos), compás
+  incompleto y 2 compases con variación (se conservan). No probado con el altavoz y el micro reales del móvil.
 - mid-box 1.71: con soplidos sintéticos entre golpes, 16/16 golpes en todas las sensibilidades (uno de los hats pegado a un
   soplido sale como abierto). La medida de latencia se probó con clics en un micro falso, no con altavoz y micro reales.
 - mid-box (1.69): probado en Chrome headless (Linux) con beatbox y tarareo **sintéticos**: conversión 16/16 golpes bien
