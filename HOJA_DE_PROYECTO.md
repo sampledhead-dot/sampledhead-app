@@ -1,9 +1,9 @@
-# SampledHead App — Hoja de proyecto (v1.73)
+# SampledHead App — Hoja de proyecto (v1.74)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
 con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, Looper, Bajo, Teclas, Mixer, FX, Gen,
-**Extractor** (nueva en 1.65) y **mid-box** (nueva en 1.69: voz → batería y voz → bajo).
+**Extractor** (nueva en 1.65) y **mid-box** (nueva en 1.69: voz → batería y voz → bajo). Pestaña **Glitch** (nueva en 1.74: GlitchHead).
 
 ## Arquitectura
 - `index.html` — la app (UI, motor de audio, pads `pads[64]` en bancos A–D, exportadores). `APP_VERSION` en el código.
@@ -18,6 +18,10 @@ con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, L
   API de pruebas: `window.MIDBOX`.
 - `midbox/drums-default.js` — sonidos de batería por defecto del usuario (DFBv3 kick, snare, hat, open hat), WAV 16 bit
   44,1 kHz en base64 (~330 KB), recortados a −60 dB. `shDefaultDrums(ctx)` → 4 AudioBuffer. Se carga antes de `sh-core.js`.
+- `glitchhead/` — pestaña Glitch (ver abajo). `glitchhead.js` (motor) y `gh-ui.js` (panel) son **copias** del repo
+  GlitchHead (`dsp/glitchhead.js` y `web/gh-ui.js`); no se editan aquí. `gh-tab.js` es la pestaña: usa `ctx`, `pads`, `sel`,
+  `select`, `labels`, `resetPad`, `stop`, `nextEmpty`, `save`, `chOut`, `chDry`, `fxEnd`, `mixEq`, `MXN`. `showTab(9)` llama a
+  `window.ghxShow`. API de pruebas: `window.GLITCHTAB`.
 - `extractor/vendor/` — librerías empaquetadas (no se editan a mano):
   - `unblend.js` + `workers/` — separación en el navegador (unblend 1.0.1, onnxruntime-web 1.26; WASM desde jsDelivr).
   - `asr-worker.js` + `transformers.min.js` — Whisper con tiempo por palabra (Transformers.js 3.8.1).
@@ -95,6 +99,16 @@ Arriba: 🥁 Batería / 🎸 Bajo, tempo, compases (1–16 o auto), metrónomo y
   **MIDI** (PPQ 960, batería canal 10: 36/38/42/46, bajo canal 1), **WAV** 24 bit y **Enviar a…** (`loop` con notas).
 - **Informe de error** propio (`mid-box-1.0.0-informe-….txt`, máx. 3 automáticos) y botón «Descargar informe (.txt)».
 
+## Glitch (1.74) · GlitchHead
+Tres efectos en cadena, el mismo motor que el plugin GlitchHead (VST3/AU) y su app web: **SHRED** (wavesets al azar),
+**HAZE** (memoria y granos), **SPLIT** (puerta partida). Panel común con presets de fábrica y de usuario (compartidos con
+las demás apps del mismo dominio: `localStorage['glitchhead.userPresets']`).
+- **En vivo**: Apagado, Máster (entre `fxEnd` y el EQ) o un canal del mixer (entre `chOut[k]` y `chDry[k]`; los envíos de
+  delay/dub/reverb salen antes). Ajustes en `localStorage['sampledhead.glitchhead']`; si estaba en vivo, se vuelve a
+  insertar con el primer toque al abrir la app.
+- **Procesar el pad seleccionado** (su región s–e, offline en Worker, mismo resultado cada vez): al mismo pad (con
+  Deshacer, solo en memoria) o al siguiente libre; cola opcional de 2 s; ⬇ WAV y «Enviar a…».
+
 ## Interconexión
 - Menú Más → «Enviar pad a…» y «Recibido de otras apps». Lo recibido va al primer pad libre (en la pestaña Extractor,
   si llega un solo audio, pasa a ser la fuente).
@@ -110,6 +124,9 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.74** (20-11-2026): pestaña **Glitch** con GlitchHead 1.0.0 (en vivo en el máster o en un canal del mixer; procesar
+  el pad seleccionado al mismo pad o a uno libre, WAV, Enviar a…). En ordenador las 10 pestañas van en una fila.
+  sh-core 1.2.1 (GlitchHead en «Enviar a…»).
 - **1.73** (20-11-2026, mid-box 1.4.0). Pedido del usuario: marcar bien el loop grabado, poder editar dónde empieza la
   secuencia y un botón para que la selección quede como secuencia final («como Ctrl+J de Ableton»); recordar los sonidos
   elegidos al reabrir; sus sonidos DFB como predeterminados de mid-box y del Generador.
@@ -171,6 +188,8 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 - `sh-core.js` se edita solo en `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 
 ## Límites conocidos
+- Glitch (1.74): probado en Chrome headless (en vivo en máster y canal, procesar, deshacer, pad libre); no oído en un
+  móvil real. Los ajustes de GlitchHead no van en los proyectos/kits. Deshacer solo dura mientras la app está abierta.
 - mid-box 1.72: probado con eco sintético (bombo + «ecos» a 350 y 700 ms en el micro falso): con modo altavoz y latencia
   346 ms se ignora el eco de 350 ms; detección del largo con 1 compás ×3, 2 compases + «uno» final (88 BPM exactos), compás
   incompleto y 2 compases con variación (se conservan). No probado con el altavoz y el micro reales del móvil.

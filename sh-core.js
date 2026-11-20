@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.1.0)
+/* sh-core.js — base común de las apps de Sampled Head (v1.2.1: + GlitchHead)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.2.0';
+  const VERSION = '1.2.1';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -31,6 +31,7 @@
     { id: 'editor', name: 'SampledHead Editor', path: 'sampledhead-editor/', takes: ['pad', 'loop', 'stem', 'phrase'], desc: 'Editar, limpiar y masterizar' },
     { id: 'crazyhead', name: 'CrazyHead', path: 'CrazyHead/', takes: ['loop', 'stem', 'pad', 'phrase'], desc: 'Trocear loops y generar secuencias' },
     { id: 'fuzzhead', name: 'FuzzHead', path: 'FuzzHead/', takes: ['stem', 'loop', 'phrase', 'pad'], desc: 'Convertir bajo o guitarra en sinte' },
+    { id: 'glitchhead', name: 'GlitchHead', path: 'GlitchHead/', takes: ['loop', 'stem', 'pad', 'phrase'], desc: 'Shred · Haze · Split: efectos salvajes' },
     { id: 'spb', name: 'Sample Pack Builder', path: 'spb-head/', takes: ['stem', 'loop'], desc: 'Hacer un pack de samples' },
     { id: 'tuner', name: 'SampledHead Tuner', path: 'Sampledhead-tuner/', takes: ['stem', 'loop', 'notes'], desc: 'Acordes y línea de bajo' },
     { id: 'tonopad', name: 'TonoPad', path: 'Tono-Pad/', takes: ['stem', 'loop', 'pad', 'notes'], desc: 'Tono, escala y pads afinados' }
@@ -199,6 +200,7 @@
     editor: { idb: [], ls: k => k.startsWith('shed.') },
     crazyhead: { idb: ['crazyhead'], ls: k => k.startsWith('crazyhead.'), state: (db, st) => st === 'aud' },   // loops A–D que están cargados ahora
     fuzzhead: { idb: [], ls: k => k.startsWith('fuzzhead-') || k.startsWith('trazo-gs1-') },
+    glitchhead: { idb: [], ls: k => k.startsWith('glitchhead.') },
     tuner: { idb: [], ls: k => k.startsWith('sampledhead.tuner') },
     tonopad: { idb: ['tonopad'], ls: k => k.startsWith('tonopad.') },
     chuleta: { idb: [], ls: k => k.startsWith('chuleta') },
