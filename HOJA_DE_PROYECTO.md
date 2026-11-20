@@ -1,9 +1,9 @@
-# SampledHead App — Hoja de proyecto (v1.68)
+# SampledHead App — Hoja de proyecto (v1.69)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
-con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, Looper, Bajo, Teclas, Mixer, FX, Gen y
-**Extractor** (nueva en 1.65).
+con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, Looper, Bajo, Teclas, Mixer, FX, Gen,
+**Extractor** (nueva en 1.65) y **mid-box** (nueva en 1.69: voz → batería y voz → bajo).
 
 ## Arquitectura
 - `index.html` — la app (UI, motor de audio, pads `pads[64]` en bancos A–D, exportadores). `APP_VERSION` en el código.
@@ -11,6 +11,11 @@ con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, L
   «Enviar a…», modelos compartidos, motor local, WAV.
 - `extractor/extractor.js` — pestaña Extractor (ver abajo). Usa funciones globales del sampler: `pads`, `sel`, `select`,
   `labels`, `resetPad`, `stop`, `nextEmpty`, `status`, `save`, `zip`, `ctx`, `bank`, `BANKS`, `audioOnsets`.
+- `midbox/midbox.js` — pestaña mid-box (ver abajo). Módulo propio (IIFE) que usa globales del sampler: `ctx`, `pads`,
+  `sel`, `select`, `labels`, `resetPad`, `stop`, `nextEmpty`, `status`, `save`, `region`, `sampBus`, `bassBus`, `mkBass`, `BP`,
+  `BS`, `BSCALES`, `bMidi`, `lp`, `lpClear`, `lpTempoUpdate`, `lpUI`, `G`, `gSave`, `gUI`, `gGrid`, `gResizeLocked`, `gBspb`,
+  `cvApply`. `showTab(8)` llama a `window.mbxShow`; al salir de la pestaña, `window.mbxHide` apaga el micro.
+  API de pruebas: `window.MIDBOX`.
 - `extractor/vendor/` — librerías empaquetadas (no se editan a mano):
   - `unblend.js` + `workers/` — separación en el navegador (unblend 1.0.1, onnxruntime-web 1.26; WASM desde jsDelivr).
   - `asr-worker.js` + `transformers.min.js` — Whisper con tiempo por palabra (Transformers.js 3.8.1).
@@ -57,6 +62,37 @@ Cargas un audio (archivo, pad seleccionado o bandeja), escribes qué quieres y p
 - Modelos web: caché común `sh-models-v1` (en escritorio, Documentos/SampledHead/Modelos). unblend se carga con
   `modelUrl` (blob) para usar esa caché.
 
+## mid-box (1.69)
+Arriba: 🥁 Batería / 🎸 Bajo, tempo, compases (1–16 o auto), metrónomo y cuenta de un compás.
+
+- **Directo** (`micOn`): `getUserMedia` sin cancelación de eco ni control de ganancia → AudioWorklet `mbx-tap` (blob; si
+  falla, ScriptProcessor de 512) → bloques al hilo principal con su `currentTime`.
+- **Batería** (`DrumDet` + `feats` + `classify`): envolventes de ataque 0,5 ms / caída 30 ms de la señal y de su derivada
+  (agudos); golpe = salto ×2,2 (×2,6 en agudos) sobre lo de los 20 ms anteriores y sobre el ruido de fondo; 50 ms de
+  refractario. Rasgos en una ventana de 25 ms («Rápida», directo) o 45 ms («Precisa», y siempre al convertir): 8 bandas
+  (40 Hz–16 kHz), centroide, cruces por cero y caída. Sin calibrar, reglas (grave = bombo, agudo = hat, resto = caja;
+  abierto si dura > 160 ms al convertir o si no cae en la ventana en directo). **Calibrado** (≥3 ejemplos de bombo, caja
+  y hat cerrado, guardados en `localStorage` `sampledhead.midbox.cal` con rasgos de las dos ventanas): k-NN (k = 5,
+  rasgos normalizados; al convertir también la duración). Fuerza = pico frente al de los ejemplos o la media de la sesión.
+- **Bajo** (`PitchTrk` + `NoteSeg`): paso bajo a 1,4 kHz, diezmado a ~12 kHz, YIN (ventana 256, 60–700 Hz, umbral 0,2)
+  cada ~5 ms; nota nueva tras 3 marcos seguidos con la misma nota; reataque si la energía sube ×2,2; fin tras 3 marcos sin
+  voz. Octava −2…+1 (−1 por defecto) y ajuste opcional a la escala de la pestaña Bajo. Suena con `mkBass(ctx, bassBus, BP)`.
+- **Grabar**: con metrónomo (o con la otra parte ya grabada, que suena mientras grabas) la toma va a tempo desde el final
+  de la cuenta, restando el «Ajuste de latencia» (por defecto salida + base + 10 ms). Sin metrónomo ni otra parte, la toma
+  empieza en el primer golpe y el tempo se estima (`estTempo`, rejilla de corcheas 70–160 BPM con preferencia suave por 95).
+  Se guarda el audio de la toma para **Reconvertir** con el análisis completo. **Sobregrabar** suma a lo que hay.
+- **Convertir** un archivo o el pad seleccionado (máx. 2 min; se normaliza si está flojo).
+- **Notas en tiempos (beats), sin cuantizar**: `{t,l,v}` batería, `{t,p,d,v}` bajo. Cambiar el BPM mueve todo como en un DAW.
+- **Editor** (canvas): elegir, Mayús para varias, arrastrar (tiempo y fila), borde derecho = duración (bajo), doble toque
+  = nota nueva, Imán + rejilla (1/4…1/32, tresillos), ◀▶ 5 ms, fuerza, transportar, **Cuantizar** con fuerza 10–100 %,
+  Deshacer/Rehacer (60 pasos). La otra parte se ve en sombra arriba.
+- **Llevar a…** (batería, bajo o las dos): **pad** (render sin conexión + la cola vuelve al principio, `loop: true`),
+  **Looper** (sustituye lo que haya, pide confirmación: sonidos de batería en pads libres —el sintetizado se renderiza—,
+  pista 1 batería, pista 2 bajo con teclas `64+k` de la pestaña Bajo; el Looper no guarda la fuerza), **Generador**
+  (`cvApply` con estilo «u:mid-box», máx. 4 compases, semicorcheas; copia los sonidos cargados a los huecos; bajo bloqueado),
+  **MIDI** (PPQ 960, batería canal 10: 36/38/42/46, bajo canal 1), **WAV** 24 bit y **Enviar a…** (`loop` con notas).
+- **Informe de error** propio (`mid-box-1.0.0-informe-….txt`, máx. 3 automáticos) y botón «Descargar informe (.txt)».
+
 ## Interconexión
 - Menú Más → «Enviar pad a…» y «Recibido de otras apps». Lo recibido va al primer pad libre (en la pestaña Extractor,
   si llega un solo audio, pasa a ser la fuente).
@@ -72,6 +108,10 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.69** (20-11-2026): pestaña **mid-box** (voz → batería con bombo/caja/hat cerrado/hat abierto y voz → bajo; en
+  directo y desde grabación o audio; calibración; editor sin cuantizar; pad, Looper, Generador, MIDI, WAV, Enviar a…).
+  Arreglo: en la vista de ordenador las pestañas **Extractor** y mid-box ocupan todo el ancho (antes los pads seguían a la
+  derecha y el panel quedaba estrecho); en ordenador las 9 pestañas van en una fila.
 - **1.68** (19-11-2026): los **proyectos guardan el Generador** (`pjMeta.gen` = `scSnap()`, `pjCapture.genAu` = audio de los 4 huecos; los proyectos antiguos sin `gen` no tocan el generador); **Looper → MIDI** (`lpMidiBytes`: pads canal 10 nota 36+n, bajo canal 1, teclas canal 2, tempo del bucle o 120); **Exportar .mid** en la vista previa del conversor de batería (lee la rejilla tal como se ve); **conversor fase 2: audio → bajo** (`cbAnalyze`: paso bajo + YIN cada 12 ms, notas por estabilidad de tono y reataques; `cbTempo`: rejilla de corcheas 70–160 BPM; `cbKey`: tónica y mayor/menor por histograma; notas al grado más cercano de la escala del Bajo; aplica al generador con el bajo bloqueado o exporta .mid con las notas reales). **Break troceado a CrazyHead**: «Enviar pad a CrazyHead» manda los cortes del Chop activo (`cuts` en segundos desde el inicio de la región). Código en el bloque `1.68` al final de `index.html`.
 - **1.67** (19-11-2026): «Grabar audio del sistema» solo aparece en ordenador (Chrome/Edge en Windows y Mac; en Mac Chrome solo captura el audio de una pestaña); en móvil se oculta porque Chrome/WebView de Android no tienen getDisplayMedia. Al pulsarlo cierra el menú y avisa si algo falla; Extractor 1.0.1: en móviles/equipos de ≤4 GB descarga el modelo de separación al terminar y usa calidad «Rápida» por defecto (el cierre de la app al final del proceso era memoria); registro de sesión `sh_ex_crumb`: si la app se cierra sola, al volver avisa del paso y descarga un informe .txt.
 - **1.66** (19-11-2026): menú Más → «Copia de tus datos»: guarda o recupera kits y ajustes en un archivo `.shdatos` (para pasarlos a SampledHead de escritorio u otro navegador).
@@ -86,6 +126,13 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 - `sh-core.js` se edita solo en `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 
 ## Límites conocidos
+- mid-box (1.69): probado en Chrome headless (Linux) con beatbox y tarareo **sintéticos**: conversión 16/16 golpes bien
+  clasificados (error < 1 ms) y 8/8 notas de bajo exactas; directo con micro falso (archivo): 16/16 golpes y 8/8 notas en
+  la toma libre, tempo detectado. **No probado con voz real, micro real, móvil real ni Safari/iOS.** La latencia real
+  (lo que tarda en sonar en directo y el «Ajuste de latencia» de las tomas a tempo) depende del equipo: no se pudo medir.
+  En directo «Rápida» distingue peor el hat abierto del cerrado (la cola aún no ha pasado): al convertir o con
+  «Reconvertir la toma» se mira la duración real. Sin auriculares, el altavoz puede disparar golpes.
+- mid-box: las tomas no se guardan en los proyectos (sí la calibración y los ajustes, en el navegador).
 - Conversor audio → bajo (1.68): monofónico; probado solo con un bajo sintético (8 notas a 100 BPM: notas, tempo y rejilla exactos). Con una mezcla completa conviene separar antes el bajo con el Extractor. El tempo se busca entre 70 y 160 BPM (÷2/×2 para corregir).
 - Proyectos con generador (1.68): el audio de los huecos ocupa espacio en el almacenamiento del navegador (máx. 6 s mono por hueco).
 - Cierre de la app al final del Extractor en móvil (1.67): causa probable = memoria; **no reproducido ni confirmado en un móvil real**. El registro de sesión dirá el paso exacto si vuelve a pasar.
