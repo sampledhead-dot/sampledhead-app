@@ -12,7 +12,7 @@
  */
 (function () {
   'use strict';
-  const MB_VERSION = '1.3.0';
+  const MB_VERSION = '1.4.0';
   const $m = s => document.querySelector(s);
   const SH = window.SH;
   const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -33,7 +33,7 @@
 
   /* ---------------- Estado ---------------- */
   const M = {
-    part: 'd', bpm: 90, bars: 2, metro: true, count: true, overdub: false,
+    part: 'd', bpm: 90, bars: 2, ls: 0, metro: true, count: true, overdub: false,
     sens: 5, resp: 'fast', comp: null, monRec: false, noise: null, spk: null, aec: false, latMeasured: false, own: [], micByRec: false, lastTake: null, oct: -1, snap: true, magnet: false, grid: 0.25, qStr: 100,
     playD: true, playB: true, exp: 'both',
     d: { notes: [], src: null }, b: { notes: [], src: null },
@@ -47,6 +47,9 @@
   const spb = () => 60 / M.bpm;
   const loopBeats = () => M.bars * 4;
   const loopSec = () => loopBeats() * spb();
+  /* región del loop: desde M.ls (inicio, en tiempos) durante loopBeats(). Lo que suena y se exporta es solo eso, contado desde el inicio. */
+  const inR = n => n.t >= M.ls - 1e-6 && n.t < M.ls + loopBeats() - 1e-6;
+  const RN = k => M[k].notes.filter(inR).map(n => Object.assign({}, n, { t: n.t - M.ls }, n.d != null ? { d: Math.min(n.d, loopBeats() - (n.t - M.ls)) } : {}));
   const P = () => M[M.part];
 
   function loadSettings() {
@@ -286,6 +289,7 @@
      2) si el último golpe cae justo en un compás y es como el primero (el «uno» de la vuelta siguiente), lo quita y cierra ahí;
      3) si no, redondea al compás entero siguiente. Devuelve un texto para el aviso. */
   function fitLoop(part, allowTempo) {
+    M.ls = 0;
     const ns = M[part].notes.slice().sort((a, b) => a.t - b.t); if (ns.length < 2) { M.bars = autoBars(endBeats()); return ''; }
     const key = n => part === 'd' ? n.l : n.p, last = ns[ns.length - 1].t;
     const rescale = (L, real) => { const k = L / real; if (!allowTempo || Math.abs(1 - k) > .08) return false; M.bpm = Math.round(M.bpm / k * 4) / 4; M[part].notes.forEach(n => { n.t *= k; if (n.d != null) n.d *= k; }); return true; };
@@ -462,10 +466,15 @@
     return raw.map(n => part === 'd' ? { t: n.t, l: LANES.findIndex(q => q.id === n.id), vel: n.vel } : { t: n.t, p: n.p, d: n.d, vel: n.vel });
   }
   /* toma o audio (src) → notas en tiempos, siempre con el análisis completo */
-  function notesFromSrc(src, part, keepTempo) {
+  function srcRaw(src, part) {
     const x = src.buf.getChannelData(0), sr = src.buf.sampleRate;
     let raw = analyzeX(src.norm ? normCopy(x) : x, sr, part);
     if (src.own && src.own.length) raw = raw.filter(n => !isEcho(src.capT0 + n.t, src.own));   // ecos del altavoz grabados en la toma
+    src.ons = raw.map(n => ({ t: n.t, l: n.l, p: n.p }));   // para el editor de la toma
+    return raw;
+  }
+  function notesFromSrc(src, part, keepTempo) {
+    let raw = srcRaw(src, part);
     if (src.timed) { raw = raw.filter(n => n.t - src.offset >= -.06 && (src.len == null || n.t - src.offset < src.len)); return { conv: toBeats(raw, src.offset, part), n: raw.length }; }
     if (!raw.length) return { conv: [], n: 0 };
     if (!keepTempo && M.tempoAuto !== false && !(part === 'd' ? M.b : M.d).notes.length) { const bpm = estTempo(raw.map(n => n.t)); if (bpm) M.bpm = bpm; }
@@ -497,13 +506,99 @@
     M[T.part].notes = base.concat(conv);
     if (src) M[T.part].src = src;
     M.lastTake = { part: T.part, before: T.before, prevSrc: T.prevSrc };
-    let fit = '';
+    let fit = ''; if (!M.overdub) M.ls = 0;
     if (!T.timed && !M.overdub) fit = fitLoop(T.part, !M[T.part === 'd' ? 'b' : 'd'].notes.length);
     else if (M.barsAuto || !T.timed) M.bars = autoBars(endBeats());
     M.sel.clear();
     step('toma', conv.length + ' notas (' + how + ') · ' + M.bpm + ' BPM · ' + barsTxt());
     flash((T.part === 'd' ? conv.length + ' golpes' : conv.length + ' notas') + ' sin cuantizar · ' + M.bpm + ' BPM · ' + barsTxt() + '. ' + (fit ? fit + ' ' : '') + 'Si no te convence: cambia la sensibilidad y pulsa ⟳ Regenerar, o ↺ Descartar la toma.');
     saveSettings(); ui(); draw();
+  }
+  /* ---------- Editor de la toma: la onda de tu voz, con inicio y final del loop ---------- */
+  const TK = { drag: null, act: 'e', node: null, peaks: null, pkKey: '' };
+  function tkSel(src) {
+    if (src.sel) return src.sel;
+    if (!src.ons) srcRaw(src, M.part);
+    const d = src.buf.duration;
+    let a = src.timed ? src.offset : (src.ons.length ? Math.max(0, src.ons[0].t - .005) : 0);
+    let b = a + (src.timed ? loopSec() : (P().notes.length ? loopBeats() * spb() : d - a));
+    return (src.sel = { s: clamp(a, 0, d), e: clamp(b, a + .05, d) });
+  }
+  function tkPeaks(src, W) {
+    const k = W + ':' + src.buf.length; if (TK.pkKey === k && TK.peaks) return TK.peaks;
+    const x = src.buf.getChannelData(0), n = x.length, pk = new Float32Array(W); let mx = 1e-6;
+    for (let i = 0; i < W; i++) { let m = 0; const a = Math.floor(i * n / W), b = Math.floor((i + 1) * n / W); for (let j = a; j < b; j += 2) { const v = Math.abs(x[j]); if (v > m) m = v; } pk[i] = m; if (m > mx) mx = m; }
+    for (let i = 0; i < W; i++) pk[i] /= mx;
+    TK.pkKey = k; return (TK.peaks = pk);
+  }
+  function tkDraw() {
+    const box = $m('#mbTake'), src = P().src; if (!box) return;
+    box.hidden = !(src && src.buf); if (box.hidden) return;
+    const cv = $m('#mbWave'), W = Math.max(240, $m('#mbWaveBox').clientWidth - 2), H = 96, dpr = window.devicePixelRatio || 1;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = W * dpr; cv.height = H * dpr;
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const d = src.buf.duration, X = t => t / d * W, sel = tkSel(src), pk = tkPeaks(src, W);
+    g.fillStyle = '#0b0d10'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#5b6573'; for (let i = 0; i < W; i++) { const h = pk[i] * (H - 22) / 2; g.fillRect(i, 14 + (H - 14) / 2 - h, 1, Math.max(1, h * 2)); }
+    (src.ons || []).forEach(o => { g.fillStyle = M.part === 'd' && o.l != null && LANES[o.l] ? LANES[o.l].c : '#9be564'; g.fillRect(X(o.t), 14, 1.5, H - 14); });
+    const xs = X(sel.s), xe = X(sel.e);
+    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, 14, xs, H - 14); g.fillRect(xe, 14, W - xe, H - 14);
+    [[xs, '#4fe3a0', 's'], [xe, '#c08bff', 'e']].forEach(([x, c, k]) => { g.strokeStyle = c; g.lineWidth = TK.act === k ? 3 : 2; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); g.fillStyle = c; g.fillRect(x - 7, 0, 14, 12); });
+    if (TK.node && TK.node.pos != null) { g.fillStyle = '#fff'; g.fillRect(X(TK.node.pos), 14, 2, H - 14); }
+    const inf = $m('#mbTakeInfo'); if (inf) { const dur = sel.e - sel.s, N = tkBars(dur); inf.textContent = 'Inicio ' + sel.s.toFixed(3).replace('.', ',') + ' s · duración ' + dur.toFixed(3).replace('.', ',') + ' s' + (N ? ' → ' + N + (N === 1 ? ' compás' : ' compases') + ' a ' + (Math.round(N * 240 / dur * 4) / 4) + ' BPM' : ' → ' + (Math.round(dur / spb() * 4) / 4) + ' tiempos a ' + M.bpm + ' BPM'); }
+  }
+  /* cuántos compases hay en la selección (auto: los que dan el tempo más parecido al actual, entre 65 y 170 BPM). 0 = mantener tempo */
+  function tkBars(dur) {
+    const v = ($m('#mbTakeBars') || {}).value || 'auto', other = (M.part === 'd' ? M.b : M.d).notes.length > 0;
+    if (v === 'tempo' || other) return 0;
+    if (v !== 'auto') return +v;
+    let best = 1, bd = 1e9; [1, 2, 3, 4, 6, 8].forEach(N => { const b = N * 240 / dur; if (b < 65 || b > 170) return; const dd = Math.abs(Math.log(b / M.bpm)); if (dd < bd) { bd = dd; best = N; } });
+    return best;
+  }
+  function tkBind() {
+    const cv = $m('#mbWave'); if (!cv) return;
+    const tAt = e => { const r = cv.getBoundingClientRect(), src = P().src; return clamp((e.clientX - r.left) / r.width, 0, 1) * src.buf.duration; };
+    const snapOn = t => { const src = P().src; if (!$m('#mbTakeSnap').checked || !src.ons) return t; const r = cv.getBoundingClientRect(), tol = 14 / r.width * src.buf.duration; let best = t, bd = tol; src.ons.forEach(o => { const v = Math.max(0, o.t - .004); if (Math.abs(v - t) < bd) { bd = Math.abs(v - t); best = v; } }); return best; };
+    cv.addEventListener('pointerdown', e => { const src = P().src; if (!src) return; const sel = tkSel(src), t = tAt(e), r = cv.getBoundingClientRect(), px = 1 / r.width * src.buf.duration;
+      const ds = Math.abs(t - sel.s), de = Math.abs(t - sel.e); cv.setPointerCapture(e.pointerId);
+      if (Math.min(ds, de) < 22 * px) TK.drag = { k: ds < de ? 's' : 'e' }; else if (t > sel.s && t < sel.e) TK.drag = { k: 'm', t0: t, s: sel.s, e: sel.e }; else TK.drag = { k: t < sel.s ? 's' : 'e' };
+      if (TK.drag.k !== 'm') TK.act = TK.drag.k; tkMove(e); });
+    const tkMove = e => { const D = TK.drag, src = P().src; if (!D || !src) return; const sel = tkSel(src), t = tAt(e), d = src.buf.duration;
+      if (D.k === 's') sel.s = clamp(snapOn(t), 0, sel.e - .05); else if (D.k === 'e') sel.e = clamp(snapOn(t), sel.s + .05, d);
+      else { const dt = t - D.t0, len = D.e - D.s; sel.s = clamp(snapOn(D.s + dt), 0, d - len); sel.e = sel.s + len; }
+      tkLoopPts(); tkDraw(); };
+    cv.addEventListener('pointermove', tkMove);
+    const up = () => { TK.drag = null; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+    const on = (id, f) => { const e = $m(id); if (e) e.addEventListener('click', f); };
+    on('#mbTakePlay', () => TK.node ? tkStop() : tkPlay());
+    document.querySelectorAll('#mbxpanel [data-tn]').forEach(b => b.addEventListener('click', () => { const src = P().src; if (!src) return; const sel = tkSel(src), dt = +b.dataset.tn / 1000; if (TK.act === 's') sel.s = clamp(sel.s + dt, 0, sel.e - .05); else sel.e = clamp(sel.e + dt, sel.s + .05, src.buf.duration); tkLoopPts(); tkDraw(); }));
+    document.querySelectorAll('#mbxpanel [data-tk]').forEach(b => b.addEventListener('click', () => { TK.act = b.dataset.tk; tkDraw(); }));
+    const bs = $m('#mbTakeBars'); if (bs) bs.addEventListener('change', tkDraw);
+    on('#mbTakeUse', safe('usar selección', tkApply));
+    on('#mbTakeAuto', () => { const src = P().src; if (!src) return; src.sel = null; srcRaw(src, M.part); tkDraw(); });
+  }
+  function tkLoopPts() { const n = TK.node, src = P().src; if (!n || !src) return; const sel = tkSel(src); n.src.loopStart = sel.s; n.src.loopEnd = sel.e; }
+  function tkPlay() {
+    const src = P().src; if (!src) return; ctx.resume(); stopPlay(true); const sel = tkSel(src);
+    const b = ctx.createBufferSource(), g = ctx.createGain(); b.buffer = src.buf; b.loop = true; b.loopStart = sel.s; b.loopEnd = sel.e; g.gain.value = .9; b.connect(g); g.connect(ctx.destination);
+    const t0 = ctx.currentTime + .03; b.start(t0, sel.s); TK.node = { src: b, t0, pos: sel.s };
+    const tick = () => { if (!TK.node || TK.node.src !== b) return; const s2 = tkSel(src), L = s2.e - s2.s, el = ctx.currentTime - t0; TK.node.pos = el < 0 ? s2.s : s2.s + (el % L); tkDraw(); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick); const pb = $m('#mbTakePlay'); if (pb) pb.textContent = '■ Parar';
+  }
+  function tkStop() { const n = TK.node; TK.node = null; if (n) try { n.src.stop(); } catch (e) {} const pb = $m('#mbTakePlay'); if (pb) pb.textContent = '▶ Escuchar la selección'; tkDraw(); }
+  /* ✓ Usar esta selección: el loop es exactamente lo marcado. Las notas se sacan del audio de dentro, desde el inicio marcado */
+  function tkApply() {
+    const part = M.part, src = P().src; if (!src || !src.buf) return; const sel = tkSel(src), dur = sel.e - sel.s; tkStop();
+    const raw = srcRaw(src, part).filter(n => n.t >= sel.s - .03 && n.t < sel.e - .03);
+    if (!raw.length) return flash('No hay golpes dentro de la selección.', true);
+    pushUndo();
+    const N = tkBars(dur); let beats;
+    if (N) { M.bpm = Math.round(N * 240 / dur * 4) / 4; beats = N * 4; } else beats = Math.max(.25, Math.round(dur / spb() * 4) / 4);
+    const conv = toBeats(raw, sel.s, part);
+    M[part].notes = (src.base || []).map(n => Object.assign({}, n, { id: M.nid++ })).concat(conv);
+    M.ls = 0; M.bars = beats / 4; M.barsAuto = false; M.sel.clear(); M.lastTake = M.lastTake; saveSettings(); ui(); draw(); tkDraw();
+    flash('Loop marcado: ' + conv.length + (part === 'd' ? ' golpes' : ' notas') + ' · ' + barsTxt() + ' a ' + M.bpm + ' BPM, empezando en lo que marcaste. Ajusta más en el editor de abajo o «Deshacer».');
+    step('usar selección', sel.s.toFixed(3) + '–' + sel.e.toFixed(3) + ' s · ' + barsTxt() + ' · ' + M.bpm);
   }
   /* ⟳ Regenerar: vuelve a analizar el audio guardado con los ajustes actuales (sensibilidad, ruido, calibración, octava, escala) */
   async function regenerate() {
@@ -640,8 +735,8 @@
       for (let c = Math.max(0, Math.floor((pl.sched - pl.t0) / L)); pl.t0 + c * L < hz; c++) {
         const cs = pl.t0 + c * L;
         if (pl.o.metro) for (let b = 0; b < loopBeats(); b++) { const a = cs + b * s; if (a >= pl.sched && a < hz) click(a, b % 4 === 0); }
-        if (M.playD && pl.o.skip !== 'd') M.d.notes.forEach(n => { const a = cs + n.t * s; if (a >= pl.sched && a < hz && n.t < loopBeats()) hitIn(ctx, drumOut, n.l, Math.max(a, now), n.v, playChk); });
-        if (M.playB && pl.o.skip !== 'b' && pl.bass) M.b.notes.forEach(n => { const a = cs + n.t * s; if (a >= pl.sched && a < hz && n.t < loopBeats()) { pl.bass.on(n.id, Math.max(a, now), n.p); pl.bass.off(n.id, Math.max(a, now) + Math.max(.03, n.d * s * .98)); } });
+        if (M.playD && pl.o.skip !== 'd') RN('d').forEach(n => { const a = cs + n.t * s; if (a >= pl.sched && a < hz) hitIn(ctx, drumOut, n.l, Math.max(a, now), n.v, playChk); });
+        if (M.playB && pl.o.skip !== 'b' && pl.bass) RN('b').forEach(n => { const a = cs + n.t * s; if (a >= pl.sched && a < hz) { pl.bass.on(n.id, Math.max(a, now), n.p); pl.bass.off(n.id, Math.max(a, now) + Math.max(.03, n.d * s * .98)); } });
       }
       pl.sched = hz; recTick();
     };
@@ -659,9 +754,9 @@
 
   /* ---------------- Editor ---------------- */
   const ED = { lw: 56, rowH: 30, rows: [], ppb: 40, drag: null, lastTap: 0 };
-  function snapNotes() { return JSON.stringify({ d: M.d.notes, b: M.b.notes, bpm: M.bpm, bars: M.bars }); }
+  function snapNotes() { return JSON.stringify({ d: M.d.notes, b: M.b.notes, bpm: M.bpm, bars: M.bars, ls: M.ls }); }
   function pushUndo() { M.undo.push(snapNotes()); if (M.undo.length > 60) M.undo.shift(); M.redo = []; }
-  function restore(s) { const o = JSON.parse(s); M.d.notes = o.d; M.b.notes = o.b; M.bpm = o.bpm; M.bars = o.bars; M.sel.clear(); ui(); draw(); }
+  function restore(s) { const o = JSON.parse(s); M.d.notes = o.d; M.b.notes = o.b; M.bpm = o.bpm; M.bars = o.bars; M.ls = o.ls || 0; M.sel.clear(); ui(); draw(); }
   function undo() { if (!M.undo.length) return flash('Nada que deshacer.'); M.redo.push(snapNotes()); restore(M.undo.pop()); }
   function redo() { if (!M.redo.length) return; M.undo.push(snapNotes()); restore(M.redo.pop()); }
   function rowsFor() {
@@ -681,15 +776,18 @@
   }
   const rowOf = n => M.part === 'd' ? ED.rows.findIndex(r => r.key === n.l) : ED.rows.findIndex(r => r.key === n.p);
   function noteRect(n) { const r = rowOf(n), x = ED.lw + n.t * ED.ppb, y = 18 + r * ED.rowH + 2, w = M.part === 'd' ? Math.max(7, ED.ppb * .14) : Math.max(5, n.d * ED.ppb), h = ED.rowH - 4; return { x, y, w, h, r }; }
-  const visBeats = () => ED.fixVB || Math.max(loopBeats() + 4, Math.ceil(Math.max(0, ...P().notes.map(n => n.t + (n.d || .25))) + .01));
+  const visBeats = () => ED.fixVB || Math.max(M.ls + loopBeats() + 4, Math.ceil(Math.max(0, ...P().notes.map(n => n.t + (n.d || .25))) + .01));
   const maxT = () => visBeats() - 1e-3;
   function draw() {
+    try { tkDraw(); } catch (e) {}
     const L = layout(); if (!L) return; const { g, W, H } = L, beats = loopBeats(), vb = visBeats();
     g.clearRect(0, 0, W, H); g.fillStyle = '#0b0d10'; g.fillRect(0, 0, W, H);
     ED.rows.forEach((r, i) => { const y = 18 + i * ED.rowH; g.fillStyle = M.part === 'b' ? (r.inSc ? (i % 2 ? '#151a20' : '#12161b') : '#0d0f12') : (i % 2 ? '#151a20' : '#11151a'); g.fillRect(ED.lw, y, W - ED.lw, ED.rowH); g.fillStyle = r.c; g.globalAlpha = M.part === 'b' && !r.inSc ? .45 : .9; g.font = (M.part === 'd' ? '600 12px' : '10px') + ' Barlow,system-ui,sans-serif'; g.fillText(r.lab, 6, y + ED.rowH / 2 + 4); g.globalAlpha = 1; });
     const q = M.grid; for (let b = 0; b <= vb + 1e-6; b += q) { const x = ED.lw + b * ED.ppb, bar = Math.abs(b / 4 - Math.round(b / 4)) < 1e-6, beat = Math.abs(b - Math.round(b)) < 1e-6; g.strokeStyle = bar ? '#5b6573' : beat ? '#323945' : '#1d222a'; g.lineWidth = bar ? 1.5 : 1; g.beginPath(); g.moveTo(x + .5, bar ? 0 : 18); g.lineTo(x + .5, H); g.stroke(); if (bar && b < beats) { g.fillStyle = '#8b95a3'; g.font = '11px Barlow,system-ui,sans-serif'; g.fillText(String(b / 4 + 1), x + 4, 13); } }
     P().notes.forEach(n => { const r = noteRect(n); if (r.r < 0) return; const c = M.part === 'd' ? LANES[n.l].c : '#9be564'; g.globalAlpha = .35 + .65 * n.v / 127; g.fillStyle = c; g.fillRect(r.x, r.y, r.w, r.h); g.globalAlpha = 1; if (M.sel.has(n.id)) { g.strokeStyle = '#fff'; g.lineWidth = 2; g.strokeRect(r.x - 1, r.y - 1, r.w + 2, r.h + 2); } if (n.t >= beats) { g.fillStyle = 'rgba(255,80,80,.5)'; g.fillRect(r.x, r.y, r.w, 3); } });
-    { const xe = ED.lw + beats * ED.ppb; g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(xe, 18, W - xe, H - 18);   // fuera del loop: en sombra
+    { const xs = ED.lw + M.ls * ED.ppb, xe = xs + beats * ED.ppb; g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(xe, 18, W - xe, H - 18); g.fillRect(ED.lw, 18, xs - ED.lw, H - 18);   // fuera del loop: en sombra
+      g.strokeStyle = '#4fe3a0'; g.lineWidth = 2; g.beginPath(); g.moveTo(xs, 0); g.lineTo(xs, H); g.stroke();
+      g.fillStyle = '#4fe3a0'; g.beginPath(); g.moveTo(xs, 0); g.lineTo(xs + 13, 7); g.lineTo(xs, 15); g.closePath(); g.fill();
       g.strokeStyle = '#c08bff'; g.lineWidth = 2; g.beginPath(); g.moveTo(xe, 0); g.lineTo(xe, H); g.stroke();
       g.fillStyle = '#c08bff'; g.beginPath(); g.moveTo(xe - 9, 0); g.lineTo(xe + 9, 0); g.lineTo(xe, 15); g.closePath(); g.fill(); }
     const ghost = M.part === 'd' ? M.b.notes : M.d.notes;   // la otra parte, en sombra, como referencia
@@ -701,7 +799,7 @@
   function drawHead() {
     const hd = $m('#mbHead'), cv = $m('#mbRoll'); if (!hd || !cv) return;
     const p = playPos(); if (p == null) { hd.style.display = 'none'; return; }
-    hd.style.display = 'block'; hd.style.left = (ED.lw + p * ED.ppb) + 'px'; hd.style.height = cv.style.height;
+    hd.style.display = 'block'; hd.style.left = (ED.lw + (M.ls + p) * ED.ppb) + 'px'; hd.style.height = cv.style.height;
   }
   const selNotes = () => P().notes.filter(n => M.sel.has(n.id));
   function hitTest(x, y) { const ns = P().notes; for (let i = ns.length - 1; i >= 0; i--) { const r = noteRect(ns[i]); if (x >= r.x - 3 && x <= r.x + r.w + 3 && y >= r.y && y <= r.y + r.h) return { n: ns[i], r }; } return null; }
@@ -713,7 +811,8 @@
     cv.addEventListener('pointerdown', e => {
       const p = pos(e), now = performance.now();
       cv.setPointerCapture(e.pointerId);
-      if (p.y < 18 || Math.abs(p.x - (ED.lw + loopBeats() * ED.ppb)) < 10 && p.y < 34) { ED.fixVB = visBeats(); ED.drag = { mode: 'end', moved: false }; return; }
+      { const xs = ED.lw + M.ls * ED.ppb, xe = xs + loopBeats() * ED.ppb;
+        if (p.y < 34 && (p.y < 18 || Math.min(Math.abs(p.x - xs), Math.abs(p.x - xe)) < 12)) { ED.fixVB = visBeats(); ED.drag = { mode: Math.abs(p.x - xs) < Math.abs(p.x - xe) ? 'start' : 'end', moved: false }; return; } }
       const h = hitTest(p.x, p.y);
       if (h) {
         if (e.shiftKey || e.ctrlKey || e.metaKey) { M.sel.has(h.n.id) ? M.sel.delete(h.n.id) : M.sel.add(h.n.id); }
@@ -728,7 +827,13 @@
       }
     });
     cv.addEventListener('pointermove', e => {
-      const D = ED.drag; if (!D) return; const p = pos(e); if (D.mode === 'end') { const q = M.magnet ? M.grid : 1, b = clamp(Math.round((p.x - ED.lw) / ED.ppb / q) * q, q, Math.min(64, visBeats())); if (Math.abs(b - loopBeats()) > 1e-6) { if (!D.moved) { pushUndo(); D.moved = true; } M.bars = b / 4; ui(); } draw(); return; } const dx = (p.x - D.x0) / ED.ppb, dr = Math.round((p.y - D.y0) / ED.rowH);
+      const D = ED.drag; if (!D) return; const p = pos(e);
+      if (D.mode === 'end' || D.mode === 'start') {
+        const q = M.magnet ? M.grid : .25, x = Math.round((p.x - ED.lw) / ED.ppb / q) * q, e0 = M.ls + loopBeats();
+        let ns = M.ls, nb = loopBeats();
+        if (D.mode === 'end') nb = clamp(x - M.ls, q, Math.min(64, visBeats() - M.ls)); else { ns = clamp(x, 0, e0 - q); nb = e0 - ns; }
+        if (Math.abs(ns - M.ls) > 1e-6 || Math.abs(nb - loopBeats()) > 1e-6) { if (!D.moved) { pushUndo(); D.moved = true; } M.ls = ns; M.bars = nb / 4; ui(); }
+        draw(); return; } const dx = (p.x - D.x0) / ED.ppb, dr = Math.round((p.y - D.y0) / ED.rowH);
       if (!D.moved && Math.abs(p.x - D.x0) < 3 && Math.abs(p.y - D.y0) < 3) return;
       if (!D.moved) { pushUndo(); D.moved = true; }
       if (D.mode === 'len') { D.orig.forEach(o => { o.n.d = Math.max(1 / 32, M.magnet ? Math.max(M.grid, snapT(o.t + o.d + dx) - o.t) : o.d + dx); }); }
@@ -738,7 +843,7 @@
       }
       draw();
     });
-    const up = () => { const D = ED.drag; ED.drag = null; if (D && D.mode === 'end') { ED.fixVB = 0; saveSettings(); draw(); ui(); if (D.moved) flash('Loop de ' + barsTxt() + '. Lo que queda en sombra no suena ni se exporta.'); return; } if (D && D.moved) { P().notes.sort((a, b) => a.t - b.t); if (M.part === 'd' && D.orig.length === 1) preview(D.orig[0].n); draw(); } };
+    const up = () => { const D = ED.drag; ED.drag = null; if (D && (D.mode === 'end' || D.mode === 'start')) { ED.fixVB = 0; saveSettings(); draw(); ui(); if (D.moved) flash('Loop de ' + barsTxt() + (M.ls ? ', empieza en el tiempo ' + (M.ls + 1).toFixed(2).replace(/\.?0+$/, '').replace('.', ',') : '') + '. Lo que queda en sombra no suena ni se exporta. ✂ Consolidar lo deja como secuencia definitiva.'); return; } if (D && D.moved) { P().notes.sort((a, b) => a.t - b.t); if (M.part === 'd' && D.orig.length === 1) preview(D.orig[0].n); draw(); } };
     cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
   }
   function addAt(p) {
@@ -747,6 +852,15 @@
     pushUndo();
     const n = M.part === 'd' ? { id: M.nid++, t, l: ED.rows[ri].key, v: 100 } : { id: M.nid++, t, p: ED.rows[ri].key, d: Math.max(M.grid, .25), v: 100 };
     P().notes.push(n); P().notes.sort((a, b) => a.t - b.t); M.sel.clear(); M.sel.add(n.id); preview(n); draw();
+  }
+  /* ✂ Consolidar (como Ctrl+J de Ableton): lo que hay entre el inicio y el final pasa a ser la secuencia; lo de fuera se borra */
+  function consolidate() {
+    const L = loopBeats(); if (!M.d.notes.length && !M.b.notes.length) return flash('No hay notas.');
+    pushUndo();
+    let out = 0; ['d', 'b'].forEach(k => { const keep = M[k].notes.filter(inR); out += M[k].notes.length - keep.length; M[k].notes = keep.map(n => Object.assign(n, { t: n.t - M.ls }, n.d != null ? { d: Math.min(n.d, L - (n.t - M.ls)) } : {})); });
+    M.ls = 0; M.sel.clear(); saveSettings(); ui(); draw();
+    flash('Consolidado: la secuencia es ahora el loop de ' + barsTxt() + ' (batería y bajo)' + (out ? '; ' + out + ' nota' + (out > 1 ? 's' : '') + ' de fuera borrada' + (out > 1 ? 's' : '') : '') + '. «Deshacer» lo devuelve.');
+    step('consolidar', barsTxt() + ' · fuera ' + out);
   }
   function delSel() { const s = selNotes(); if (!s.length) return flash('Toca una nota para elegirla (Mayús para varias).'); pushUndo(); P().notes = P().notes.filter(n => !M.sel.has(n.id)); M.sel.clear(); draw(); }
   function nudge(ms) { const s = selNotes(); if (!s.length) return flash('Elige antes las notas a mover.'); pushUndo(); const db = ms / 1000 / spb(); s.forEach(n => n.t = clamp(n.t + db, 0, maxT())); P().notes.sort((a, b) => a.t - b.t); draw(); }
@@ -765,8 +879,8 @@
     const sr = ctx.sampleRate, L = loopSec(), tail = 1.2, n = Math.ceil(L * sr), s = spb();
     const off = new OfflineAudioContext(2, Math.ceil((L + tail) * sr), sr), out = off.createGain(); out.gain.value = .9; out.connect(off.destination);
     const chk = {};
-    if (parts.includes('d')) M.d.notes.filter(x => x.t < loopBeats()).forEach(x => hitIn(off, out, x.l, x.t * s, x.v, chk));
-    if (parts.includes('b')) { const bo = newBass(off, out); if (bo) M.b.notes.filter(x => x.t < loopBeats()).forEach(x => { bo.on(x.id, x.t * s, x.p); bo.off(x.id, x.t * s + Math.max(.03, x.d * s * .98)); }); }
+    if (parts.includes('d')) RN('d').forEach(x => hitIn(off, out, x.l, x.t * s, x.v, chk));
+    if (parts.includes('b')) { const bo = newBass(off, out); if (bo) RN('b').forEach(x => { bo.on(x.id, x.t * s, x.p); bo.off(x.id, x.t * s + Math.max(.03, x.d * s * .98)); }); }
     const r = await off.startRendering(), o = ctx.createBuffer(2, n, sr);
     for (let c = 0; c < 2; c++) { const a = r.getChannelData(c), d = o.getChannelData(c); d.set(a.subarray(0, n)); for (let i = n; i < a.length; i++) d[i - n] += a[i]; }   // la cola vuelve al principio: el bucle encaja
     return o;
@@ -785,8 +899,8 @@
   function midiBytes(parts) {
     const ppq = 960, tick = b => Math.max(0, Math.round(b * ppq)), us = Math.round(60e6 / M.bpm), ev = [];
     const vlq = n => { const b = [n & 127]; while ((n >>= 7) > 0) b.unshift((n & 127) | 128); return b; };
-    if (parts.includes('d')) M.d.notes.filter(n => n.t < loopBeats()).forEach(n => { ev.push([tick(n.t), 0x99, LANES[n.l].m, n.v]); ev.push([tick(n.t + .125), 0x89, LANES[n.l].m, 0]); });
-    if (parts.includes('b')) M.b.notes.filter(n => n.t < loopBeats()).forEach(n => { ev.push([tick(n.t), 0x90, n.p, n.v]); ev.push([tick(Math.min(loopBeats(), n.t + n.d)), 0x80, n.p, 0]); });
+    if (parts.includes('d')) RN('d').forEach(n => { ev.push([tick(n.t), 0x99, LANES[n.l].m, n.v]); ev.push([tick(n.t + .125), 0x89, LANES[n.l].m, 0]); });
+    if (parts.includes('b')) RN('b').forEach(n => { ev.push([tick(n.t), 0x90, n.p, n.v]); ev.push([tick(Math.min(loopBeats(), n.t + n.d)), 0x80, n.p, 0]); });
     ev.sort((a, b) => a[0] - b[0] || (a[1] & 0xf0) - (b[1] & 0xf0));
     const name = [...unescape(encodeURIComponent(baseName(parts)))].map(c => c.charCodeAt(0));
     const trk = [0, 0xff, 0x03, name.length, ...name, 0, 0xff, 0x51, 3, (us >> 16) & 255, (us >> 8) & 255, us & 255, 0, 0xff, 0x58, 4, 4, 2, 24, 8]; let last = 0;
@@ -812,9 +926,9 @@
       padOf[li] = t;
     }
     lpClear();
-    if (parts.includes('d')) M.d.notes.filter(n => n.t < loopBeats()).forEach(n => ev.push({ t: n.t * s, k: 'h', i: padOf[n.l], layer: 0, sess: 0, pass: -1, trk: 0 }));
+    if (parts.includes('d')) RN('d').forEach(n => ev.push({ t: n.t * s, k: 'h', i: padOf[n.l], layer: 0, sess: 0, pass: -1, trk: 0 }));
     let off = 0;
-    if (parts.includes('b')) M.b.notes.filter(n => n.t < loopBeats()).forEach(n => { const q = bassKey(n.p); if (!q.exact) off++; ev.push({ t: n.t * s, k: 'h', i: 64 + q.k, layer: 0, sess: 0, pass: -1, trk: 1 }); ev.push({ t: Math.min(loopSec() - .001, (n.t + n.d) * s), k: 'r', i: 64 + q.k, layer: 0, sess: 0, pass: -1, trk: 1 }); });
+    if (parts.includes('b')) RN('b').forEach(n => { const q = bassKey(n.p); if (!q.exact) off++; ev.push({ t: n.t * s, k: 'h', i: 64 + q.k, layer: 0, sess: 0, pass: -1, trk: 1 }); ev.push({ t: Math.min(loopSec() - .001, (n.t + n.d) * s), k: 'r', i: 64 + q.k, layer: 0, sess: 0, pass: -1, trk: 1 }); });
     ev.sort((a, b) => a.t - b.t);
     lp.ev = ev.slice(0, typeof LP_MAX === 'number' ? LP_MAX : 4000); lp.len = loopSec(); lp.oct = 1; lp.over = false; lp.st = 'stopped';
     try { lpTempoUpdate(); } catch (e) {} try { lpUI(); } catch (e) {}
@@ -827,14 +941,14 @@
     const bars = [1, 2, 4].filter(b => b <= Math.max(1, Math.round(M.bars))).pop() || 1, L = 16 * bars, beatsMax = bars * 4;
     if (parts.includes('d') && M.d.notes.length) {
       const pat = { k: new Array(L).fill(0), s: new Array(L).fill(0), h: new Array(L).fill(0), o: new Array(L).fill(0) };
-      M.d.notes.filter(n => n.t < beatsMax).forEach(n => { const st = Math.round(n.t * 4) % L, id = LANES[n.l].id; pat[id][st] = Math.max(pat[id][st], clamp(n.v, 30, 127)); });
+      RN('d').filter(n => n.t < beatsMax).forEach(n => { const st = Math.round(n.t * 4) % L, id = LANES[n.l].id; pat[id][st] = Math.max(pat[id][st], clamp(n.v, 30, 127)); });
       LANES.forEach((Ln, i) => { const b = M.slots[i].buf; if (b) { const S = G.sl[i]; S.buf = b; S.name = M.slots[i].name || ('mid-box ' + Ln.n); S.pb = null; S.pk = ''; } });
       try { cvApply({ bpm: M.bpm, bars, sw: 0, dk: 0, ds: 0, dh: 0, j: 0, pat }, 'mid-box'); } catch (e) { reportError('al generador', e); return; }
     } else { G.bpm = clamp(Math.round(M.bpm), 40, 240); G.bars = bars; G.ts = '4/4'; try { gResizeLocked(); } catch (e) {} }
     if (parts.includes('b') && M.b.notes.length) {
       G.ts = '4/4'; G.bTsOwn = false; try { gResizeLocked(); } catch (e) {}
       const sp = gBspb(), A = new Array(sp * G.bars).fill(0);
-      M.b.notes.filter(n => n.t < beatsMax).forEach(n => { const i = Math.round(n.t * sp / 4) % A.length; const q = bassKey(n.p); if (!A[i] || A[i].v < n.v) A[i] = { k: q.k, v: clamp(n.v, 30, 127) }; });
+      RN('b').filter(n => n.t < beatsMax).forEach(n => { const i = Math.round(n.t * sp / 4) % A.length; const q = bassKey(n.p); if (!A[i] || A[i].v < n.v) A[i] = { k: q.k, v: clamp(n.v, 30, 127) }; });
       G.bas = A; G.lock.b = 1; G.useB = true;
     }
     try { gUI(); gGrid(); gSave(); } catch (e) {}
@@ -847,29 +961,49 @@
     SH.ui.sendSheet({
       from: 'sampler', kinds: ['loop', 'notes'], count: 1, getItems: async () => {
         const s = spb(), notes = [];
-        if (parts.includes('d')) M.d.notes.forEach(n => notes.push({ t: n.t * s, d: .125 * s, p: LANES[n.l].m, v: n.v, drum: true }));
-        if (parts.includes('b')) M.b.notes.forEach(n => notes.push({ t: n.t * s, d: n.d * s, p: n.p, v: n.v }));
+        if (parts.includes('d')) RN('d').forEach(n => notes.push({ t: n.t * s, d: .125 * s, p: LANES[n.l].m, v: n.v, drum: true }));
+        if (parts.includes('b')) RN('b').forEach(n => notes.push({ t: n.t * s, d: n.d * s, p: n.p, v: n.v }));
         return [{ name: baseName(parts), kind: 'loop', audio: await render(parts), bpm: M.bpm, notes, meta: { from: 'mid-box', bars: M.bars } }];
       }
     });
   }
 
   /* ---------------- Sonidos de la batería ---------------- */
+  /* Sonidos de la batería: se guardan en el navegador (IndexedDB del sampler, claves «mbx:slot:N») y se recuperan al abrir.
+     Si un hueco no tiene sonido guardado, lleva el sonido por defecto (DFB, midbox/drums-default.js). */
+  const slotKey = i => 'mbx:slot:' + i;
+  async function slotStore(i) {
+    const x = M.slots[i]; if (typeof tx !== 'function') return;
+    try { await tx('readwrite', st => x.buf && !x.def ? st.put({ sr: x.buf.sampleRate, ch: Array.from({ length: x.buf.numberOfChannels }, (_, c) => x.buf.getChannelData(c).slice()), name: x.name }, slotKey(i)) : st.delete(slotKey(i))); } catch (e) { LOG('no se pudo guardar el sonido', e.message); }
+  }
+  async function defaults() { try { return typeof shDefaultDrums === 'function' ? await shDefaultDrums(ctx) : []; } catch (e) { return []; } }
+  async function slotDefault(i) { const d = await defaults(); M.slots[i] = { buf: d[i] || null, name: d[i] ? (window.SH_DRUM_NAMES || [])[i] || 'Por defecto' : '', def: true }; }
+  async function slotsRestore() {
+    for (let i = 0; i < 4; i++) {
+      if (M.slots[i].buf) continue;   // ya puesto (p. ej. por un proyecto)
+      let r = null; try { if (typeof tx === 'function') r = await tx('readonly', st => st.get(slotKey(i))); } catch (e) {}
+      if (M.slots[i].buf) continue;
+      if (r && r.ch && r.ch.length) { const b = ctx.createBuffer(r.ch.length, r.ch[0].length, r.sr); r.ch.forEach((d, c) => b.copyToChannel(d, c)); M.slots[i] = { buf: b, name: r.name || LANES[i].n }; }
+      else await slotDefault(i);
+    }
+    drawSlots();
+  }
+  function setSlot(i, buf, name) { M.slots[i] = { buf, name }; slotStore(i); drawSlots(); }
   function fromGen(quiet) {
     if (typeof G === 'undefined') return 0; let n = 0;
-    LANES.forEach((L, i) => { const S = G.sl[i]; if (S && S.buf) { M.slots[i] = { buf: S.buf, name: S.name || ('Generador · ' + L.n) }; n++; } });
-    if (!quiet) flash(n ? n + ' sonidos copiados del Generador.' : 'El Generador no tiene sonidos cargados en sus huecos.');
+    LANES.forEach((L, i) => { const S = G.sl[i]; if (S && S.buf) { setSlot(i, S.buf, S.name || ('Generador · ' + L.n)); n++; } });
+    if (!quiet) flash(n ? n + ' sonidos copiados del Generador (quedan guardados).' : 'El Generador no tiene sonidos cargados en sus huecos.');
     drawSlots(); return n;
   }
-  function slotFromPad(i) { const p = pads[sel]; if (!p || !p.buf) return flash('Elige antes en el Sampler un pad con sonido.'); let b; try { b = region(p); } catch (e) { b = p.buf; } M.slots[i] = { buf: b, name: p.name || 'Pad ' + (sel + 1) }; drawSlots(); hitLive(i, 110); }
-  async function slotFromFile(i, f) { if (!f) return; try { const b = await ctx.decodeAudioData(await f.arrayBuffer()); M.slots[i] = { buf: b, name: f.name.replace(/\.[^.]+$/, '') }; drawSlots(); hitLive(i, 110); } catch (e) { flash('No se pudo leer ese sonido.', true); } }
+  function slotFromPad(i) { const p = pads[sel]; if (!p || !p.buf) return flash('Elige antes en el Sampler un pad con sonido.'); let b; try { b = region(p); } catch (e) { b = p.buf; } setSlot(i, b, p.name || 'Pad ' + (sel + 1)); hitLive(i, 110); }
+  async function slotFromFile(i, f) { if (!f) return; try { const b = await ctx.decodeAudioData(await f.arrayBuffer()); setSlot(i, b, f.name.replace(/\.[^.]+$/, '')); hitLive(i, 110); } catch (e) { flash('No se pudo leer ese sonido.', true); } }
   function drawSlots() {
     const box = $m('#mbSlots'); if (!box) return; box.innerHTML = '';
     LANES.forEach((L, i) => {
-      const r = document.createElement('div'); r.className = 'mbrow';
-      r.innerHTML = `<b style="color:${L.c}">${L.n}</b><span class="mbsm">${M.slots[i].buf ? M.slots[i].name : 'sintetizado'}</span><label class="btn">Archivo<input type="file" accept="audio/*" hidden></label><button>Pad</button><button>▶</button><button title="Quitar">✕</button>`;
+      const r = document.createElement('div'), x = M.slots[i]; r.className = 'mbrow';
+      r.innerHTML = `<b style="color:${L.c}">${L.n}</b><span class="mbsm">${x.buf ? x.name + (x.def ? ' (por defecto)' : '') : 'sintetizado'}</span><label class="btn">Archivo<input type="file" accept="audio/*" hidden></label><button>Pad</button><button>▶</button><button title="Volver al sonido por defecto">↺</button>`;
       r.querySelector('input').onchange = e => slotFromFile(i, e.target.files[0]);
-      const bs = r.querySelectorAll('button'); bs[0].onclick = () => slotFromPad(i); bs[1].onclick = () => { ctx.resume(); hitLive(i, 110); }; bs[2].onclick = () => { M.slots[i] = { buf: null, name: '' }; drawSlots(); };
+      const bs = r.querySelectorAll('button'); bs[0].onclick = () => slotFromPad(i); bs[1].onclick = () => { ctx.resume(); hitLive(i, 110); }; bs[2].onclick = async () => { await slotDefault(i); slotStore(i); drawSlots(); hitLive(i, 110); };
       box.appendChild(r);
     });
   }
@@ -971,9 +1105,18 @@
 </div>
 <div class="mbc" id="mbSndBox"><h4>Sonidos de la batería</h4><div id="mbSlots"></div>
   <div class="row"><button id="mbFromGen">Usar los del Generador</button></div>
-  <div class="note">Sin sonido cargado se usa uno sintetizado. El bajo suena con el sonido de la pestaña Bajo.</div>
+  <div class="note">Los sonidos que elijas se quedan guardados para la próxima vez; ↺ vuelve al sonido por defecto. El bajo suena con el sonido de la pestaña Bajo.</div>
 </div>
 </div><div>
+<div class="mbc" id="mbTake" hidden><h4>Toma grabada · marca el loop</h4>
+  <div id="mbWaveBox"><canvas id="mbWave" style="display:block;touch-action:none;border-radius:8px" aria-label="Onda de la toma: arrastra el inicio (verde) y el final (morado); arrastra el centro para mover la selección"></canvas></div>
+  <div class="mbsm" id="mbTakeInfo" style="margin-top:4px"></div>
+  <div class="row"><button id="mbTakePlay">▶ Escuchar la selección</button><label class="ck"><input type="checkbox" id="mbTakeSnap" checked>Imán a los golpes</label></div>
+  <div class="row"><button data-tk="s" style="color:#4fe3a0">Inicio</button><button data-tk="e" style="color:#c08bff">Final</button><button data-tn="-10">◀ 10 ms</button><button data-tn="-2">◀ 2 ms</button><button data-tn="2">2 ms ▶</button><button data-tn="10">10 ms ▶</button></div>
+  <div class="row"><span class="mbsm">Dentro hay</span><select id="mbTakeBars"><option value="auto">compases: auto</option><option value="1">1 compás</option><option value="2">2 compases</option><option value="3">3 compases</option><option value="4">4 compases</option><option value="6">6 compases</option><option value="8">8 compases</option><option value="tempo">mantener el tempo</option></select>
+    <button class="pri" id="mbTakeUse">✓ Usar esta selección</button><button id="mbTakeAuto">Volver a la automática</button></div>
+  <div class="note">Arrastra el inicio (verde) y el final (morado) para que el loop sea justo lo que quieres; con el imán se pegan a los golpes. Escúchalo en bucle y pulsa «Usar esta selección»: el tempo sale de la duración y los compases.</div>
+</div>
 <div class="mbc"><h4 id="mbEdT">Editor</h4>
   <div class="row" style="margin-top:0"><button id="mbPlay" class="pri">▶ Play</button><label class="ck"><input type="checkbox" id="mbPlayD">Batería</label><label class="ck"><input type="checkbox" id="mbPlayB">Bajo</label>
     <label class="ck"><input type="checkbox" id="mbMag">Imán</label><select id="mbGrid" aria-label="Rejilla"><option value="1">1/4</option><option value="0.5">1/8</option><option value="0.25">1/16</option><option value="0.125">1/32</option><option value="0.3333333333">1/8 tresillo</option><option value="0.1666666667">1/16 tresillo</option></select>
@@ -985,6 +1128,7 @@
   <div class="row"><span class="mbsm">Cuantizar a</span><select id="mbQGrid"><option value="1">1/4</option><option value="0.5">1/8</option><option value="0.25">1/16</option><option value="0.125">1/32</option><option value="0.3333333333">1/8 tresillo</option><option value="0.1666666667">1/16 tresillo</option></select>
     <span class="mbsm">al</span><input type="range" id="mbQStr" min="10" max="100" step="10" style="width:90px"><span class="mbsm" id="mbQStrV"></span><button id="mbQ">Cuantizar</button></div>
   <div class="row"><span class="mbsm">Largo del loop</span><button data-l="-4">−1 compás</button><button data-l="-1">−1 tiempo</button><b id="mbLenV" class="mbsm" style="color:var(--ink)"></b><button data-l="1">+1 tiempo</button><button data-l="4">+1 compás</button><button id="mbLenFit" title="Vuelve a buscar dónde acaba el loop">Buscar el final</button></div>
+  <div class="row"><span class="mbsm">Inicio</span><button data-s="-1">◀ 1 tiempo</button><button data-s="-0.25">◀ 1/16</button><b id="mbStartV" class="mbsm" style="color:var(--ink)"></b><button data-s="0.25">1/16 ▶</button><button data-s="1">1 tiempo ▶</button><button id="mbCons" class="pri" title="Ctrl+J">✂ Consolidar</button></div>
   <div class="row"><button id="mbUndo">↶ Deshacer</button><button id="mbRedo">↷ Rehacer</button><button id="mbClr">Vaciar esta parte</button></div>
 </div>
 <div class="mbc"><h4>Llevar a…</h4>
@@ -1005,7 +1149,7 @@
     const pb = $m('#mbPlay'); if (pb) { pb.textContent = M.player ? '■ Stop' : '▶ Play'; pb.disabled = !!M.take; }
     const set = (id, v) => { const e = $m(id); if (e && document.activeElement !== e) e.value = v; };
     set('#mbBpm', M.bpm); { const sb = $m('#mbBars'); if (sb) { let c = sb.querySelector('option[data-c]'); const std = !M.barsAuto && BARS.includes(M.bars); if (!M.barsAuto && !std) { if (!c) { c = document.createElement('option'); c.dataset.c = 1; sb.appendChild(c); } c.value = String(M.bars); c.textContent = barsTxt(); } else if (c) c.remove(); if (document.activeElement !== sb) sb.value = M.barsAuto ? 'auto' : String(M.bars); } }
-    { const lv = $m('#mbLenV'); if (lv) lv.textContent = barsTxt(); } set('#mbSens', M.sens); set('#mbResp', M.resp); set('#mbOct', M.oct); set('#mbComp', M.comp); set('#mbGrid', M.grid); set('#mbQGrid', M.grid); set('#mbQStr', M.qStr); set('#mbExp', M.exp);
+    { const lv = $m('#mbLenV'); if (lv) lv.textContent = barsTxt(); const sv = $m('#mbStartV'); if (sv) sv.textContent = M.ls ? 'tiempo ' + String(Math.round((M.ls + 1) * 100) / 100).replace('.', ',') : 'desde el principio'; } set('#mbSens', M.sens); set('#mbResp', M.resp); set('#mbOct', M.oct); set('#mbComp', M.comp); set('#mbGrid', M.grid); set('#mbQGrid', M.grid); set('#mbQStr', M.qStr); set('#mbExp', M.exp);
     const ck = (id, v) => { const e = $m(id); if (e) e.checked = !!v; };
     ck('#mbMetro', M.metro); ck('#mbSpk', M.spk); ck('#mbAec', M.aec); { const a = $m('#mbAecL'); if (a) a.hidden = !M.spk; } ck('#mbMonRec', M.monRec); ck('#mbCount', M.count); ck('#mbOver', M.overdub); ck('#mbSnap', M.snap); ck('#mbMag', M.magnet); ck('#mbPlayD', M.playD); ck('#mbPlayB', M.playB);
     const tx = (id, v) => { const e = $m(id); if (e) e.textContent = v; };
@@ -1058,18 +1202,20 @@
     on('#mbTr', 'click', e => { const k = e.target && e.target.dataset && e.target.dataset.k; if (k) transpose(+k); });
     on('#mbQStr', 'input', e => { M.qStr = +e.target.value; ui(); saveSettings(); }); on('#mbQ', 'click', quantize);
     document.querySelectorAll('#mbxpanel [data-l]').forEach(b => b.addEventListener('click', () => { const nb = clamp(loopBeats() + +b.dataset.l, 1, 64); if (nb === loopBeats()) return; pushUndo(); M.bars = nb / 4; M.barsAuto = false; saveSettings(); ui(); draw(); }));
+    document.querySelectorAll('#mbxpanel [data-s]').forEach(b => b.addEventListener('click', () => { const e0 = M.ls + loopBeats(), ns = clamp(M.ls + +b.dataset.s, 0, e0 - .25); if (Math.abs(ns - M.ls) < 1e-6) return; pushUndo(); M.ls = ns; M.bars = (e0 - ns) / 4; saveSettings(); ui(); draw(); }));
+    on('#mbCons', 'click', consolidate);
     on('#mbLenFit', 'click', () => { if (!P().notes.length) return flash('No hay notas.'); pushUndo(); const ms = P().notes.slice().sort((a, b) => a.t - b.t), o = ms[0].t; ms.forEach(n => n.t -= o); const m = fitLoop(M.part, false); ui(); draw(); flash((o > .01 ? 'El loop empieza ahora en el primer sonido. ' : '') + (m || 'Loop de ' + barsTxt() + '.') + ' «Deshacer» lo devuelve.'); });
     on('#mbUndo', 'click', undo); on('#mbRedo', 'click', redo);
     on('#mbClr', 'click', () => { if (!P().notes.length) return; pushUndo(); P().notes = []; M.sel.clear(); draw(); flash('Parte vaciada. «Deshacer» la recupera.'); });
     on('#mbExp', 'change', e => { M.exp = e.target.value; saveSettings(); });
     on('#mbToPad', 'click', safe('a un pad', toPad)); on('#mbToLp', 'click', safe('al looper', toLooper)); on('#mbToGen', 'click', safe('al generador', toGen));
     on('#mbMidi', 'click', safe('midi', midiOut)); on('#mbWav', 'click', safe('wav', wavOut)); on('#mbSend', 'click', safe('enviar a', sendTo));
-    document.addEventListener('keydown', e => { const u = $m('.unit'); if (!u || !u.classList.contains('mbx')) return; if (/INPUT|SELECT|TEXTAREA/.test((document.activeElement || {}).tagName || '')) return; if (e.key === 'Delete' || e.key === 'Backspace') { if (M.sel.size) { e.preventDefault(); delSel(); } } });
+    document.addEventListener('keydown', e => { const u = $m('.unit'); if (!u || !u.classList.contains('mbx')) return; if (/INPUT|SELECT|TEXTAREA/.test((document.activeElement || {}).tagName || '')) return; if (e.key === 'Delete' || e.key === 'Backspace') { if (M.sel.size) { e.preventDefault(); delSel(); } } if ((e.ctrlKey || e.metaKey) && (e.key === 'j' || e.key === 'J')) { e.preventDefault(); consolidate(); } });
     window.addEventListener('resize', () => { const u = $m('.unit'); if (u && u.classList.contains('mbx')) draw(); });
-    bindRoll();
+    bindRoll(); tkBind();
     (function meter() { const i = $m('#mbMeter i'); if (i) { i.style.width = Math.min(100, Math.round(M.level * 140)) + '%'; M.level *= .92; } requestAnimationFrame(meter); })();
   }
-  function setPart(p) { if (M.take) return flash('Termina antes la grabación.'); if (M.part === p) return; M.part = p; M.sel.clear(); if (M.mic) resetLive(); if (M.liveBass) try { M.liveBass.silence(ctx.currentTime); } catch (e) {} ui(); draw(); show('—'); }
+  function setPart(p) { if (M.take) return flash('Termina antes la grabación.'); if (M.part === p) return; tkStop(); M.part = p; M.sel.clear(); if (M.mic) resetLive(); if (M.liveBass) try { M.liveBass.silence(ctx.currentTime); } catch (e) {} ui(); draw(); show('—'); }
   function setBpm(v) { v = Math.round(clamp(v || 90, 40, 240) * 4) / 4; if (v === M.bpm) return; M.bpm = v; saveSettings(); ui(); draw(); }
 
 
@@ -1079,8 +1225,8 @@
   const packAu = b => b ? { sr: b.sampleRate, d: mono(b) } : null;
   const unpackAu = r => { if (!r || !r.d || !r.d.length) return null; const b = ctx.createBuffer(1, r.d.length, r.sr); b.copyToChannel(r.d instanceof Float32Array ? r.d : Float32Array.from(r.d), 0); return b; };
   function pjMb() {
-    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, timed: !!x.timed, len: x.len == null ? null : x.len, name: x.name || '', base: (x.base || []).map(n => k === 'd' ? { t: n.t, l: n.l, v: n.v } : { t: n.t, p: n.p, d: n.d, v: n.v }), au: x.buf.duration <= SRC_MAX } : null; };
-    return { v: 1, part: M.part, bpm: M.bpm, bars: M.bars, barsAuto: !!M.barsAuto, exp: M.exp, playD: M.playD, playB: M.playB,
+    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, timed: !!x.timed, len: x.len == null ? null : x.len, name: x.name || '', sel: x.sel || null, base: (x.base || []).map(n => k === 'd' ? { t: n.t, l: n.l, v: n.v } : { t: n.t, p: n.p, d: n.d, v: n.v }), au: x.buf.duration <= SRC_MAX } : null; };
+    return { v: 1, part: M.part, bpm: M.bpm, bars: M.bars, ls: M.ls, barsAuto: !!M.barsAuto, exp: M.exp, playD: M.playD, playB: M.playB,
       d: M.d.notes.map(n => ({ t: n.t, l: n.l, v: n.v })), b: M.b.notes.map(n => ({ t: n.t, p: n.p, d: n.d, v: n.v })),
       slots: M.slots.map(x => x.buf ? x.name || '' : null), src: { d: src('d'), b: src('b') },
       set: Object.fromEntries(['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'monRec', 'noise', 'spk', 'aec', 'latMeasured'].map(k => [k, M[k]])), cal: LANES.some(L => M.cal[L.id].length) ? M.cal : null };
@@ -1088,13 +1234,13 @@
   function pjMbApply(o, au) {
     if (!o) return;
     if (M.take) recStop(); stopPlay(true);
-    M.part = o.part === 'b' ? 'b' : 'd'; M.bpm = o.bpm || M.bpm; M.bars = o.bars || M.bars; M.barsAuto = !!o.barsAuto; if (o.exp) M.exp = o.exp;
+    M.part = o.part === 'b' ? 'b' : 'd'; M.bpm = o.bpm || M.bpm; M.bars = o.bars || M.bars; M.ls = o.ls || 0; M.barsAuto = !!o.barsAuto; if (o.exp) M.exp = o.exp;
     M.playD = o.playD !== false; M.playB = o.playB !== false;
     M.d.notes = (o.d || []).map(n => ({ id: M.nid++, t: n.t, l: n.l, v: n.v }));
     M.b.notes = (o.b || []).map(n => ({ id: M.nid++, t: n.t, p: n.p, d: n.d, v: n.v }));
     au = au || {};
-    M.slots = LANES.map((L, i) => { const b = unpackAu(au.slots && au.slots[i]); return { buf: b, name: b ? (o.slots && o.slots[i]) || L.n : '' }; });
-    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, offset: m.offset, live: m.live, timed: m.timed != null ? m.timed : !!m.live, len: m.len == null ? null : m.len, name: m.name, base: (m.base || []).map(n => Object.assign({ id: M.nid++ }, n)) } : null; }); M.lastTake = null;
+    LANES.forEach((L, i) => { const b = unpackAu(au.slots && au.slots[i]); if (b) M.slots[i] = { buf: b, name: (o.slots && o.slots[i]) || L.n }; });   // huecos sin sonido en el proyecto: se quedan los tuyos
+    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, sel: m.sel || null, offset: m.offset, live: m.live, timed: m.timed != null ? m.timed : !!m.live, len: m.len == null ? null : m.len, name: m.name, base: (m.base || []).map(n => Object.assign({ id: M.nid++ }, n)) } : null; }); M.lastTake = null;
     if (o.set) ['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'monRec', 'noise', 'spk', 'aec', 'latMeasured'].forEach(k => { if (o.set[k] != null) M[k] = o.set[k]; });
     if (o.cal && !LANES.some(L => M.cal[L.id].length)) { LANES.forEach(L => M.cal[L.id] = o.cal[L.id] || []); saveCal(); }   // la calibración del proyecto solo entra si no hay otra
     saveSettings();
@@ -1131,8 +1277,9 @@
   }
   loadSettings(); M.barsAuto = false;
   try { installProjectHooks(); } catch (e) { LOG('proyectos', e.message); }   // ya, antes de que se cargue el autoguardado
-  window.mbxShow = () => { if (!M.slots.some(s => s.buf) && !M.shown) fromGen(true); M.shown = true; ui(); draw(); };
-  window.mbxHide = () => { if (M.take) recStop(); if (M.calib) M.calib = null; stopPlay(true); micOff(); ui(); };
-  window.MIDBOX = { version: MB_VERSION, state: M, analyzeDrums, analyzeBass, feats, classify, estTempo, convertBuffer, render, midiBytes, toLooper, toGen, toPad, quantize, pjMb, pjMbApply, regenerate, discardTake, measureNoise, measureLatency, setPart, setBpm, draw, undo, startPlay, stopPlay, micOn, micOff, recStart, recStop, report };
+  window.mbxShow = () => { M.shown = true; ui(); draw(); drawSlots(); };
+  setTimeout(() => { slotsRestore(); }, 0);
+  window.mbxHide = () => { tkStop(); if (M.take) recStop(); if (M.calib) M.calib = null; stopPlay(true); micOff(); ui(); };
+  window.MIDBOX = { version: MB_VERSION, state: M, analyzeDrums, analyzeBass, feats, classify, estTempo, convertBuffer, render, midiBytes, toLooper, toGen, toPad, quantize, consolidate, RN, pjMb, pjMbApply, regenerate, discardTake, measureNoise, measureLatency, setPart, setBpm, draw, undo, startPlay, stopPlay, micOn, micOff, recStart, recStop, report };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

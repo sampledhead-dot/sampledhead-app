@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.72)
+# SampledHead App — Hoja de proyecto (v1.73)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -16,6 +16,8 @@ con IA y exporta a Koala, Ableton, MPC, Move y SP-404MKII. Pestañas: Sampler, L
   `BS`, `BSCALES`, `bMidi`, `lp`, `lpClear`, `lpTempoUpdate`, `lpUI`, `G`, `gSave`, `gUI`, `gGrid`, `gResizeLocked`, `gBspb`,
   `cvApply`. `showTab(8)` llama a `window.mbxShow`; al salir de la pestaña, `window.mbxHide` apaga el micro.
   API de pruebas: `window.MIDBOX`.
+- `midbox/drums-default.js` — sonidos de batería por defecto del usuario (DFBv3 kick, snare, hat, open hat), WAV 16 bit
+  44,1 kHz en base64 (~330 KB), recortados a −60 dB. `shDefaultDrums(ctx)` → 4 AudioBuffer. Se carga antes de `sh-core.js`.
 - `extractor/vendor/` — librerías empaquetadas (no se editan a mano):
   - `unblend.js` + `workers/` — separación en el navegador (unblend 1.0.1, onnxruntime-web 1.26; WASM desde jsDelivr).
   - `asr-worker.js` + `transformers.min.js` — Whisper con tiempo por palabra (Transformers.js 3.8.1).
@@ -108,6 +110,20 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.73** (20-11-2026, mid-box 1.4.0). Pedido del usuario: marcar bien el loop grabado, poder editar dónde empieza la
+  secuencia y un botón para que la selección quede como secuencia final («como Ctrl+J de Ableton»); recordar los sonidos
+  elegidos al reabrir; sus sonidos DFB como predeterminados de mid-box y del Generador.
+  - **Editor de la toma** (`tkDraw`, `tkBind`, `tkApply`): onda de `src.buf` con los golpes (`src.ons`, de `srcRaw`),
+    selección `src.sel = {s, e}` en segundos (inicial = la automática), asas arrastrables, mover la selección entera, imán a
+    los golpes (14 px), ajuste fino 2/10 ms, escucha en bucle del audio (`AudioBufferSource.loop`), «Dentro hay» auto/1/2/
+    3/4/6/8 compases o mantener tempo (auto = compases cuyo tempo, entre 65 y 170 BPM, se parece más al actual; con la otra
+    parte grabada se mantiene el tempo). «Usar esta selección» → notas de dentro desde el inicio, `M.bars`, `M.bpm`.
+  - **Región del loop**: `M.ls` (inicio, en tiempos) + `loopBeats()`; `RN(k)` da las notas de la región contadas desde su
+    inicio y lo usan reproducción, render, MIDI, Looper, Generador y «Enviar a…». Asa ▶ de inicio en el editor y botones.
+    **✂ Consolidar** (`consolidate`, Ctrl+J/Cmd+J): notas de la región → desde 0, el resto se borra (batería y bajo).
+  - **Sonidos**: `mbx:slot:N` en el IndexedDB del sampler (canales completos); vacío → por defecto (`def: true`, no se
+    guarda); ↺ = volver al de por defecto. Ya no se copian los del Generador al abrir. Proyectos sin sonido en un hueco no
+    borran el tuyo. Generador: `gSlotRestore` rellena los huecos vacíos con los DFB y los guarda (`gSlotStore`, mono).
 - **1.72** (20-11-2026, mid-box 1.3.0). Vídeo del usuario: con el altavoz del móvil y sin cascos, un «bum» disparaba una
   cadena sin fin (cada ~0,35 s = latencia de ida y vuelta medida, 346 ms): el altavoz vuelve al micro. **Modo altavoz**
   (`M.spk`, de serie en pantallas táctiles): cada sonido propio en directo (`ownSound`) abre una ventana de eco
