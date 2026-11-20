@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.69)
+# SampledHead App — Hoja de proyecto (v1.70)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -108,6 +108,13 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.70** (20-11-2026): **mid-box en los proyectos** (y en el autoguardado): `pjMeta().mbx` = notas de batería y bajo sin
+  cuantizar, tempo, compases, parte, qué exportar, nombres de los sonidos, ajustes (sensibilidad, respuesta, latencia, octava,
+  escala, metrónomo, cuenta, sobregrabar, imán, rejilla, fuerza de cuantizar) y la calibración (al cargar solo entra si el
+  navegador no tiene otra); `pjCapture().mbxAu` = audio mono de los 4
+  sonidos de la batería y de la última toma de cada parte (si dura ≤ 90 s) para poder reconvertir. Los proyectos sin
+  `mbx` no tocan mid-box. «Nuevo proyecto» también lo vacía (envoltura de `newFxGen`). Los ganchos se instalan al cargar
+  `midbox.js`, antes de que se recupere el autoguardado. mid-box 1.1.0.
 - **1.69** (20-11-2026): pestaña **mid-box** (voz → batería con bombo/caja/hat cerrado/hat abierto y voz → bajo; en
   directo y desde grabación o audio; calibración; editor sin cuantizar; pad, Looper, Generador, MIDI, WAV, Enviar a…).
   Arreglo: en la vista de ordenador las pestañas **Extractor** y mid-box ocupan todo el ancho (antes los pads seguían a la
@@ -132,7 +139,7 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
   (lo que tarda en sonar en directo y el «Ajuste de latencia» de las tomas a tempo) depende del equipo: no se pudo medir.
   En directo «Rápida» distingue peor el hat abierto del cerrado (la cola aún no ha pasado): al convertir o con
   «Reconvertir la toma» se mira la duración real. Sin auriculares, el altavoz puede disparar golpes.
-- mid-box: las tomas no se guardan en los proyectos (sí la calibración y los ajustes, en el navegador).
+- mid-box en proyectos: audio de toma > 90 s → solo se guardan las notas. La calibración de un proyecto no sustituye a una que ya tengas en ese navegador (para eso, «Borrar calibración» y volver a cargar el proyecto).
 - Conversor audio → bajo (1.68): monofónico; probado solo con un bajo sintético (8 notas a 100 BPM: notas, tempo y rejilla exactos). Con una mezcla completa conviene separar antes el bajo con el Extractor. El tempo se busca entre 70 y 160 BPM (÷2/×2 para corregir).
 - Proyectos con generador (1.68): el audio de los huecos ocupa espacio en el almacenamiento del navegador (máx. 6 s mono por hueco).
 - Cierre de la app al final del Extractor en móvil (1.67): causa probable = memoria; **no reproducido ni confirmado en un móvil real**. El registro de sesión dirá el paso exacto si vuelve a pasar.

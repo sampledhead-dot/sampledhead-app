@@ -12,7 +12,7 @@
  */
 (function () {
   'use strict';
-  const MB_VERSION = '1.0.0';
+  const MB_VERSION = '1.1.0';
   const $m = s => document.querySelector(s);
   const SH = window.SH;
   const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -909,18 +909,67 @@
   function setPart(p) { if (M.take) return flash('Termina antes la grabación.'); if (M.part === p) return; M.part = p; M.sel.clear(); if (M.mic) resetLive(); if (M.liveBass) try { M.liveBass.silence(ctx.currentTime); } catch (e) {} ui(); draw(); show('—'); }
   function setBpm(v) { v = Math.round(clamp(v || 90, 40, 240) * 4) / 4; if (v === M.bpm) return; M.bpm = v; saveSettings(); ui(); draw(); }
 
+
+  /* ---------------- Proyectos (1.70): las tomas, los sonidos y el audio para reconvertir viajan con el proyecto ---------------- */
+  const SRC_MAX = 90;   // segundos de audio de toma que se guardan (más largo: solo las notas)
+  const mono = b => { if (b.numberOfChannels === 1) return b.getChannelData(0).slice(); const n = b.length, o = new Float32Array(n); for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); for (let i = 0; i < n; i++) o[i] += d[i] / b.numberOfChannels; } return o; };
+  const packAu = b => b ? { sr: b.sampleRate, d: mono(b) } : null;
+  const unpackAu = r => { if (!r || !r.d || !r.d.length) return null; const b = ctx.createBuffer(1, r.d.length, r.sr); b.copyToChannel(r.d instanceof Float32Array ? r.d : Float32Array.from(r.d), 0); return b; };
+  function pjMb() {
+    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, name: x.name || '', au: x.buf.duration <= SRC_MAX } : null; };
+    return { v: 1, part: M.part, bpm: M.bpm, bars: M.bars, barsAuto: !!M.barsAuto, exp: M.exp, playD: M.playD, playB: M.playB,
+      d: M.d.notes.map(n => ({ t: n.t, l: n.l, v: n.v })), b: M.b.notes.map(n => ({ t: n.t, p: n.p, d: n.d, v: n.v })),
+      slots: M.slots.map(x => x.buf ? x.name || '' : null), src: { d: src('d'), b: src('b') },
+      set: Object.fromEntries(['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr'].map(k => [k, M[k]])), cal: LANES.some(L => M.cal[L.id].length) ? M.cal : null };
+  }
+  function pjMbApply(o, au) {
+    if (!o) return;
+    if (M.take) recStop(); stopPlay(true);
+    M.part = o.part === 'b' ? 'b' : 'd'; M.bpm = o.bpm || M.bpm; M.bars = o.bars || M.bars; M.barsAuto = !!o.barsAuto; if (o.exp) M.exp = o.exp;
+    M.playD = o.playD !== false; M.playB = o.playB !== false;
+    M.d.notes = (o.d || []).map(n => ({ id: M.nid++, t: n.t, l: n.l, v: n.v }));
+    M.b.notes = (o.b || []).map(n => ({ id: M.nid++, t: n.t, p: n.p, d: n.d, v: n.v }));
+    au = au || {};
+    M.slots = LANES.map((L, i) => { const b = unpackAu(au.slots && au.slots[i]); return { buf: b, name: b ? (o.slots && o.slots[i]) || L.n : '' }; });
+    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, offset: m.offset, live: m.live, name: m.name } : null; });
+    if (o.set) ['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr'].forEach(k => { if (o.set[k] != null) M[k] = o.set[k]; });
+    if (o.cal && !LANES.some(L => M.cal[L.id].length)) { LANES.forEach(L => M.cal[L.id] = o.cal[L.id] || []); saveCal(); }   // la calibración del proyecto solo entra si no hay otra
+    saveSettings();
+    M.sel.clear(); M.undo = []; M.redo = []; M.shown = true;
+    try { drawSlots(); ui(); draw(); } catch (e) {}
+    step('proyecto cargado', M.d.notes.length + ' golpes · ' + M.b.notes.length + ' notas');
+  }
+  function installProjectHooks() {
+    if (typeof pjMeta !== 'function' || typeof pjCapture !== 'function' || typeof pjApply !== 'function') { LOG('sin proyectos: no se engancha'); return; }
+    const oMeta = pjMeta, oSig = pjSig, oCap = pjCapture, oApply = pjApply;
+    const ids = () => [...M.slots.map(x => x.buf ? pjId(x.buf) : 0), M.d.src && M.d.src.buf ? pjId(M.d.src.buf) : 0, M.b.src && M.b.src.buf ? pjId(M.b.src.buf) : 0].join(',');
+    pjMeta = function () { const m = oMeta(); try { m.mbx = pjMb(); } catch (e) {} return m; };
+    pjSig = function () { return oSig() + '|mbx:' + ids(); };
+    pjCapture = function () {
+      const c = oCap();
+      try { if (!c.mbx) c.mbx = pjMb(); c.mbxAu = { slots: M.slots.map(x => packAu(x.buf)), src: { d: M.d.src && M.d.src.buf && M.d.src.buf.duration <= SRC_MAX ? packAu(M.d.src.buf) : null, b: M.b.src && M.b.src.buf && M.b.src.buf.duration <= SRC_MAX ? packAu(M.b.src.buf) : null } }; } catch (e) { LOG('no se pudo guardar el audio de mid-box', e.message); }
+      return c;
+    };
+    if (typeof newFxGen === 'function') { const oNew = newFxGen; newFxGen = function (...a) { const r = oNew.apply(this, a); try { pjMbApply({ part: 'd', bpm: M.bpm, bars: 2, d: [], b: [] }, null); } catch (e) {} return r; }; }   // «Nuevo proyecto» también vacía mid-box
+    pjApply = async function (d) {
+      await oApply(d);
+      if (d && d.mbx) { try { pjMbApply(d.mbx, d.mbxAu); } catch (e) { reportError('cargar proyecto', e); } }   // los proyectos sin mid-box no lo tocan
+    };
+  }
+
   /* ---------------- Arranque ---------------- */
   function init() {
     if (!document.querySelector('.unit')) return;
-    loadSettings(); M.barsAuto = false;
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     let panel = $m('#mbxpanel'); if (!panel) { panel = document.createElement('div'); panel.id = 'mbxpanel'; $m('.unit').appendChild(panel); }
     panel.innerHTML = html();
     bind(); drawSlots(); ui();
     LOG('mid-box ' + MB_VERSION + ' listo');
   }
+  loadSettings(); M.barsAuto = false;
+  try { installProjectHooks(); } catch (e) { LOG('proyectos', e.message); }   // ya, antes de que se cargue el autoguardado
   window.mbxShow = () => { if (!M.slots.some(s => s.buf) && !M.shown) fromGen(true); M.shown = true; ui(); draw(); };
   window.mbxHide = () => { if (M.take) recStop(); if (M.calib) M.calib = null; stopPlay(true); micOff(); ui(); };
-  window.MIDBOX = { version: MB_VERSION, state: M, analyzeDrums, analyzeBass, feats, classify, estTempo, convertBuffer, render, midiBytes, toLooper, toGen, toPad, quantize, setPart, setBpm, draw, undo, startPlay, stopPlay, micOn, micOff, recStart, recStop, report };
+  window.MIDBOX = { version: MB_VERSION, state: M, analyzeDrums, analyzeBass, feats, classify, estTempo, convertBuffer, render, midiBytes, toLooper, toGen, toPad, quantize, pjMb, pjMbApply, setPart, setBpm, draw, undo, startPlay, stopPlay, micOn, micOff, recStart, recStop, report };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
