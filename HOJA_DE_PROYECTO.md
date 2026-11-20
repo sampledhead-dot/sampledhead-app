@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.70)
+# SampledHead App — Hoja de proyecto (v1.71)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -108,6 +108,16 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.71** (20-11-2026, mid-box 1.2.0, a petición del usuario tras probarlo): **⟳ Regenerar** (vuelve a analizar el audio
+  guardado de la toma o del archivo con los ajustes actuales; en sobregrabación conserva lo que había antes: `src.base`),
+  **↺ Descartar la toma** (`M.lastTake.before`), **Oír mientras grabo** (`M.monRec`, desmarcado de serie: al grabar no
+  suenan los golpes/notas de la voz), la toma se analiza **entera al terminar** (`notesFromSrc`; respaldo: lo detectado en
+  directo). Umbral nuevo: sensibilidad 1–10 = −19…−60 dBFS (`drumGate`, `voiceGate`), rechazo de soplidos (`noiseLike`:
+  energía que llega a la mitad después del 50 % de la ventana o que crece dentro de ella, o pico flojo) y de colas
+  (`masked`: < 33 % del golpe anterior y a menos de 180 ms). **🤫 Medir ruido** (2,5 s → `M.noise`, umbral = 2× ruido).
+  **⏱ Medir latencia** (6 clics cada 1 s por el altavoz, el micro los detecta; mediana = ida y vuelta → «Ajuste de
+  latencia», máx. 500 ms). El micro encendido solo para grabar se apaga al terminar. Proyectos: `src` guarda `timed`,
+  `len` y `base`; ajustes `monRec` y `noise`.
 - **1.70** (20-11-2026): **mid-box en los proyectos** (y en el autoguardado): `pjMeta().mbx` = notas de batería y bajo sin
   cuantizar, tempo, compases, parte, qué exportar, nombres de los sonidos, ajustes (sensibilidad, respuesta, latencia, octava,
   escala, metrónomo, cuenta, sobregrabar, imán, rejilla, fuerza de cuantizar) y la calibración (al cargar solo entra si el
@@ -133,6 +143,8 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 - `sh-core.js` se edita solo en `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 
 ## Límites conocidos
+- mid-box 1.71: con soplidos sintéticos entre golpes, 16/16 golpes en todas las sensibilidades (uno de los hats pegado a un
+  soplido sale como abierto). La medida de latencia se probó con clics en un micro falso, no con altavoz y micro reales.
 - mid-box (1.69): probado en Chrome headless (Linux) con beatbox y tarareo **sintéticos**: conversión 16/16 golpes bien
   clasificados (error < 1 ms) y 8/8 notas de bajo exactas; directo con micro falso (archivo): 16/16 golpes y 8/8 notas en
   la toma libre, tempo detectado. **No probado con voz real, micro real, móvil real ni Safari/iOS.** La latencia real

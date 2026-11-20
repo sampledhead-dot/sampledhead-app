@@ -12,7 +12,7 @@
  */
 (function () {
   'use strict';
-  const MB_VERSION = '1.1.0';
+  const MB_VERSION = '1.2.0';
   const $m = s => document.querySelector(s);
   const SH = window.SH;
   const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -34,7 +34,7 @@
   /* ---------------- Estado ---------------- */
   const M = {
     part: 'd', bpm: 90, bars: 2, metro: true, count: true, overdub: false,
-    sens: 5, resp: 'fast', comp: null, oct: -1, snap: true, magnet: false, grid: 0.25, qStr: 100,
+    sens: 5, resp: 'fast', comp: null, monRec: false, noise: null, micByRec: false, lastTake: null, oct: -1, snap: true, magnet: false, grid: 0.25, qStr: 100,
     playD: true, playB: true, exp: 'both',
     d: { notes: [], src: null }, b: { notes: [], src: null },
     sel: new Set(), undo: [], redo: [], nid: 1,
@@ -50,11 +50,11 @@
   const P = () => M[M.part];
 
   function loadSettings() {
-    try { const s = JSON.parse(localStorage.getItem(SETKEY) || 'null'); if (s) ['bpm', 'bars', 'metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'exp'].forEach(k => { if (s[k] != null) M[k] = s[k]; }); } catch (e) {}
+    try { const s = JSON.parse(localStorage.getItem(SETKEY) || 'null'); if (s) ['bpm', 'bars', 'metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'exp', 'monRec', 'noise'].forEach(k => { if (s[k] != null) M[k] = s[k]; }); } catch (e) {}
     try { const c = JSON.parse(localStorage.getItem(CALKEY) || 'null'); if (c) LANES.forEach(L => { if (Array.isArray(c[L.id])) M.cal[L.id] = c[L.id]; }); } catch (e) {}
     if (M.comp == null) M.comp = defComp();
   }
-  function saveSettings() { try { const s = {}; ['bpm', 'bars', 'metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'exp'].forEach(k => s[k] = M[k]); localStorage.setItem(SETKEY, JSON.stringify(s)); } catch (e) {} }
+  function saveSettings() { try { const s = {}; ['bpm', 'bars', 'metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'exp', 'monRec', 'noise'].forEach(k => s[k] = M[k]); localStorage.setItem(SETKEY, JSON.stringify(s)); } catch (e) {} }
   function saveCal() { M.calKnn = null; try { localStorage.setItem(CALKEY, JSON.stringify(M.cal)); } catch (e) {} }
   function defComp() { let l = 0; try { l = (ctx.outputLatency || 0) + (ctx.baseLatency || 0); } catch (e) {} return Math.round(clamp(l * 1000 + 10, 10, 120)); }
 
@@ -68,6 +68,14 @@
     }
   }
   const BANDS = [40, 120, 250, 500, 1000, 2000, 4000, 8000, 16000];
+  /* umbrales: sensibilidad 1 = solo golpes muy fuertes (−19 dBFS) … 10 = todo (−60 dBFS); nunca por debajo del ruido medido */
+  const drumGate = () => Math.max(Math.pow(10, (-14.4 - 4.6 * M.sens) / 20), M.noise ? M.noise.env * 2 : 0);
+  const drumGateH = () => Math.max(Math.pow(10, (-14.4 - 4.6 * M.sens) / 20), M.noise ? M.noise.envH * 2 : 0);
+  const voiceGate = () => Math.max(Math.pow(10, (-20 - 4 * M.sens) / 20), M.noise ? M.noise.rms * 2.2 : 0);
+  /* soplido o aire contra el micro: sube despacio o es flojo → no es un golpe */
+  /* cola de un golpe fuerte (o aire justo detrás): muy flojo y pegado al anterior */
+  const masked = (prev, t, peak) => prev && t - prev.t < .18 && peak < prev.peak * .33;
+  const noiseLike = (f, W, sr) => f.att > (W / sr) * 1000 * .5 || f.decay >= 1.3 || f.peak < drumGate() * 1.6;
   const winSec = mode => mode === 'precise' ? 0.045 : 0.025;
   /* seg: muestras desde el inicio del golpe (al menos W) */
   function feats(seg, sr, W) {
@@ -80,6 +88,7 @@
       if (i && (v >= 0) !== (seg[i - 1] >= 0)) zc++;
       if (i < th) e1 += v * v; else if (i >= W - th) e3 += v * v;
     }
+    let att = 0; { const F = Math.max(8, Math.round(sr * .003)), ev = []; for (let i = 0; i + F <= W; i += F) { let q = 0; for (let j = 0; j < F; j++) q += seg[i + j] * seg[i + j]; ev.push(q); } const mx = Math.max(...ev); att = ev.findIndex(q => q >= mx * .5) * F / sr * 1000; }
     fft(re, im);
     const bw = sr / N, be = new Float64Array(8); let sc = 0, se = 0;
     for (let k = 1; k < N / 2; k++) {
@@ -91,7 +100,7 @@
     const cent = sc / (se || 1e-12), decay = clamp(Math.sqrt(e3 / (e1 || 1e-12)), 0, 1.5);
     return {
       v: [...frac.map(Math.sqrt), Math.log2(Math.max(50, cent)) / 14, Math.min(1, zc / W * 2), decay],
-      frac, cent, decay, zc: zc / W, peak: pk, rms: Math.sqrt(tot2 / W),
+      frac, cent, decay, att, zc: zc / W, peak: pk, rms: Math.sqrt(tot2 / W),
       low: frac[0] + frac[1] + frac[2], high: frac[6] + frac[7]
     };
   }
@@ -150,12 +159,11 @@
        que las ondas graves de un bombo largo (más lentas que la ventana) parezcan golpes nuevos. */
     const H = 128, RB = 1 << 17, ring = new Float32Array(RB), kA = 1 - Math.exp(-1 / (.0005 * sr)), kR = Math.exp(-1 / (.03 * sr));
     let n = 0, hop = 0, env = 0, envH = 0, prev = 0, floor = 1e-5, lastOn = -1e9; const eh = [], hh = [];
-    const gate = () => Math.pow(10, (-30 - 3.2 * M.sens) / 20);
     function evalHop() {
       const pm = eh.length ? Math.min(...eh) : env, hm = hh.length ? Math.min(...hh) : envH;
       floor = env < floor ? env : floor * 1.0008;
-      const g = gate();
-      const up = (env > Math.max(g, floor * 4) && env > pm * 2.2) || (envH > g * .5 && envH > hm * 2.6 && env > Math.max(g * .4, floor * 3));
+      const g = drumGate(), gh = drumGateH();
+      const up = (env > Math.max(g, floor * 5) && env > pm * 2.4) || (envH > Math.max(gh, floor * 5) && envH > hm * 3 && env > Math.max(g * .6, floor * 4));
       eh.push(env); hh.push(envH); if (eh.length > 8) { eh.shift(); hh.shift(); }
       if (up && n - lastOn > sr * .05) {
         let pk = 0; for (let i = n - 384; i < n; i++) { const v = Math.abs(ring[i & (RB - 1)]); if (v > pk) pk = v; }
@@ -181,9 +189,10 @@
     const ons = []; const det = DrumDet(sr, s0 => ons.push(s0));
     for (let i = 0; i < x.length; i += 1024) det.push(x.subarray(i, Math.min(x.length, i + 1024)));
     const W = Math.round(sr * winSec('precise'));
+    let prev = null;
     return ons.map((s0, i) => {
       const seg = x.subarray(s0, Math.min(x.length, s0 + W)); if (seg.length < W * .6) return null;
-      const f = feats(seg, sr, W), dur = hitDur(x, s0, sr, i + 1 < ons.length ? ons[i + 1] : x.length), id = classify(f, dur, 'precise');
+      const f = feats(seg, sr, W); if (noiseLike(f, W, sr) || masked(prev, s0 / sr, f.peak)) return null; prev = { t: s0 / sr, peak: f.peak }; const dur = hitDur(x, s0, sr, i + 1 < ons.length ? ons[i + 1] : x.length), id = classify(f, dur, 'precise');
       return { t: s0 / sr, id, vel: velOf(id, f.peak), f, dur };
     }).filter(Boolean);
   }
@@ -230,7 +239,7 @@
   /* segmentación en notas (la misma en directo y sobre un audio) */
   function NoteSeg(cb) {
     let cur = null, cand = [], unv = 0, hist = [], pk = 0;
-    const gate = () => Math.pow(10, (-38 - 2.4 * M.sens) / 20);
+    const gate = voiceGate;
     return {
       frame(F) {
         const g = gate(), voiced = F.rms > g && F.f >= 55 && F.f <= 750 && F.conf > .72;
@@ -290,7 +299,7 @@
     if (!drumOut) { drumOut = ctx.createGain(); drumOut.gain.value = .9; drumOut.connect(typeof sampBus !== 'undefined' ? sampBus : ctx.destination); }
     if (!bassOut) { bassOut = ctx.createGain(); bassOut.connect(typeof bassBus !== 'undefined' ? bassBus : ctx.destination); }
   }
-  function hitLive(li, v, t) { outs(); hitIn(ctx, drumOut, li, t || ctx.currentTime, v, liveChk); }
+  function hitLive(li, v, t) { M.liveHits = (M.liveHits || 0) + 1; outs(); hitIn(ctx, drumOut, li, t || ctx.currentTime, v, liveChk); }
   function click(t, strong) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = strong ? 1760 : 1175; g.gain.setValueAtTime(strong ? .35 : .22, t); g.gain.exponentialRampToValueAtTime(.001, t + .05); o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + .06); }
   function newBass(c, dest) { try { return mkBass(c, dest, BP); } catch (e) { LOG('mkBass falla', e.message); return null; } }
 
@@ -334,7 +343,7 @@
     const L = { n0: null, t0: null, ns: 0, pend: [], cur: null };
     L.det = DrumDet(sr, s0 => L.pend.push(s0));
     L.seg = NoteSeg({
-      on(c) { outs(); if (!M.liveBass) M.liveBass = newBass(ctx, bassOut); const t = ctx.currentTime, v = bassVel(c.rms); if (M.liveBass && M.monitor !== false) M.liveBass.on('v', t, c.p); L.cur = { p: c.p, ctxT: L.toCtx(c.t), v }; show(nName(c.p)); takeNote({ t: L.toCtx(c.t), p: c.p, vel: v, open: true }); },
+      on(c) { outs(); if (!M.liveBass) M.liveBass = newBass(ctx, bassOut); const t = ctx.currentTime, v = bassVel(c.rms); if (M.liveBass && monitorOn()) M.liveBass.on('v', t, c.p); L.cur = { p: c.p, ctxT: L.toCtx(c.t), v }; show(nName(c.p)); takeNote({ t: L.toCtx(c.t), p: c.p, vel: v, open: true }); },
       off(c, t) { if (M.liveBass) M.liveBass.off('v', ctx.currentTime); takeClose(L.toCtx(t)); L.cur = null; }
     });
     L.trk = PitchTrk(sr, F => { if (M.part === 'b') L.seg.frame(F); });
@@ -349,37 +358,44 @@
     M.level = Math.max(pk, M.level * .9);
     if (M.take && M.take.rec) { if (!M.take.chunks.length) M.take.capT0 = t; M.take.chunks.push(x); }
     if (M.calib) M.calib.chunks.push(x);
+    if (M.meas) { if (!M.meas.chunks.length) M.meas.t0 = t; M.meas.chunks.push(x); return; }
     if (M.part === 'd') {
       L.det.push(x); L.ns += x.length;
       const W = Math.round(m.sr * winSec(M.resp));
       while (L.pend.length && L.det.n >= L.pend[0] + W) {
-        const s0 = L.pend.shift(), seg = L.det.read(s0, W), f = feats(seg, m.sr, W), id = classify(f, null, M.resp), li = LANES.findIndex(q => q.id === id), v = velOf(id, f.peak);
-        if (!M.calib) { hitLive(li, v); show(LANES[li].n); }
+        const s0 = L.pend.shift(), seg = L.det.read(s0, W), f = feats(seg, m.sr, W);
+        if (noiseLike(f, W, m.sr) || masked(L.prev, s0 / m.sr, f.peak)) { LOG('descartado (soplido, cola o flojo)', Math.round(f.att) + ' ms', f.peak.toFixed(3)); continue; }
+        L.prev = { t: s0 / m.sr, peak: f.peak };
+        const id = classify(f, null, M.resp), li = LANES.findIndex(q => q.id === id), v = velOf(id, f.peak);
+        if (!M.calib) { if (monitorOn()) hitLive(li, v); show(LANES[li].n); }
         const tc = L.t0 + (s0 - L.n0) / m.sr;
         takeNote({ t: tc, l: li, vel: v });
       }
     } else { L.trk.push(x); L.ns += x.length; }
   }
+  const monitorOn = () => !(M.take && M.take.rec && !M.monRec);
   function show(txt) { M.lastHit = txt; const e = $m('#mbHit'); if (e) { e.textContent = txt; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); } }
 
   /* ---------------- Grabación (toma) ---------------- */
   function busy() { return !!(M.take || M.calib); }
   async function recStart() {
-    if (busy()) return;
+    if (busy() || M.meas) return;
+    const had = !!M.mic;
     if (!(await micOn())) return;
+    if (!had) M.micByRec = true;   // el micro se encendió solo para grabar: se apaga al terminar
     stopPlay();
     const part = M.part, other = part === 'd' ? 'b' : 'd', hasOther = M[other].notes.length > 0;
     const timed = M.metro || hasOther, now = ctx.currentTime + .12, bar = 4 * spb();
     const t0 = timed ? now + (M.count ? bar : 0) : null;
     const auto = M.barsAuto;
-    M.take = { part, timed, t0, end: timed && !auto ? t0 + loopSec() : null, notes: [], chunks: [], rec: true, capT0: ctx.currentTime, base: snapNotes(), pendOpen: null };
+    M.take = { part, timed, t0, end: timed && !auto ? t0 + loopSec() : null, notes: [], chunks: [], rec: true, capT0: ctx.currentTime, sr: M.mic.sr, before: snapNotes(), prevSrc: M[part].src, pendOpen: null };
     pushUndo();
     if (timed) {
       if (M.count) for (let b = 0; b < 4; b++) click(now + b * spb(), b === 0);
       startPlay(t0, { metro: M.metro, skip: M.overdub ? null : part, rec: true });
-      flash(M.count ? 'Cuenta de un compás y graba ' + (auto ? 'hasta que pulses ■' : M.bars + (M.bars === 1 ? ' compás' : ' compases')) + '…' : 'Grabando…');
-    } else flash('Grabando: empieza cuando quieras. Pulsa ■ para terminar.');
-    step('grabar', JSON.stringify({ part, timed, bpm: M.bpm, bars: auto ? 'auto' : M.bars, overdub: M.overdub }));
+      flash((M.count ? 'Cuenta de un compás y graba ' + (auto ? 'hasta que pulses ■' : M.bars + (M.bars === 1 ? ' compás' : ' compases')) + '…' : 'Grabando…') + (M.monRec ? '' : ' (sin oír ' + (part === 'd' ? 'la batería' : 'el bajo') + ')'));
+    } else flash('Grabando: empieza cuando quieras. Pulsa ■ para terminar.' + (M.monRec ? '' : ' (sin oír ' + (part === 'd' ? 'la batería' : 'el bajo') + ')'));
+    step('grabar', JSON.stringify({ part, timed, bpm: M.bpm, bars: auto ? 'auto' : M.bars, overdub: M.overdub, oir: M.monRec }));
     ui();
   }
   function takeNote(n) {
@@ -391,32 +407,107 @@
   }
   function takeClose(tc) { const T = M.take; if (!T || !T.pendOpen) return; const o = T.pendOpen; T.pendOpen = null; o.d = Math.max(.03, tc - (M.comp || 0) / 1000 - o.t); if (T.end != null && o.t + o.d > T.end) o.d = T.end - o.t; if (o.d >= .04) T.notes.push(o); }
   function recTick() { const T = M.take; if (T && T.rec && T.end != null && ctx.currentTime > T.end + .15) recStop(); }
+  /* análisis completo de un audio de voz → notas en segundos del propio audio */
+  function analyzeX(x, sr, part) {
+    const raw = part === 'd' ? analyzeDrums(x, sr) : analyzeBass(x, sr);
+    return raw.map(n => part === 'd' ? { t: n.t, l: LANES.findIndex(q => q.id === n.id), vel: n.vel } : { t: n.t, p: n.p, d: n.d, vel: n.vel });
+  }
+  /* toma o audio (src) → notas en tiempos, siempre con el análisis completo */
+  function notesFromSrc(src, part, keepTempo) {
+    const x = src.buf.getChannelData(0), sr = src.buf.sampleRate;
+    let raw = analyzeX(src.norm ? normCopy(x) : x, sr, part);
+    if (src.timed) { raw = raw.filter(n => n.t - src.offset >= -.06 && (src.len == null || n.t - src.offset < src.len)); return { conv: toBeats(raw, src.offset, part), n: raw.length }; }
+    if (!raw.length) return { conv: [], n: 0 };
+    if (!keepTempo && M.tempoAuto !== false && !(part === 'd' ? M.b : M.d).notes.length) { const bpm = estTempo(raw.map(n => n.t)); if (bpm) M.bpm = bpm; }
+    return { conv: toBeats(raw, raw[0].t, part), n: raw.length };
+  }
+  function normCopy(x) { let pk = 0; for (let i = 0; i < x.length; i += 2) { const a = Math.abs(x[i]); if (a > pk) pk = a; } if (!(pk > 1e-4 && pk < .5)) return x; const g = .5 / pk, o = new Float32Array(x.length); for (let i = 0; i < x.length; i++) o[i] = x[i] * g; return o; }
   function recStop() {
     const T = M.take; if (!T) return;
     T.rec = false; M.take = null;
     if (T.pendOpen) takeClose(ctx.currentTime);
     if (M.liveBass) try { M.liveBass.silence(ctx.currentTime); } catch (e) {}
     stopPlay();
-    // audio de la toma (para reconvertir con el análisis completo)
-    const len = T.chunks.reduce((a, c) => a + c.length, 0), sr = M.mic ? M.mic.sr : ctx.sampleRate;
+    if (M.micByRec) { M.micByRec = false; micOff(); }
+    const len = T.chunks.reduce((a, c) => a + c.length, 0), sr = T.sr || ctx.sampleRate;
     let buf = null; if (len) { buf = ctx.createBuffer(1, len, sr); let o = 0; const d = buf.getChannelData(0); T.chunks.forEach(c => { d.set(c, o); o += c.length; }); }
-    let notes = T.notes.slice().sort((a, b) => a.t - b.t), origin;
-    if (!notes.length) { flash('No se ha detectado nada. Sube la sensibilidad o acércate al micro.', true); M.undo.pop(); ui(); return; }
-    if (T.timed) origin = T.t0;
-    else {   // libre: el primer golpe es el principio; tempo detectado
-      origin = notes[0].t;
-      const bpm = estTempo(notes.map(n => n.t));
-      if (bpm && M.tempoAuto !== false && !M[T.part === 'd' ? 'b' : 'd'].notes.length) M.bpm = bpm;
+    const comp = (M.comp || 0) / 1000;
+    // la toma se analiza entera (mejor que lo oído en directo: ve la duración de los hats, la escala, etc.)
+    const base = M.overdub ? M[T.part].notes.map(n => Object.assign({}, n)) : [];
+    const src = buf ? { buf, timed: T.timed, offset: T.timed ? T.t0 - T.capT0 + comp : null, len: T.end != null ? T.end - T.t0 : null, name: 'Toma ' + new Date().toLocaleTimeString().slice(0, 5), base, live: T.timed } : null;
+    let conv = [], how = 'análisis completo';
+    if (src) conv = notesFromSrc(src, T.part).conv;
+    if (!conv.length && T.notes.length) {   // respaldo: lo detectado en directo
+      const notes = T.notes.slice().sort((a, b) => a.t - b.t); how = 'directo';
+      let origin = T.timed ? T.t0 : notes[0].t;
+      if (!T.timed) { const bpm = estTempo(notes.map(n => n.t)); if (bpm && !M[T.part === 'd' ? 'b' : 'd'].notes.length) M.bpm = bpm; }
+      conv = toBeats(notes, origin, T.part);
     }
-    const conv = toBeats(notes, origin, T.part);
-    const prev = M.overdub ? M[T.part].notes : [];
-    M[T.part].notes = prev.concat(conv);
-    M[T.part].src = buf ? { buf, offset: T.timed ? T.t0 - T.capT0 + (M.comp || 0) / 1000 : null, name: 'Toma ' + new Date().toLocaleTimeString().slice(0, 5), live: T.timed } : null;
+    if (!conv.length) { M.undo.pop(); flash('No se ha detectado nada. Sube la sensibilidad o acércate al micro.', true); ui(); return; }
+    M[T.part].notes = base.concat(conv);
+    if (src) M[T.part].src = src;
+    M.lastTake = { part: T.part, before: T.before, prevSrc: T.prevSrc };
     if (M.barsAuto || !T.timed) M.bars = autoBars(endBeats());
     M.sel.clear();
-    step('toma', conv.length + ' notas · ' + M.bpm + ' BPM · ' + M.bars + ' compases');
-    flash((T.part === 'd' ? conv.length + ' golpes' : conv.length + ' notas') + ' grabados sin cuantizar · ' + M.bpm + ' BPM · ' + M.bars + (M.bars === 1 ? ' compás' : ' compases') + '. Muévelos en el editor o cuantiza cuando quieras.');
+    step('toma', conv.length + ' notas (' + how + ') · ' + M.bpm + ' BPM · ' + M.bars + ' compases');
+    flash((T.part === 'd' ? conv.length + ' golpes' : conv.length + ' notas') + ' sin cuantizar · ' + M.bpm + ' BPM · ' + M.bars + (M.bars === 1 ? ' compás' : ' compases') + '. Si no te convence: cambia la sensibilidad y pulsa ⟳ Regenerar, o ↺ Descartar la toma.');
     saveSettings(); ui(); draw();
+  }
+  /* ⟳ Regenerar: vuelve a analizar el audio guardado con los ajustes actuales (sensibilidad, ruido, calibración, octava, escala) */
+  async function regenerate() {
+    const part = M.part, src = M[part].src; if (!src || !src.buf) return flash('No hay toma ni audio guardado que regenerar.');
+    const { conv } = notesFromSrc(src, part, true);
+    if (!conv.length) return flash('Con estos ajustes no sale nada: sube la sensibilidad y vuelve a pulsar ⟳ Regenerar.', true);
+    pushUndo();
+    M[part].notes = (src.base || []).map(n => Object.assign({}, n, { id: M.nid++ })).concat(conv);
+    M.sel.clear(); ui(); draw();
+    const cnt = {}; if (part === 'd') conv.forEach(n => cnt[n.l] = (cnt[n.l] || 0) + 1);
+    flash('Regenerado con sensibilidad ' + M.sens + ': ' + (part === 'd' ? conv.length + ' golpes (' + LANES.map((L, i) => (cnt[i] || 0) + ' ' + L.n.toLowerCase()).join(', ') + ')' : conv.length + ' notas') + '. «Deshacer» vuelve al anterior.');
+    step('regenerar', conv.length + ' notas · sens ' + M.sens);
+  }
+  /* ↺ Descartar la toma: todo como antes de grabarla */
+  function discardTake() {
+    const L = M.lastTake; if (!L || L.part !== M.part) return flash('No hay una toma reciente de ' + (M.part === 'd' ? 'batería' : 'bajo') + ' que descartar.');
+    pushUndo(); restore(L.before); M[L.part].src = L.prevSrc; M.lastTake = null; ui();
+    flash('Toma descartada. Pulsa ● Grabar para repetirla.'); step('descartar toma');
+  }
+  /* 🤫 Medir ruido: 2 s de silencio (o respirando como al hacer beatbox) → umbral por encima del ruido */
+  async function measureNoise() {
+    if (busy() || M.meas) return; const had = !!M.mic; if (!(await micOn())) return;
+    M.meas = { chunks: [] }; ui(); flash('Midiendo el ruido 2,5 s: quédate en silencio, o respira como cuando haces beatbox (sin hacer sonidos)…');
+    await new Promise(r => setTimeout(r, 2500));
+    const C = M.meas; M.meas = null; if (!had) micOff();
+    const x = new Float32Array(C.chunks.reduce((a, c) => a + c.length, 0)); let o = 0; C.chunks.forEach(c => { x.set(c, o); o += c.length; });
+    const sr = ctx.sampleRate, kA = 1 - Math.exp(-1 / (.0005 * sr)), kR = Math.exp(-1 / (.03 * sr)); let e = 0, eh = 0, pv = 0, me = 0, mh = 0, mr = 0;
+    const skip = Math.round(sr * .2), F = Math.round(sr * .02);
+    for (let i = 0; i < x.length; i++) { const a = Math.abs(x[i]), d = Math.abs(x[i] - pv); pv = x[i]; e = a > e ? e + (a - e) * kA : e * kR; eh = d > eh ? eh + (d - eh) * kA : eh * kR; if (i > skip) { if (e > me) me = e; if (eh > mh) mh = eh; } }
+    for (let i = skip; i + F <= x.length; i += F) { let q = 0; for (let j = 0; j < F; j++) q += x[i + j] * x[i + j]; mr = Math.max(mr, Math.sqrt(q / F)); }
+    if (!me) return flash('No llega sonido del micro.', true);
+    M.noise = { env: me, envH: mh, rms: mr }; saveSettings(); if (M.mic) resetLive(); ui();
+    flash('Ruido medido: ' + (20 * Math.log10(me)).toFixed(0) + ' dB. Ya no se dispara nada por debajo del doble de eso. Si ahora cuesta que entren los golpes suaves, sube la sensibilidad o pulsa «Quitar».');
+    step('ruido', JSON.stringify(M.noise));
+  }
+  /* ⏱ Medir latencia: suenan 6 clics por el altavoz y el micro los oye; el retraso (ida y vuelta) es el ajuste de latencia de las tomas */
+  async function measureLatency() {
+    if (busy() || M.meas) return; const had = !!M.mic; if (!(await micOn())) return;
+    stopPlay(); M.meas = { chunks: [] }; ui();
+    flash('Midiendo: quítate los auriculares (o ponlos junto al micro), sube el volumen y no hables. Van a sonar 6 clics…');
+    await new Promise(r => setTimeout(r, 300));
+    const start = ctx.currentTime + .4, gap = 1, clicks = [];
+    for (let k = 0; k < 6; k++) { const t = start + k * gap; clicks.push(t); const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'square'; o.frequency.value = 1500; g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t + .03); o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + .04); }
+    await new Promise(r => setTimeout(r, (start - ctx.currentTime + 6 * gap + .5) * 1000));
+    const C = M.meas; M.meas = null; if (!had) micOff();
+    if (!C || !C.chunks.length) { ui(); return flash('No llega sonido del micro.', true); }
+    const x = new Float32Array(C.chunks.reduce((a, c) => a + c.length, 0)); let o = 0; C.chunks.forEach(c => { x.set(c, o); o += c.length; });
+    const sr = ctx.sampleRate, ons = [], sens = M.sens, nz = M.noise; M.sens = 9; M.noise = null;
+    try { const det = DrumDet(sr, s0 => ons.push(C.t0 + s0 / sr)); for (let i = 0; i < x.length; i += 1024) det.push(x.subarray(i, Math.min(x.length, i + 1024))); } finally { M.sens = sens; M.noise = nz; }
+    const d = clicks.map(t => { const c = ons.filter(u => u - t > -.005 && u - t < .9); return c.length ? c[0] - t : null; }).filter(v => v != null).sort((a, b) => a - b);
+    ui(); step('latencia (medida)', 'bloques ' + C.chunks.length + ' · golpes ' + ons.length + ' · ' + ons.slice(0, 8).map(u => u.toFixed(3)).join(',') + ' · clics ' + clicks.map(u => u.toFixed(3)).join(','));
+    if (d.length < 4) return flash('Solo he oído ' + d.length + ' de 6 clics. Sube el volumen, quita los auriculares y repite.', true);
+    const med = d[d.length >> 1], spread = d[d.length - 1] - d[0];
+    M.comp = Math.round(clamp(med * 1000, 0, 500)); saveSettings(); ui();
+    flash('Latencia medida: ' + M.comp + ' ms (ida y vuelta, ' + d.length + '/6 clics' + (spread > .03 ? ', variable ±' + Math.round(spread * 500) + ' ms' : '') + '). Ya está puesta en el ajuste: las tomas a tempo caen en su sitio. En directo ese retraso no se puede quitar: para grabar, desmarca «Oír mientras grabo».' + (M.comp > 150 ? ' Es alto: si usas auriculares Bluetooth, con cable baja mucho.' : ''));
+    step('latencia', M.comp + ' ms · ' + d.map(v => Math.round(v * 1000)).join(','));
   }
   function toBeats(notes, origin, part) {
     const s = spb();
@@ -437,7 +528,7 @@
     const part = opts.part || M.part; step('convertir', (name || '?') + ' · ' + b.duration.toFixed(2) + ' s · ' + (part === 'd' ? 'batería' : 'bajo'));
     if (b.duration > 120) { flash('El audio dura más de 2 minutos: corta antes el trozo en el sampler.', true); return 0; }
     const { x, sr } = await toMono(b);
-    const raw = part === 'd' ? analyzeDrums(x, sr) : analyzeBass(x, sr);
+    const raw = part === 'd' ? analyzeDrums(x, sr) : analyzeBass(x, sr);   // (toMono ya normaliza los archivos flojos)
     if (!raw.length) { flash('No encuentro ' + (part === 'd' ? 'golpes' : 'notas') + ' claros en ese audio.', true); return 0; }
     pushUndo();
     let origin = raw[0].t;
@@ -445,16 +536,12 @@
     else if (M.tempoAuto !== false && !(part === 'd' ? M.b : M.d).notes.length) { const bpm = estTempo(raw.map(n => n.t)); if (bpm) M.bpm = bpm; }
     const conv = toBeats(raw.map(n => part === 'd' ? { t: n.t, l: LANES.findIndex(q => q.id === n.id), vel: n.vel } : { t: n.t, p: n.p, d: n.d, vel: n.vel }), origin, part);
     M[part].notes = conv;
-    if (!opts.keepSrc) M[part].src = { buf: b, offset: opts.offset != null ? opts.offset : origin, name: name || 'audio', live: false };
+    if (!opts.keepSrc) { const mb = ctx.createBuffer(1, x.length, sr); mb.copyToChannel(x, 0); M[part].src = { buf: mb, timed: false, offset: null, name: name || 'audio', live: false, base: [] }; M.lastTake = null; }
     if (M.barsAuto || opts.offset == null) M.bars = autoBars(endBeats());
     M.sel.clear(); saveSettings(); ui(); draw();
     const cnt = {}; if (part === 'd') conv.forEach(n => cnt[n.l] = (cnt[n.l] || 0) + 1);
     flash((part === 'd' ? conv.length + ' golpes (' + LANES.map((L, i) => (cnt[i] || 0) + ' ' + L.n.toLowerCase()).join(', ') + ')' : conv.length + ' notas (' + nName(Math.min(...conv.map(n => n.p))) + '–' + nName(Math.max(...conv.map(n => n.p))) + ')') + ' · ' + M.bpm + ' BPM · ' + M.bars + (M.bars === 1 ? ' compás' : ' compases') + ' · sin cuantizar.');
     step('convertido', conv.length + ' notas'); return conv.length;
-  }
-  async function reconvert() {
-    const s = P().src; if (!s || !s.buf) return flash('No hay toma ni audio guardado para reconvertir.');
-    await convertBuffer(s.buf, s.name, { offset: s.live ? s.offset : null, keepSrc: true, raw: true });
   }
   async function fromFile(f) {
     if (!f) return; M.lastFile = { name: f.name, size: f.size, type: f.type };
@@ -803,14 +890,16 @@
 <div class="mbc"><h4>Voz</h4>
   <div class="row" style="margin-top:0"><button id="mbLive">🎤 Directo</button><button class="rec" id="mbRec">● Grabar</button><button id="mbStop" disabled>■</button>
   <span id="mbHit">—</span><span id="mbMeter"><i></i></span></div>
-  <div class="row"><label class="btn">Convertir un audio<input type="file" id="mbFile" accept="audio/*,video/*" hidden></label><button id="mbFromPad">Convertir el pad seleccionado</button><button id="mbReconv" disabled>Reconvertir la toma</button></div>
-  <div class="row"><label class="ck"><input type="checkbox" id="mbOver">Sobregrabar (añadir a lo que hay)</label></div>
-  <div class="row"><span class="mbsm">Sensibilidad</span><input type="range" id="mbSens" min="1" max="10" step="1" style="width:110px">
+  <div class="row"><label class="btn">Convertir un audio<input type="file" id="mbFile" accept="audio/*,video/*" hidden></label><button id="mbFromPad">Convertir el pad seleccionado</button></div>
+  <div class="row"><button id="mbRegen" disabled title="Vuelve a analizar la toma o el audio con los ajustes de ahora">⟳ Regenerar</button><button id="mbDiscard" disabled title="Deja todo como antes de la última toma">↺ Descartar la toma</button></div>
+  <div class="row"><label class="ck"><input type="checkbox" id="mbMonRec">Oír mientras grabo</label><label class="ck"><input type="checkbox" id="mbOver">Sobregrabar (añadir a lo que hay)</label></div>
+  <div class="row"><span class="mbsm">Sensibilidad</span><input type="range" id="mbSens" min="1" max="10" step="1" style="width:110px"><span class="mbsm" id="mbSensV"></span>
     <span class="mbsm" id="mbRespL">Respuesta</span><select id="mbResp"><option value="fast">Rápida (25 ms)</option><option value="precise">Precisa (45 ms)</option></select></div>
   <div class="row" id="mbBassOpts"><span class="mbsm">Octava</span><select id="mbOct"><option value="-2">−2</option><option value="-1">−1 (voz a bajo)</option><option value="0">Como cantas</option><option value="1">+1</option></select>
     <label class="ck"><input type="checkbox" id="mbSnap">Ajustar a la escala de la pestaña Bajo</label><span class="mbsm" id="mbScale"></span></div>
-  <div class="row"><span class="mbsm">Ajuste de latencia</span><input type="range" id="mbComp" min="0" max="200" step="1" style="width:110px"><span class="mbsm" id="mbCompV"></span></div>
-  <div class="note">Usa auriculares: si el altavoz suena cerca del micro, la batería se dispara sola. Sin metrónomo ni otra parte grabada, la toma empieza en tu primer golpe y el tempo se detecta solo.</div>
+  <div class="row"><button id="mbNoise">🤫 Medir ruido</button><span class="mbsm" id="mbNoiseV"></span><button id="mbNoiseX" hidden>Quitar</button></div>
+  <div class="row"><span class="mbsm">Ajuste de latencia</span><input type="range" id="mbComp" min="0" max="500" step="1" style="width:110px"><span class="mbsm" id="mbCompV"></span><button id="mbLat">⏱ Medir latencia</button></div>
+  <div class="note">Usa auriculares (mejor con cable: los Bluetooth retrasan mucho). Al grabar, la toma se analiza entera al terminar; si no te convence, cambia la sensibilidad y pulsa ⟳ Regenerar. Sin metrónomo ni otra parte grabada, la toma empieza en tu primer golpe y el tempo se detecta solo.</div>
   <div id="mbFlash"></div>
   <div class="row"><button id="mbReport">Descargar informe (.txt)</button></div>
 </div>
@@ -855,7 +944,7 @@
     const set = (id, v) => { const e = $m(id); if (e && document.activeElement !== e) e.value = v; };
     set('#mbBpm', M.bpm); set('#mbBars', M.barsAuto ? 'auto' : M.bars); set('#mbSens', M.sens); set('#mbResp', M.resp); set('#mbOct', M.oct); set('#mbComp', M.comp); set('#mbGrid', M.grid); set('#mbQGrid', M.grid); set('#mbQStr', M.qStr); set('#mbExp', M.exp);
     const ck = (id, v) => { const e = $m(id); if (e) e.checked = !!v; };
-    ck('#mbMetro', M.metro); ck('#mbCount', M.count); ck('#mbOver', M.overdub); ck('#mbSnap', M.snap); ck('#mbMag', M.magnet); ck('#mbPlayD', M.playD); ck('#mbPlayB', M.playB);
+    ck('#mbMetro', M.metro); ck('#mbMonRec', M.monRec); ck('#mbCount', M.count); ck('#mbOver', M.overdub); ck('#mbSnap', M.snap); ck('#mbMag', M.magnet); ck('#mbPlayD', M.playD); ck('#mbPlayB', M.playB);
     const tx = (id, v) => { const e = $m(id); if (e) e.textContent = v; };
     tx('#mbCompV', M.comp + ' ms'); tx('#mbQStrV', M.qStr + ' %');
     try { tx('#mbScale', M.snap ? '(' + NOTE[BS.root] + ' ' + (BSCALES[BS.scale].full || BSCALES[BS.scale].name) + ')' : ''); } catch (e) {}
@@ -863,7 +952,11 @@
     const d = M.part === 'd';
     ['#mbCalBox', '#mbSndBox', '#mbResp', '#mbRespL'].forEach(id => { const e = $m(id); if (e) e.hidden = !d; });
     const bo = $m('#mbBassOpts'); if (bo) bo.hidden = d; const tr = $m('#mbTr'); if (tr) tr.hidden = d;
-    const rc = $m('#mbReconv'); if (rc) rc.disabled = !(P().src && P().src.buf) || busy();
+    const rc = $m('#mbRegen'); if (rc) rc.disabled = !(P().src && P().src.buf) || busy();
+    const dc = $m('#mbDiscard'); if (dc) dc.disabled = !(M.lastTake && M.lastTake.part === M.part) || busy();
+    tx('#mbSensV', M.sens <= 3 ? 'solo golpes fuertes' : M.sens >= 8 ? 'capta casi todo' : '');
+    tx('#mbNoiseV', M.noise ? 'ruido ' + (20 * Math.log10(M.noise.env)).toFixed(0) + ' dB' : 'sin medir'); const nx = $m('#mbNoiseX'); if (nx) nx.hidden = !M.noise;
+    ['#mbNoise', '#mbLat'].forEach(id => { const e = $m(id); if (e) e.disabled = busy() || !!M.meas; });
     const cal = $m('#mbCal');
     if (cal) { cal.innerHTML = ''; LANES.forEach((L, i) => { const b = document.createElement('button'), n = M.cal[L.id].length; b.innerHTML = `<b style="color:${L.c}">${M.calib && M.calib.li === i ? '● Escuchando…' : 'Enseñar ' + L.n.toLowerCase()}</b><span class="mbsm">${L.voz} · ${n ? n + ' ejemplos ✓' : 'sin ejemplos'}</span>`; b.disabled = busy(); b.onclick = safe('calibrar', () => calibrate(i)); cal.appendChild(b); }); }
     tx('#mbCalNote', calReady() ? 'Calibrado: los golpes se reconocen comparándolos con tus ejemplos.' + (M.cal.o.length < 3 ? ' Hat abierto sin ejemplos: se distingue del cerrado por lo que dura.' : '') : 'Sin calibrar se usan reglas generales (grave = bombo, ruido medio = caja, agudo = hat; largo = abierto). Con 3 o más ejemplos de bombo, caja y hat cerrado se usa tu voz.');
@@ -875,16 +968,19 @@
     on('#mbBars', 'change', e => { if (e.target.value === 'auto') { M.barsAuto = true; M.bars = autoBars(endBeats()); } else { M.barsAuto = false; pushUndo(); M.bars = +e.target.value; } saveSettings(); ui(); draw(); });
     on('#mbMetro', 'change', e => { M.metro = e.target.checked; saveSettings(); }); on('#mbCount', 'change', e => { M.count = e.target.checked; saveSettings(); });
     on('#mbOver', 'change', e => { M.overdub = e.target.checked; saveSettings(); });
-    on('#mbSens', 'input', e => { M.sens = +e.target.value; saveSettings(); });
+    on('#mbSens', 'input', e => { M.sens = +e.target.value; saveSettings(); ui(); });
     on('#mbResp', 'change', e => { M.resp = e.target.value; saveSettings(); });
     on('#mbOct', 'change', e => { M.oct = +e.target.value; saveSettings(); });
     on('#mbSnap', 'change', e => { M.snap = e.target.checked; saveSettings(); ui(); draw(); });
     on('#mbComp', 'input', e => { M.comp = +e.target.value; saveSettings(); ui(); });
-    on('#mbLive', 'click', safe('directo', async () => { if (M.mic) { if (M.take) recStop(); micOff(); } else if (await micOn()) flash(M.part === 'd' ? 'Directo: haz beatbox y suena la batería. Grabar guarda la toma.' : 'Directo: tararea y suena el bajo. Grabar guarda la toma.'); ui(); }));
+    on('#mbLive', 'click', safe('directo', async () => { if (M.mic && M.micByRec) { M.micByRec = false; flash('Directo activado.'); } else if (M.mic) { if (M.take) recStop(); micOff(); } else if (await micOn()) flash(M.part === 'd' ? 'Directo: haz beatbox y suena la batería. Grabar guarda la toma.' : 'Directo: tararea y suena el bajo. Grabar guarda la toma.'); ui(); }));
     on('#mbRec', 'click', safe('grabar', () => M.take ? recStop() : recStart()));
     on('#mbStop', 'click', safe('parar', () => { if (M.take) recStop(); else stopPlay(); }));
     on('#mbFile', 'change', safe('convertir audio', e => { const f = e.target.files[0]; e.target.value = ''; return fromFile(f); }));
-    on('#mbFromPad', 'click', safe('convertir pad', fromPad)); on('#mbReconv', 'click', safe('reconvertir', reconvert));
+    on('#mbFromPad', 'click', safe('convertir pad', fromPad)); on('#mbRegen', 'click', safe('regenerar', regenerate)); on('#mbDiscard', 'click', safe('descartar', discardTake));
+    on('#mbMonRec', 'change', e => { M.monRec = e.target.checked; saveSettings(); });
+    on('#mbNoise', 'click', safe('medir ruido', measureNoise)); on('#mbNoiseX', 'click', () => { M.noise = null; saveSettings(); ui(); flash('Umbral de ruido quitado: manda solo la sensibilidad.'); });
+    on('#mbLat', 'click', safe('medir latencia', measureLatency));
     on('#mbReport', 'click', () => save(new Blob([M.lastReport || report('informe pedido a mano', null)], { type: 'text/plain' }), 'mid-box-' + MB_VERSION + '-informe-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.txt'));
     on('#mbCalClr', 'click', () => { if (!confirm('¿Borrar los ejemplos de tu voz?')) return; LANES.forEach(L => M.cal[L.id] = []); saveCal(); ui(); flash('Calibración borrada: se vuelven a usar las reglas generales.'); });
     on('#mbFromGen', 'click', () => fromGen(false));
@@ -916,11 +1012,11 @@
   const packAu = b => b ? { sr: b.sampleRate, d: mono(b) } : null;
   const unpackAu = r => { if (!r || !r.d || !r.d.length) return null; const b = ctx.createBuffer(1, r.d.length, r.sr); b.copyToChannel(r.d instanceof Float32Array ? r.d : Float32Array.from(r.d), 0); return b; };
   function pjMb() {
-    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, name: x.name || '', au: x.buf.duration <= SRC_MAX } : null; };
+    const src = k => { const x = M[k].src; return x && x.buf ? { offset: x.offset, live: !!x.live, timed: !!x.timed, len: x.len == null ? null : x.len, name: x.name || '', base: (x.base || []).map(n => k === 'd' ? { t: n.t, l: n.l, v: n.v } : { t: n.t, p: n.p, d: n.d, v: n.v }), au: x.buf.duration <= SRC_MAX } : null; };
     return { v: 1, part: M.part, bpm: M.bpm, bars: M.bars, barsAuto: !!M.barsAuto, exp: M.exp, playD: M.playD, playB: M.playB,
       d: M.d.notes.map(n => ({ t: n.t, l: n.l, v: n.v })), b: M.b.notes.map(n => ({ t: n.t, p: n.p, d: n.d, v: n.v })),
       slots: M.slots.map(x => x.buf ? x.name || '' : null), src: { d: src('d'), b: src('b') },
-      set: Object.fromEntries(['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr'].map(k => [k, M[k]])), cal: LANES.some(L => M.cal[L.id].length) ? M.cal : null };
+      set: Object.fromEntries(['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'monRec', 'noise'].map(k => [k, M[k]])), cal: LANES.some(L => M.cal[L.id].length) ? M.cal : null };
   }
   function pjMbApply(o, au) {
     if (!o) return;
@@ -931,8 +1027,8 @@
     M.b.notes = (o.b || []).map(n => ({ id: M.nid++, t: n.t, p: n.p, d: n.d, v: n.v }));
     au = au || {};
     M.slots = LANES.map((L, i) => { const b = unpackAu(au.slots && au.slots[i]); return { buf: b, name: b ? (o.slots && o.slots[i]) || L.n : '' }; });
-    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, offset: m.offset, live: m.live, name: m.name } : null; });
-    if (o.set) ['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr'].forEach(k => { if (o.set[k] != null) M[k] = o.set[k]; });
+    ['d', 'b'].forEach(k => { const m = o.src && o.src[k], b = unpackAu(au.src && au.src[k]); M[k].src = m && b ? { buf: b, offset: m.offset, live: m.live, timed: m.timed != null ? m.timed : !!m.live, len: m.len == null ? null : m.len, name: m.name, base: (m.base || []).map(n => Object.assign({ id: M.nid++ }, n)) } : null; }); M.lastTake = null;
+    if (o.set) ['metro', 'count', 'overdub', 'sens', 'resp', 'comp', 'oct', 'snap', 'magnet', 'grid', 'qStr', 'monRec', 'noise'].forEach(k => { if (o.set[k] != null) M[k] = o.set[k]; });
     if (o.cal && !LANES.some(L => M.cal[L.id].length)) { LANES.forEach(L => M.cal[L.id] = o.cal[L.id] || []); saveCal(); }   // la calibración del proyecto solo entra si no hay otra
     saveSettings();
     M.sel.clear(); M.undo = []; M.redo = []; M.shown = true;
@@ -970,6 +1066,6 @@
   try { installProjectHooks(); } catch (e) { LOG('proyectos', e.message); }   // ya, antes de que se cargue el autoguardado
   window.mbxShow = () => { if (!M.slots.some(s => s.buf) && !M.shown) fromGen(true); M.shown = true; ui(); draw(); };
   window.mbxHide = () => { if (M.take) recStop(); if (M.calib) M.calib = null; stopPlay(true); micOff(); ui(); };
-  window.MIDBOX = { version: MB_VERSION, state: M, analyzeDrums, analyzeBass, feats, classify, estTempo, convertBuffer, render, midiBytes, toLooper, toGen, toPad, quantize, pjMb, pjMbApply, setPart, setBpm, draw, undo, startPlay, stopPlay, micOn, micOff, recStart, recStop, report };
+  window.MIDBOX = { version: MB_VERSION, state: M, analyzeDrums, analyzeBass, feats, classify, estTempo, convertBuffer, render, midiBytes, toLooper, toGen, toPad, quantize, pjMb, pjMbApply, regenerate, discardTake, measureNoise, measureLatency, setPart, setBpm, draw, undo, startPlay, stopPlay, micOn, micOff, recStart, recStop, report };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
