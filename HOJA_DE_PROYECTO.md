@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.76)
+# SampledHead App — Hoja de proyecto (v1.77)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -124,6 +124,17 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.77** (21-11-2026, mid-box 1.7.0). Secuenciador con vista propia (ED.va/ED.vw en tiempos; lienzo del ancho de la caja, sin scroll):
+  pellizco de dos dedos = zoom + desplazamiento anclado al punto medio (mismo patrón que el editor del sampler), un dedo en un hueco = desplazar,
+  rueda = zoom (Ctrl o vertical) / desplazar (Mayús u horizontal), barra morada de posición. Herramientas ✋ Mover / ✏️ Lápiz / 🧽 Borrar
+  (lápiz: celda de la rejilla, tocar nota = quitar, arrastrar = pintar en la fila o alargar en el bajo; fuerza nueva = M.penVel desde el
+  deslizador Fuerza sin selección). Si el segundo dedo llega <400 ms después de editar con el primero, se deshace esa edición. Onda de la toma
+  con zoom (TK.va/TK.vw en segundos; picos por vista normalizados al máximo global). El Generador sigue los sonidos del mid-box
+  (evento 'mbx:sounds', MIDBOX.sounds(), localStorage sampledhead.genMbLink; primera vez enlazado solo si el Generador tenía vacíos o los DFB;
+  gSetSlot y kits sintetizados lo sueltan; botón 🔗). Secciones plegables en mid-box (.mbc>h4), Extractor (.exc>h4) y Glitch (.ghc>h4 y
+  .gh-mod por su nombre), con delegación de clics y MutationObserver porque los paneles se montan tarde; estado en sampledhead.fold.mbx/ext/ghx;
+  la toma nueva abre su sección (shFoldOpen). Avisos del mid-box (#mbFlash) en la barra superior. Ayuda: sección 31 (ES/EN), renumerada (arregla
+  el «48» repetido).
 - **1.76** (21-11-2026, mid-box 1.6.0). Copia del usuario (SampledHead_copia_20261121.json): toma de 6 s con altavoz +
   cancelación de eco; la regla de soplido tiraba 7 golpes fuertes (energía que aún crece 20 ms después del inicio
   detectado, por un ruidito previo) y el tempo quedó en 342,75 BPM (eligió «8 compases» en «Dentro hay» para 5,6 s).
