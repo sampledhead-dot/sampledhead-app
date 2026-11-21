@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.75)
+# SampledHead App — Hoja de proyecto (v1.76)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -124,6 +124,21 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.76** (21-11-2026, mid-box 1.6.0). Copia del usuario (SampledHead_copia_20261121.json): toma de 6 s con altavoz +
+  cancelación de eco; la regla de soplido tiraba 7 golpes fuertes (energía que aún crece 20 ms después del inicio
+  detectado, por un ruidito previo) y el tempo quedó en 342,75 BPM (eligió «8 compases» en «Dentro hay» para 5,6 s).
+  Cambios: **`mainAttack`** (los rasgos se miden desde donde la energía llega a la mitad de su máximo, en 60 ms) y
+  **`riseMs`** (soplido = del 10 al 50 % de la energía en > 17 ms; golpes reales ≤ 10 ms, soplidos ~25 ms); en directo
+  los golpes fuertes (> 5× umbral) nunca se descartan por soplido; `clickLike` solo con metrónomo encendido y tono > 95 %
+  en 1–2 kHz. **`periodOf`** (periodo en segundos, tolerancia ±2,5 % del loop) compartido por `fitLoop` y la selección
+  automática de la onda (una vuelta del patrón, sin depender del tempo guardado). Arreglado `rescale` (ajustaba el tempo
+  al revés). Regenerar una toma libre vuelve a calcular loop y tempo. **Chips de tempo** en la toma (N = 1, 2, 3, 4, 6, 8
+  con 55–190 BPM; ★ = más cerca de 92 BPM, 3 y 6 penalizados) y «Mantener». Cabecera: **÷2, ×2, Tap, ↺ Tempo de la toma**
+  (`src.bpm0`). **`src.org`/`src.bpm0`** = qué punto del audio es el tiempo 0 y a qué tempo se sacaron las notas: onda de
+  la voz bajo las notas y **Voz** (suena la toma con la secuencia si el tempo es el de la toma). **⤢ Ampliar** (pantalla
+  completa, filas 44–90 px) y **zoom** (×1–×8). Arrastre y doble toque del editor en coordenadas de pantalla (antes, al
+  redibujarse la tarjeta de la toma, el editor se desplazaba y la nota saltaba filas); filas fijas durante el arrastre.
+  Con la toma del usuario: 16 golpes (los 7 fuertes recuperados), 1 compás a 85,25 BPM con las 8 corcheas en su sitio.
 - **1.75** (20-11-2026, mid-box 1.5.0). Captura del usuario: en la toma se veían ~20 golpes y solo se marcaron 8 (tenía
   sensibilidad baja, ruido medido −25 dB y cancelación de eco). Cambios: **umbral de la grabación** (`takeGate`: 3× el
   ruido de la propia toma (percentil 10 de 10 ms) y 21 + 3·sens dB por debajo del pico; candidatos con 2,2× ruido / −56 dB
