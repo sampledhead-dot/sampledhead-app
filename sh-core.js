@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.2.1: + GlitchHead)
+/* sh-core.js — base común de las apps de Sampled Head (v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.2.1';
+  const VERSION = '1.2.2';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -197,7 +197,7 @@
   const OWN = {
     sampler: { idb: ['sampler'], ls: k => (k.startsWith('sampledhead.') && !k.startsWith('sampledhead.tuner')) || k.startsWith('sh_'),
       state: (db, st, k) => k === 'proj:__auto__' || /^gen:\d+$/.test(String(k)) },   // autoguardado y sonidos actuales del generador
-    editor: { idb: [], ls: k => k.startsWith('shed.') },
+    editor: { idb: ['shed-projects'], ls: k => k.startsWith('shed.') },
     crazyhead: { idb: ['crazyhead'], ls: k => k.startsWith('crazyhead.'), state: (db, st) => st === 'aud' },   // loops A–D que están cargados ahora
     fuzzhead: { idb: [], ls: k => k.startsWith('fuzzhead-') || k.startsWith('trazo-gs1-') },
     glitchhead: { idb: [], ls: k => k.startsWith('glitchhead.') },
