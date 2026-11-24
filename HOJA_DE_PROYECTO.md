@@ -1,4 +1,4 @@
-# SampledHead App — Hoja de proyecto (v1.77)
+# SampledHead App — Hoja de proyecto (v1.78)
 
 ## Descripción
 Sampler de pads en el navegador (PWA) y en Windows/Mac/Android: graba, edita, haz loops, genera bases, extrae pistas
@@ -124,6 +124,7 @@ cp node_modules/@huggingface/transformers/dist/transformers.min.js vendor/
 ```
 
 ## Historial
+- **1.78** (24-11-2026): Generador → Looper **por partes y pistas** (hoja con bombo/caja/charles/bajo/teclas y la pista de cada uno; con Looper ocupado, «sustituir solo esas pistas» repite el patrón hasta el largo del bucle); Looper **«Juntar»** (`lpJoin`: las pistas elegidas pasan a una con su volumen horneado en `e.v`, lo silenciado queda a 0); pestañas **Gen bat. / Gen bajo / Gen teclas** (mismo panel, `showTab(6|10|11)` fija `G.mode`; el selector de modo se oculta); estilo **MF DOOM (Metal Fingers)**; **Proyecto nuevo** apaga también el mixer (`MXD()`), GlitchHead y los pads de FX; en apps instaladas (Android/escritorio) «Enviar a CrazyHead / al editor» va por la bandeja común de sh-core. Código en el bloque `1.78` al final de `index.html`.
 - **1.77** (21-11-2026, mid-box 1.7.0). Secuenciador con vista propia (ED.va/ED.vw en tiempos; lienzo del ancho de la caja, sin scroll):
   pellizco de dos dedos = zoom + desplazamiento anclado al punto medio (mismo patrón que el editor del sampler), un dedo en un hueco = desplazar,
   rueda = zoom (Ctrl o vertical) / desplazar (Mayús u horizontal), barra morada de posición. Herramientas ✋ Mover / ✏️ Lápiz / 🧽 Borrar
