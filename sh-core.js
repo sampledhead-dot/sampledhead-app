@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
+/* sh-core.js — base común de las apps de Sampled Head (v1.4.0: app única SampledHead para Android · v1.3.0: envío directo entre apps Android instaladas · v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.3.0';
+  const VERSION = '1.4.0';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -102,6 +102,9 @@
      programa (SHAndroid.outBegin/sendTo → intent com.sampledhead.RECIBIR → bandeja propia, que se lee en /__bandeja__/).
      Con APK anteriores a la 1.4.0 no existe y se sigue como en el navegador. ---------------- */
   const AND = (!D && G.SHAndroid && typeof G.SHAndroid.outBegin === 'function') ? G.SHAndroid : null;
+  /* 1.4.0: dentro de la app única SampledHead para Android todas las apps comparten origen (como en GitHub Pages): la
+     bandeja es la de la web (IndexedDB) y SH.open cambia de vista sin salir de la app (SHSuite.open). */
+  const SUITE = (!D && G.SHSuite && typeof G.SHSuite.open === 'function') ? G.SHSuite : null;
   function packItem(o) {
     const meta = Object.assign({}, o); delete meta.wav;
     const j = new TextEncoder().encode(JSON.stringify(meta)), w = o.wav ? new Uint8Array(o.wav) : new Uint8Array(0);
@@ -151,6 +154,7 @@
         await IDB.set(k, cur);
       }
       try { chan && chan.postMessage({ to, n: list.length, from: from || bridge.me }); } catch (e) {}
+      if (SUITE) try { SUITE.notify(to); } catch (e) {}
       return list.length;
     },
     async inbox(me) {
@@ -195,6 +199,7 @@
   async function open(id) {
     const a = appById(id); if (!a) return false;
     if (D && D.openApp) { try { if (await D.openApp(id)) return true; } catch (e) {} }
+    if (SUITE) { if (SUITE.open(id)) return true; alert(a.name + ' no está dentro de esta versión de SampledHead.'); return false; }
     if (AND) { if (bridge._sentAndroid) { bridge._sentAndroid = false; return true; }   // el envío ya la ha abierto
       if (AND.openApp(id)) return true;
       alert(a.name + ' no está instalada en este móvil. Instálala desde el portal (Descargar apps → Android) o usa la versión web.'); return false; }
@@ -493,12 +498,12 @@
     sendSheet(opts) {
       const from = opts.from || bridge.me, kinds = opts.kinds || ['pad'];
       const { sh, close } = sheet(opts.title || 'Enviar a…', (opts.count ? opts.count + ' elemento' + (opts.count === 1 ? '' : 's') + ' · ' : '') +
-        (D ? 'Se guarda en Documentos/SampledHead/Bandeja.' : AND ? 'Se pasa a la app instalada en este móvil y se abre.' : 'Se guarda en este navegador para las demás apps de Sampled Head.'));
+        (D ? 'Se guarda en Documentos/SampledHead/Bandeja.' : SUITE ? 'Llega al momento a la otra app de SampledHead.' : AND ? 'Se pasa a la app instalada en este móvil y se abre.' : 'Se guarda en este navegador para las demás apps de Sampled Head.'));
       const openChk = el('label', 'shc-chk'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = opts.openAfter !== false;
       if (AND) { cb.checked = true; openChk.hidden = true; }   // en Android la otra app se abre siempre al recibir
       openChk.appendChild(cb); openChk.appendChild(document.createTextNode('Abrir la app al enviar'));
       APPS.filter(a => a.id !== from).forEach(a => {
-        const inst = !AND || AND.hasApp(a.id), ok = inst && kinds.some(k => a.takes.includes(k));
+        const inst = SUITE ? SUITE.has(a.id) : !AND || AND.hasApp(a.id), ok = inst && kinds.some(k => a.takes.includes(k));
         const row = el('div', 'shc-row'), info = el('div');
         info.appendChild(el('b', null, a.name)); info.appendChild(el('small', null, a.desc));
         const b = el('button', 'shc-b pri', inst ? 'Enviar' : 'No instalada'); b.disabled = !ok; if (!inst) b.title = 'Instálala desde el portal (Descargar apps → Android)'; else if (!ok) b.title = 'Esta app no recibe ' + kinds.map(k => KIND[k] || k).join(' ni ');
@@ -597,7 +602,7 @@
   };
 
   G.SH = Object.assign(G.SH || {}, {
-    core: VERSION, _pack: packItem, _unpack: unpackItem, APPS, app: appById, isDesktop: !!D, isAndroid: !!AND, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
+    core: VERSION, _pack: packItem, _unpack: unpackItem, APPS, app: appById, isDesktop: !!D, isAndroid: !!AND || !!SUITE, isSuite: !!SUITE, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
     bridge, open, models, engine, ui, backup, wav: { encode, decode },
     toFile: it => ui.toFile(it), feedInput: (i, f) => ui.feedInput(i, f)
   });
