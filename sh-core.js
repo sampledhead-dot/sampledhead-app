@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.4.1: copias que se suman sin cambiar la versión de la base · v1.4.0: app única SampledHead para Android · v1.3.0: envío directo entre apps Android instaladas · v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
+/* sh-core.js — base común de las apps de Sampled Head (v1.5.0: menú común «☰ Menú» igual en todas las apps · v1.4.1: copias que se suman sin cambiar la versión de la base · v1.4.0: app única SampledHead para Android · v1.3.0: envío directo entre apps Android instaladas · v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -9,6 +9,7 @@
  *  SH.open(id)                 abre otra app (escritorio: el programa instalado; web: pestaña nueva)
  *  SH.ui.sendSheet(opts)       hoja «Enviar a…» con todas las apps
  *  SH.ui.receiveSheet(me, cb)  hoja «Recibido» con lo que hay en la bandeja
+ *  SH.ui.menu(opts)            1.5.0: menú común «☰ Menú» (mismas secciones desplegables y en el mismo orden en todas las apps)
  *  SH.models.get(url, opts)    descarga un modelo una sola vez para todas las apps
  *  SH.engine                   motor local de IA (solo Windows y Mac)
  *  SH.wav.encode / decode      WAV de 16/24 bits
@@ -22,7 +23,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.4.1';
+  const VERSION = '1.5.0';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -173,13 +174,16 @@
     /* Llama a cb(items) cuando hay algo nuevo en el buzón de «me» */
     watch(me, cb) {
       bridge.me = me;
+      // 1.5.0: una sola vigilancia por app (el menú común puede tomar el relevo del botón «⇄ Apps»: se cambia el aviso)
+      if (bridge._w && bridge._w.me === me) { bridge._w.cb = cb; return bridge._w.check; }
+      const W = bridge._w = { me, cb };
       let busy = false, lastSig = '';
-      const check = async () => {
+      const check = W.check = async () => {
         if (busy) return; busy = true;
         try {
           const items = await bridge.inbox(me);
           const sig = items.map(x => x.id).join(',');
-          if (items.length && sig !== lastSig) { lastSig = sig; await cb(items); }
+          if (items.length && sig !== lastSig) { lastSig = sig; await W.cb(items); }
           if (!items.length) lastSig = '';
         } catch (e) { console.warn('[sh-core] bandeja:', e); }
         busy = false;
@@ -444,6 +448,11 @@
     /* Interfaz común: hoja con «Guardar copia» y «Recuperar copia» */
     sheet(me) {
       const { sh, close } = ui.sheet('Copia de tus datos', 'Kits, presets, proyectos y ajustes de esta app. Sirve para pasarlos a SampledHead para Windows y Mac (Inicio → «Traer mis datos») o a otro navegador.');
+      backup.rows(me, sh);
+      const foot = el('div', 'shc-foot'), c = el('button', 'shc-b', 'Cerrar'); c.onclick = close; foot.appendChild(c); sh.appendChild(foot);
+    },
+    /* Las dos filas «Guardar copia» y «Añadir una copia» (las usan la hoja de arriba y el menú común) */
+    rows(me, sh) {
       const r1 = el('div', 'shc-row'), i1 = el('div'); i1.appendChild(el('b', null, 'Guardar copia (.shdatos)')); i1.appendChild(el('small', null, 'Descarga un archivo con todo lo que tiene guardado esta app'));
       const b1 = el('button', 'shc-b pri', 'Guardar');
       b1.onclick = async () => { b1.disabled = true; b1.textContent = 'Preparando…'; try { const bl = await backup.export(me); backup.download(bl, backup.fileName(me)); b1.textContent = 'Guardado (' + (bl.size / 1048576).toFixed(1) + ' MB)'; } catch (e) { b1.textContent = 'Error'; alert(e.message || e); b1.disabled = false; } };
@@ -455,7 +464,6 @@
         try { const r = await backup.restore(me, await f.arrayBuffer()); alert(backup.summary(r)); location.reload(); } catch (e) { alert('No se pudo recuperar: ' + (e.message || e)); } };
       b2.onclick = () => fi.click();
       r2.appendChild(i2); r2.appendChild(b2); r2.appendChild(fi); sh.appendChild(r2);
-      const foot = el('div', 'shc-foot'), c = el('button', 'shc-b', 'Cerrar'); c.onclick = close; foot.appendChild(c); sh.appendChild(foot);
     }
   };
   /* En la plataforma de escritorio: si «Traer mis datos» dejó una copia para esta app, se aplica al abrirla */
@@ -559,6 +567,15 @@
     /* Botón flotante «⇄ Apps» para las apps que no tienen un menú propio para esto.
      * opts: { me, kinds:[...], provide: async ()=>items|null, accept: async (items)=>bool, pos:'left'|'right', bottom:px } */
     dock(opts) {
+      // 1.5.0: si la app tiene el menú común, «Enviar a…», «Recibido» y la copia de datos van dentro del menú (sin botón flotante)
+      ui._dockOpts = opts;
+      if (ui._menu) { ui._menu.adoptDock(opts); return { refresh: () => ui._menu.refresh(), button: null }; }
+      const h = { refresh: () => (h._r ? h._r() : ui._menu && ui._menu.refresh()), button: null };
+      const go = () => { if (ui._menu) { ui._menu.adoptDock(opts); return; } const r = ui._dockFloat(opts); h._r = r.refresh; h.button = r.button; };
+      if (document.readyState === 'complete') setTimeout(go, 0); else G.addEventListener('load', () => setTimeout(go, 0), { once: true });
+      return h;
+    },
+    _dockFloat(opts) {
       ensureCss();
       if (!document.getElementById('shc-dock-css')) {
         const s = document.createElement('style'); s.id = 'shc-dock-css';
@@ -591,7 +608,7 @@
           const b3 = el('button', 'shc-b', 'Abrir'); b3.onclick = () => { close(); backup.sheet(opts.me); }; r3.appendChild(i3); r3.appendChild(b3); sh.appendChild(r3); }
         if (D && D.openFolder) { const r3 = el('div', 'shc-foot'), b3 = el('button', 'shc-b', 'Abrir la carpeta compartida'); b3.onclick = () => D.openFolder(); r3.appendChild(b3); sh.appendChild(r3); }
       };
-      document.body.appendChild(b);
+      document.body.appendChild(b); ui._dockBtn = b;
       if (!opts.backupOnly) bridge.watch(opts.me, async items => { paint(items.length); if (opts.autoOpen !== false) await ui.receiveSheet(opts.me, async l => { const ok = await opts.accept(l); setTimeout(refresh, 300); return ok; }, items); });
       return { refresh, button: b };
     },
@@ -607,9 +624,193 @@
     }
   };
 
+
+  /* ---------------- 1.5.0: informe de error común (.txt) ----------------
+   * SH.report.install({ me, version, options: ()=>({…}), auto: false }) recoge errores, pasos y las últimas 300 líneas de
+   * consola; SH.report.download(where?, err?) descarga el .txt con lo que piden las normas de entrega de las apps. */
+  const report = (() => {
+    const lines = [], steps = []; let cfg = { me: 'app' }, autos = 0, installed = false;
+    const now = () => new Date().toISOString().slice(11, 23);
+    function push(kind, args) { try { lines.push(now() + ' [' + kind + '] ' + Array.from(args).map(a => a && a.stack ? a.stack : typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')); if (lines.length > 300) lines.splice(0, lines.length - 300); } catch (e) {} }
+    function install(o) {
+      cfg = Object.assign(cfg, o || {}); if (installed) return; installed = true;
+      ['log', 'info', 'warn', 'error'].forEach(k => { const f = console[k]; console[k] = function () { push(k, arguments); return f.apply(console, arguments); }; });
+      G.addEventListener('error', e => { push('window.onerror', [e.message + ' ' + (e.filename || '') + ':' + (e.lineno || '') + (e.error && e.error.stack ? '\n' + e.error.stack : '')]); if (cfg.auto && autos++ < 2) download('window.onerror', e.error || e.message); });
+      G.addEventListener('unhandledrejection', e => { push('unhandledrejection', [e.reason && e.reason.stack || e.reason]); if (cfg.auto && autos++ < 2) download('promesa sin capturar', e.reason); });
+    }
+    function step(t) { steps.push(now() + '  ' + t); if (steps.length > 200) steps.shift(); }
+    function text(where, err) {
+      const a = appById(cfg.me), n = navigator, sc = G.screen || {}, mem = performance && performance.memory;
+      let o = ''; try { o = JSON.stringify(cfg.options ? cfg.options() : {}, null, 1); } catch (e) { o = '(no se pudieron leer)'; }
+      return ['INFORME DE ERROR · ' + (a ? a.name : cfg.me), 'Versión: ' + (typeof cfg.version === 'function' ? cfg.version() : cfg.version || '?') + ' · sh-core ' + VERSION,
+        'Fecha: ' + new Date().toString(), 'Dónde: ' + (where || 'informe manual'), 'Mensaje: ' + (err ? (err.message || err) : '(informe manual)'), 'Stack: ' + (err && err.stack || '-'), '',
+        'Navegador/UA: ' + n.userAgent, 'Plataforma: ' + (n.platform || '') + ' · ' + (D ? 'escritorio' : SUITE ? 'Android (app única)' : AND ? 'Android' : 'web'),
+        'Núcleos: ' + (n.hardwareConcurrency || '?') + ' · RAM: ' + (n.deviceMemory ? n.deviceMemory + ' GB' : '?') + ' · Pantalla: ' + (sc.width || '?') + 'x' + (sc.height || '?') + ' @' + (G.devicePixelRatio || 1) + 'x',
+        'URL: ' + location.href + ' · contexto seguro: ' + (G.isSecureContext ? 'sí' : 'no') + ' · COOP/COEP (aislado): ' + (G.crossOriginIsolated ? 'sí' : 'no') + ' · WebGPU: ' + ('gpu' in n ? 'sí' : 'no'),
+        'Memoria JS: ' + (mem ? Math.round(mem.usedJSHeapSize / 1048576) + '/' + Math.round(mem.jsHeapSizeLimit / 1048576) + ' MB' : '?'),
+        'Opciones: ' + o, '', '--- Cronología ---'].concat(steps, ['', '--- Consola (últimas ' + lines.length + ' líneas) ---'], lines).join('\n');
+    }
+    function download(where, err) {
+      const a = appById(cfg.me), name = (a ? a.name : cfg.me).replace(/[^A-Za-z0-9]+/g, '-') + '-v' + (typeof cfg.version === 'function' ? cfg.version() : cfg.version || '') + '-informe-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.txt';
+      backup.download(new Blob([text(where, err)], { type: 'text/plain' }), name);
+    }
+    return { install, step, text, download };
+  })();
+
+  /* ---------------- 1.5.0: menú común «☰ Menú» ----------------
+   * Las mismas secciones, con el mismo nombre y en el mismo orden en todas las apps (petición del usuario, 24-11-2026):
+   *   Proyecto · Importar · Exportar · Otras apps · Copia de tus datos · Ajustes · Ayuda
+   * opts: {
+   *   me, name?, version?, lang?: ()=>'es'|'en', button?: elemento o selector (el botón de la app que abre el menú),
+   *   proyecto, importar, exportar, ajustes, ayuda: [elemento…]   (una sección sin elementos no sale)
+   *   apps: { kinds, provide: async ()=>items, accept: async items=>bool, sendHint, extra:[elemento…] } | false
+   *   guide: ()=>…, report: ()=>…, button: 'auto' (crea un botón ☰ fijo arriba a la derecha), onOpen: ()=>…
+ *   Si la app llama a SH.ui.dock (antes o después), sus opciones pasan a «Otras apps» y no sale el botón flotante.
+   * }
+   * elemento: { label?, hint?, icon?, pri?, click: '#selector' (pulsa ese botón de la app) | run: fn | node: elemento/selector
+   *             (se mueve dentro del menú tal cual, con sus eventos), show?: ()=>bool }
+   *   Si no se da label, se usa el texto del botón de «click» (así sale ya traducido por la app). */
+  const MCSS = '.shm-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99990;display:none;justify-content:flex-end;font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}' +
+    '.shm-ov.on{display:flex}' +
+    '.shm{background:#1b1712;color:#f3efe9;width:min(420px,100%);height:100%;overflow:auto;padding:calc(12px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));box-shadow:-10px 0 40px rgba(0,0,0,.5);-webkit-overflow-scrolling:touch}' +
+    '.shm-h{display:flex;align-items:center;gap:10px;margin:2px 2px 10px}.shm-h b{font-size:18px;flex:1}.shm-h small{display:block;font-weight:500;opacity:.65;font-size:12px}' +
+    '.shm-x{appearance:none;border:0;background:#3a3229;color:#f3efe9;border-radius:10px;min-width:40px;height:40px;font:700 18px system-ui;cursor:pointer}' +
+    '.shm details{background:#241f19;border-radius:12px;margin:8px 0;border:1px solid #3a3229}' +
+    '.shm summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 12px;font-weight:700;font-size:15px;min-height:48px}' +
+    '.shm summary::-webkit-details-marker{display:none}.shm summary::after{content:"\\25BE";margin-left:auto;opacity:.6;transition:transform .15s}' +
+    '.shm details[open] summary::after{transform:rotate(180deg)}.shm summary .ic{width:26px;text-align:center;font-size:17px}' +
+    '.shm summary small{font-weight:500;opacity:.6;font-size:12px;margin-left:4px}' +
+    '.shm-in{padding:0 8px 10px}' +
+    '.shm-it{appearance:none;display:flex;width:100%;text-align:left;align-items:center;gap:10px;border:0;border-radius:10px;background:#2f2820;color:#f3efe9;padding:10px 12px;margin:5px 0;min-height:44px;font:600 14px system-ui,sans-serif;cursor:pointer}' +
+    '.shm-it:hover{background:#3a3229}.shm-it.pri{background:#d65f00;color:#fff}.shm-it .ic{width:22px;text-align:center;flex:none}' +
+    '.shm-it span{flex:1;min-width:0}.shm-it small{display:block;font-weight:500;opacity:.7;font-size:12px;margin-top:1px}' +
+    '.shm-t{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.6;margin:12px 2px 2px}.shm-in>.shm-t:first-child{margin-top:4px}' +
+    '.shm-node{margin:6px 0}.shm .shc-row{margin:5px 0}.shm-foot{opacity:.55;font-size:12px;text-align:center;margin-top:14px}' +
+    '.shm-badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:#d65f00;color:#fff;font:700 11px/18px system-ui;text-align:center;vertical-align:middle}' +
+    '.shm-fab{position:fixed;z-index:9991;top:calc(10px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));width:44px;height:44px;border-radius:12px;border:0;background:#d65f00;color:#fff;font:700 21px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer}' +
+    '@media print{.shm-ov,.shm-fab{display:none!important}}';
+  const MT = {
+    es: { menu: 'Menú', proyecto: 'Proyecto', importar: 'Importar', exportar: 'Exportar', apps: 'Otras apps', datos: 'Copia de tus datos', ajustes: 'Ajustes', ayuda: 'Ayuda',
+      proyectoS: 'nuevo, guardar, abrir', importarS: 'traer audio', exportarS: 'archivos y máquinas', appsS: 'enviar y recibir', datosS: 'pasar a otro dispositivo', ajustesS: 'preferencias', ayudaS: 'guía e informe',
+      send: 'Enviar a otra app…', sendH: 'Lo que tienes ahora, a otra app de Sampled Head', recv: 'Recibido de otras apps', recvH: 'Lo que te han enviado', recv0: 'La bandeja está vacía',
+      openApp: 'Abrir otra app', folder: 'Abrir la carpeta compartida', guide: 'Guía de uso', report: 'Descargar informe (.txt)', reportH: 'Para mandarlo si algo falla', close: 'Cerrar' },
+    en: { menu: 'Menu', proyecto: 'Project', importar: 'Import', exportar: 'Export', apps: 'Other apps', datos: 'Backup of your data', ajustes: 'Settings', ayuda: 'Help',
+      proyectoS: 'new, save, open', importarS: 'bring audio in', exportarS: 'files and devices', appsS: 'send and receive', datosS: 'move to another device', ajustesS: 'preferences', ayudaS: 'guide and report',
+      send: 'Send to another app…', sendH: 'What you have now, to another Sampled Head app', recv: 'Received from other apps', recvH: 'What other apps sent you', recv0: 'The inbox is empty',
+      openApp: 'Open another app', folder: 'Open the shared folder', guide: 'User guide', report: 'Download report (.txt)', reportH: 'To send it if something fails', close: 'Close' }
+  };
+  const SECS = [['proyecto', '📁'], ['importar', '📥'], ['exportar', '⬇'], ['apps', '⇄'], ['datos', '💾'], ['ajustes', '⚙'], ['ayuda', '?']];
+  ui.menu = function (opts) {
+    if (!document.getElementById('shm-css')) { const st = document.createElement('style'); st.id = 'shm-css'; st.textContent = MCSS; document.head.appendChild(st); }
+    ensureCss();
+    const me = opts.me, a = appById(me), L = () => MT[(opts.lang && opts.lang()) === 'en' ? 'en' : 'es'];
+    const ov = el('div', 'shm-ov'), pn = el('div', 'shm'); pn.setAttribute('role', 'dialog'); pn.setAttribute('aria-modal', 'true');
+    ov.appendChild(pn); document.body.appendChild(ov);
+    const KEY = 'shc-menu-' + me; let inboxN = 0;
+    let btn = typeof opts.button === 'string' && opts.button !== 'auto' ? document.querySelector(opts.button) : opts.button;
+    if (opts.button === 'auto' || !btn) { btn = el('button', 'shm-fab'); btn.type = 'button'; document.body.appendChild(btn); }   // apps sin sitio en la cabecera
+    function q(x) { return typeof x === 'string' ? document.querySelector(x) : x; }
+    // los bloques que se mueven al menú se buscan ya, antes de que el menú los saque de su sitio
+    for (const [id] of SECS) for (const it of (id === 'apps' ? (opts.apps && opts.apps.extra) || [] : Array.isArray(opts[id]) ? opts[id] : [])) if (it && typeof it.node === 'string') it.node = q(it.node);
+    function itemEl(it) {
+      if (it.title) return el('div', 'shm-t', typeof it.title === 'function' ? it.title() : it.title);
+      if (it.node) { const n = q(it.node); if (!n) return null; const w = el('div', 'shm-node'); w.appendChild(n); if (n.hidden) n.hidden = false; return w; }
+      const tg = it.click ? q(it.click) : null; if (it.click && !tg) return null;
+      const b = el('button', 'shm-it' + (it.pri ? ' pri' : '')); b.type = 'button';
+      const lab = () => it.label ? (typeof it.label === 'function' ? it.label() : it.label) : (tg ? (tg.getAttribute('aria-label') && !tg.textContent.trim() ? tg.getAttribute('aria-label') : tg.textContent.trim()) : '');
+      b.innerHTML = ''; b.appendChild(el('span', 'ic', it.icon || '•')); const sp = el('span'); sp.textContent = lab(); if (it.hint) sp.appendChild(el('small', null, typeof it.hint === 'function' ? it.hint() : it.hint)); b.appendChild(sp);
+      b.onclick = async () => {
+        close();
+        try {
+          if (it.run) await it.run();
+          else if (tg) { if (tg.tagName === 'LABEL') { const inp = tg.querySelector('input'); (inp || tg).click(); } else tg.click(); }
+        } catch (e) { console.error('[sh-core] menú', e); alert(e.message || e); }
+      };
+      b._upd = () => { const t = lab(); sp.firstChild.nodeValue = t; b.hidden = (it.show && !it.show()) || (tg && tg.disabled && it.hideDisabled); if (tg) b.disabled = !!tg.disabled && !it.ignoreDisabled; };
+      return b;
+    }
+    function build() {
+      pn.innerHTML = ''; const t = L();
+      const h = el('div', 'shm-h'), hb = el('b', null, (opts.name || (a ? a.name : me))); if (opts.version) hb.appendChild(el('small', null, 'v' + (typeof opts.version === 'function' ? opts.version() : opts.version)));
+      const x = el('button', 'shm-x', '✕'); x.type = 'button'; x.setAttribute('aria-label', t.close); x.onclick = close;
+      h.appendChild(hb); h.appendChild(x); pn.appendChild(h);
+      let saved = null; try { saved = localStorage.getItem(KEY); } catch (e) {}
+      for (const [id, ic] of SECS) {
+        let items = [];
+        if (id === 'apps') {
+          if (opts.apps === false) continue;
+          const ap = opts.apps || {};
+          if (ap.provide) items.push({ icon: '➜', label: t.send, hint: ap.sendHint || t.sendH, run: async () => { const its = await ap.provide(); if (!its || !its.length) { alert((opts.lang && opts.lang() === 'en') ? 'Nothing to send.' : 'No hay nada que enviar.'); return; } ui.sendSheet({ from: me, kinds: ap.kinds || its.map(i => i.kind || 'pad'), count: its.length, getItems: async () => its }); } });
+          if (ap.accept) items.push({ icon: '⬅', label: () => t.recv + (inboxN ? ' (' + inboxN + ')' : ''), hint: () => inboxN ? t.recvH : t.recv0, run: async () => { if (!await ui.receiveSheet(me, async l => { const ok = await ap.accept(l); setTimeout(refresh, 300); return ok; })) alert(t.recv0); } });
+          (ap.extra || []).forEach(i => items.push(i));
+          items.push({ icon: '↗', label: t.openApp, run: () => openPicker() });
+          if (D && D.openFolder) items.push({ icon: '📂', label: t.folder, run: () => D.openFolder() });
+        } else if (id === 'datos') {
+          if (!OWN[me]) continue;
+        } else if (id === 'ayuda') {
+          items = (opts.ayuda || []).slice();
+          if (opts.guide) items.unshift({ icon: '📖', label: t.guide, run: opts.guide });
+          if (opts.report) items.push({ icon: '⚠', label: t.report, hint: t.reportH, run: opts.report });
+        } else items = (opts[id] || []).slice();
+        const els = id === 'datos' ? [] : items.map(itemEl).filter(Boolean);
+        if (id !== 'datos' && !els.length) continue;
+        const d = el('details'); d.dataset.sec = id; if (saved === id) d.open = true;
+        const sm = el('summary'); sm.appendChild(el('span', 'ic', ic)); const nm = el('span', null, t[id]); nm.appendChild(el('small', null, t[id + 'S'])); sm.appendChild(nm); d.appendChild(sm);
+        const inn = el('div', 'shm-in'); d.appendChild(inn);
+        if (id === 'datos') backup.rows(me, inn); else els.forEach(e => inn.appendChild(e));
+        d.addEventListener('toggle', () => { if (!d.open) return; try { localStorage.setItem(KEY, id); } catch (e) {} pn.querySelectorAll('details').forEach(o => { if (o !== d) o.open = false; }); });
+        pn.appendChild(d);
+      }
+      pn.appendChild(el('div', 'shm-foot', (a ? a.name : me) + (opts.version ? ' ' + (typeof opts.version === 'function' ? opts.version() : opts.version) : '') + ' · sh-core ' + VERSION + ' · By SampledHead'));
+    }
+    function refreshItems() { pn.querySelectorAll('.shm-it').forEach(b => b._upd && b._upd()); }
+    function openPicker() {
+      const { sh, close: c2 } = sheet(L().openApp);
+      APPS.filter(x => x.id !== me && (!SUITE || SUITE.has(x.id)) && (!AND || AND.hasApp(x.id))).forEach(x => {
+        const row = el('div', 'shc-row'), info = el('div'); info.appendChild(el('b', null, x.name)); info.appendChild(el('small', null, x.desc));
+        const b = el('button', 'shc-b pri', '↗'); b.onclick = () => { c2(); open(x.id); }; row.appendChild(info); row.appendChild(b); sh.appendChild(row);
+      });
+      const foot = el('div', 'shc-foot'), c = el('button', 'shc-b', L().close); c.onclick = c2; foot.appendChild(c); sh.appendChild(foot);
+    }
+    function paintBtn() {
+      if (!btn) return; let i = btn.querySelector('.shm-badge');
+      if (inboxN) { if (!i) { i = el('i', 'shm-badge'); btn.appendChild(i); } i.textContent = inboxN; } else if (i) i.remove();
+    }
+    async function refresh() { if (opts.apps === false || !(opts.apps && opts.apps.accept)) return; try { inboxN = (await bridge.inbox(me)).length; } catch (e) { inboxN = 0; } paintBtn(); refreshItems(); }
+    let built = false;
+    function openM(sec) {
+      build(); built = true;   // se rehace cada vez: textos ya traducidos por la app y estados al día
+      refreshItems(); ov.classList.add('on'); try { opts.onOpen && opts.onOpen(); } catch (e) {}
+      if (sec) pn.querySelectorAll('details').forEach(d => d.open = d.dataset.sec === sec);
+      if (!pn.querySelector('details[open]')) { const f = pn.querySelector('details'); if (f) f.open = true; }
+      document.addEventListener('keydown', escK);
+      refresh();
+    }
+    function close() { ov.classList.remove('on'); document.removeEventListener('keydown', escK); }
+    const escK = e => { if (e.key === 'Escape') close(); };
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    if (btn) {
+      btn.addEventListener('click', e => { e.preventDefault(); e.stopImmediatePropagation(); openM(); }, true);   // sustituye a lo que hiciera antes ese botón
+      if (!opts.keepLabel) { btn.textContent = '☰'; btn.setAttribute('aria-label', L().menu); btn.title = L().menu; }
+    }
+    function watch() { if (opts.apps && opts.apps.accept) bridge.watch(me, async items => { inboxN = items.length; paintBtn(); if (opts.apps.autoOpen !== false) await ui.receiveSheet(me, async l => { const ok = await opts.apps.accept(l); setTimeout(refresh, 300); return ok; }, items); }); }
+    function adoptDock(d) {
+      if (ui._dockBtn) { ui._dockBtn.remove(); ui._dockBtn = null; }
+      if (opts.apps === false) return;
+      opts.apps = Object.assign({}, opts.apps || {}, { kinds: d.kinds, sendHint: d.sendHint, provide: d.backupOnly ? null : d.provide, accept: d.backupOnly ? null : d.accept, autoOpen: d.autoOpen });
+      watch(); refresh();
+    }
+    const M = { open: openM, close, refresh, el: ov, adoptDock };
+    ui._menu = M;
+    watch();
+    if (ui._dockOpts) adoptDock(ui._dockOpts);
+    refresh();
+    return M;
+  };
+
   G.SH = Object.assign(G.SH || {}, {
     core: VERSION, _pack: packItem, _unpack: unpackItem, APPS, app: appById, isDesktop: !!D, isAndroid: !!AND || !!SUITE, isSuite: !!SUITE, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
-    bridge, open, models, engine, ui, backup, wav: { encode, decode },
+    bridge, open, models, engine, ui, backup, report, wav: { encode, decode },
     toFile: it => ui.toFile(it), feedInput: (i, f) => ui.feedInput(i, f)
   });
 })(typeof window !== 'undefined' ? window : self);

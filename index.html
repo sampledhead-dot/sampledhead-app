@@ -3399,7 +3399,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.79';
+const APP_VERSION='1.80';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
@@ -8589,6 +8589,55 @@ newFxGen=function(){
 const bf={"Elige qué partes mandas y a qué pista del Looper va cada una.":"Choose which parts to send and which Looper track each one goes to.","Por defecto: batería → pista 1, bajo → 2, teclas → 3.":"By default: drums → track 1, bass → 2, keys → 3.","Sustituir solo las pistas elegidas (las demás se quedan)":"Replace only the chosen tracks (the others stay)","Vaciar el Looper y empezar de cero":"Empty the Looper and start from scratch","Las pistas marcadas pasan a la pista de destino con su volumen; las demás quedan libres para grabar.":"The marked tracks move into the destination track with their volume; the others become free to record."," (con audio)":" (with audio)","Enviado al Looper · ":"Sent to Looper · ","Juntadas en la pista ":"Merged into track "," (quedan libres)":" (now free)"," golpes":" hits","Pista ":"Track "};
 for(const k in bx)if(!(k in I18N.x))I18N.x[k]=bx[k];Object.assign(I18N.f,bf);I18N_FK.push(...Object.keys(bf));I18N_FK.sort((a,b)=>b.length-a.length);
 try{if(LANG==='en')i18nWalk(document.body)}catch{}}
+})();
+</script>
+<script>
+/* === 1.80: menú común «☰ Menú» de todas las apps (sh-core 1.5.0) ===
+   El antiguo «Más» tenía todo seguido (kits, exportar, otras apps, editor, CrazyHead, ajustes…). Ahora es el menú común,
+   con las mismas secciones desplegables y en el mismo orden que en las demás apps: Proyecto · Importar · Exportar ·
+   Otras apps · Copia de tus datos · Ajustes · Ayuda. Los botones de siempre siguen haciendo lo mismo (el menú los pulsa). */
+(function(){
+  if(!window.SH||!SH.ui||!SH.ui.menu)return;
+  const q=s=>document.querySelector(s),T=(es,en)=>()=>(typeof LANG!=='undefined'&&LANG==='en')?en:es;
+  SH.report.install({me:'sampler',version:()=>APP_VERSION,options:()=>({pestaña:document.querySelector('.tabs .on')&&document.querySelector('.tabs .on').id,idioma:typeof LANG!=='undefined'?LANG:'es'})});
+  window.SH_MENU=SH.ui.menu({
+    me:'sampler',version:()=>APP_VERSION,button:'#menubtn',lang:()=>(typeof LANG!=='undefined'&&LANG==='en')?'en':'es',
+    onOpen:()=>{try{pwaInfo()}catch(e){}},
+    proyecto:[
+      {icon:'📁',click:'#projbtn',pri:true,label:T('Mis proyectos (guardar y abrir)','My projects (save and open)')},
+      {icon:'🆕',click:'#newb',label:T('Nuevo: vaciar los 64 pads','New: clear the 64 pads')},
+      {title:T('Kits','Kits')},
+      {node:q('#kits')&&q('#kits').closest('.kit')},
+      {icon:'⬇',click:'#kexp',label:T('Guardar kit en un archivo (.zip)','Save kit to a file (.zip)')},
+      {icon:'⬆',click:'#kimp',label:T('Abrir kit de un archivo (.zip)','Open kit from a file (.zip)')}
+    ],
+    importar:[
+      {icon:'📂',click:'#file',label:T('Abrir audio o vídeo','Open audio or video')},
+      {icon:'🔊',click:'#recsys'},
+      {title:T('Desde un enlace','From a link')},
+      {node:'.sheet#sheet .url'}
+    ],
+    exportar:[
+      {title:T('Kit para máquinas y programas','Kit for devices and software')},
+      {icon:'🎛',click:'#ksp404mk2'},{icon:'🎛',click:'#ksp404a'},{icon:'🎛',click:'#kmpc'},{icon:'🎛',click:'#kmove'},
+      {icon:'🎹',click:'#kadg'},{icon:'🐨',click:'#kkoala'}
+    ],
+    apps:{extra:[
+      {icon:'➜',click:'#shsend',label:T('Enviar el pad a otra app…','Send the pad to another app…')},
+      {icon:'⬅',click:'#shinbox',label:T('Recibido de otras apps','Received from other apps')},
+      {title:T('Editor y CrazyHead','Editor and CrazyHead')},
+      {icon:'➜',click:'#toed'},{icon:'⬅',click:'#fromed'},{icon:'➜',click:'#tocrz'},{icon:'⬅',click:'#fromcrz'}
+    ]},
+    ajustes:[
+      {node:q('#snap')&&q('#snap').closest('label')},
+      {node:'.sheet#sheet .kit.langs'},
+      {icon:'🎹',click:'#midibtn',label:T('Controlador MIDI…','MIDI controller…')},
+      {icon:'📲',click:'#pwainst',show:()=>!q('#pwainst').hidden},
+      {node:'#pwainfo'}
+    ],
+    guide:()=>guideOpen(true),
+    report:()=>SH.report.download('informe manual')
+  });
 })();
 </script>
 </body>
