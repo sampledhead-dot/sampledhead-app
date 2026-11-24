@@ -1,4 +1,4 @@
-/* sh-core.js — base común de las apps de Sampled Head (v1.4.0: app única SampledHead para Android · v1.3.0: envío directo entre apps Android instaladas · v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
+/* sh-core.js — base común de las apps de Sampled Head (v1.4.1: copias que se suman sin cambiar la versión de la base · v1.4.0: app única SampledHead para Android · v1.3.0: envío directo entre apps Android instaladas · v1.2.2: + biblioteca del Editor (shed-projects) · v1.2.1: GlitchHead)
  * Copia de este archivo en cada app (no editar allí: se edita en SH-apps/sh-core y se reparte con
  * `node sh-core/sync.js`).
  *
@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.4.0';
+  const VERSION = '1.4.1';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -382,9 +382,15 @@
       }
       for (const d of data.idb) {
         let db = await openDb(d.name);
+        if (!db.objectStoreNames.length) {   // 1.4.1: base recién creada (la app aún no se había abierto): se hace con la MISMA versión que la copia
+          db.close(); await new Promise(ok => { const q = indexedDB.deleteDatabase(d.name); q.onsuccess = q.onerror = q.onblocked = () => ok(); });
+          db = await openDb(d.name, d.version || 1, (udb, tx) => { for (const s of d.stores) { const st = udb.createObjectStore(s.name, { keyPath: s.keyPath, autoIncrement: s.autoIncrement }); for (const ix of s.indexes) st.createIndex(ix.name, ix.keyPath, { unique: ix.unique, multiEntry: ix.multiEntry }); } });
+        }
         const missing = d.stores.some(s => !db.objectStoreNames.contains(s.name)) || db.version < d.version;
         if (missing) {
-          const v = Math.max(d.version, db.version + 1); db.close();
+          // antes: Math.max(d.version, db.version + 1), que dejaba en la versión 2 una base que la app abre con la 1 → la app
+          // no podía abrirla y no se veía nada (sampler en la app única de Android, 24-11-2026)
+          const v = db.version < d.version ? d.version : db.version + 1; db.close();
           db = await openDb(d.name, v, (udb, tx) => {
             for (const s of d.stores) {
               let st = udb.objectStoreNames.contains(s.name) ? tx.objectStore(s.name) : udb.createObjectStore(s.name, { keyPath: s.keyPath, autoIncrement: s.autoIncrement });

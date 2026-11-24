@@ -2873,11 +2873,11 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{if(/^(url|kits)$/.test(e.target.id))return;const i=KEYS.indexOf(e.key.toLowerCase());if(i>=0){if(keysShown())kRel(i);else if(bassShown())bRel(i);else release(bank*16+i)}});
 
 /* ---------- kits guardados (IndexedDB) ---------- */
-const db=window.indexedDB?new Promise((res,rej)=>{
-  const q=indexedDB.open('sampler',1);
-  q.onupgradeneeded=()=>q.result.createObjectStore('kits');
-  q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);
-}):Promise.reject(new Error('sin IndexedDB'));
+/* 1.79: se abre sin número de versión fijo y se crean los almacenes que falten. Con «indexedDB.open('sampler',1)», si una
+   copia de datos (.shdatos) había dejado la base en la versión 2 (pasaba en la app única de Android al sumar la copia
+   antes de abrir el sampler), la apertura fallaba y no aparecía ningún kit, preset ni proyecto. */
+const openStores=function(name,stores){return new Promise((ok,ko)=>{const go=v=>{const r=v?indexedDB.open(name,v):indexedDB.open(name);r.onupgradeneeded=()=>{const d=r.result;stores.forEach(s=>{if(!d.objectStoreNames.contains(s[0]))d.createObjectStore(s[0],s[1])})};r.onsuccess=()=>{const d=r.result;if(stores.some(s=>!d.objectStoreNames.contains(s[0]))){const nv=d.version+1;d.close();go(nv)}else{d.onversionchange=()=>d.close();ok(d)}};r.onerror=()=>ko(r.error)};go(0)})};
+const db=window.indexedDB?openStores('sampler',[['kits']]):Promise.reject(new Error('sin IndexedDB'));
 db.catch(()=>{});
 const tx=(mode,fn)=>db.then(d=>new Promise((res,rej)=>{
   const t=d.transaction('kits',mode),r=fn(t.objectStore('kits'));
@@ -3399,7 +3399,7 @@ async function askPersist(){   // pide al navegador que no borre los kits si fal
   try{if(navigator.storage&&navigator.storage.persist){persisted=await navigator.storage.persist()}}catch{}
   return persisted;
 }
-const APP_VERSION='1.78';
+const APP_VERSION='1.79';
 {const sv=$('#spv');if(sv)sv.textContent=APP_VERSION;const gv=$('#gver');if(gv)gv.textContent=APP_VERSION}
 async function pwaInfo(){
   const el=$('#pwainfo');if(!el)return;
