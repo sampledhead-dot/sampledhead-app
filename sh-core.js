@@ -22,7 +22,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.2.2';
+  const VERSION = '1.3.0';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -98,11 +98,53 @@
     return o;
   }
 
+  /* ---------------- Android (1.3.0): cada APK tiene su almacenamiento, así que la bandeja viaja de una app a otra por el
+     programa (SHAndroid.outBegin/sendTo → intent com.sampledhead.RECIBIR → bandeja propia, que se lee en /__bandeja__/).
+     Con APK anteriores a la 1.4.0 no existe y se sigue como en el navegador. ---------------- */
+  const AND = (!D && G.SHAndroid && typeof G.SHAndroid.outBegin === 'function') ? G.SHAndroid : null;
+  function packItem(o) {
+    const meta = Object.assign({}, o); delete meta.wav;
+    const j = new TextEncoder().encode(JSON.stringify(meta)), w = o.wav ? new Uint8Array(o.wav) : new Uint8Array(0);
+    const out = new Uint8Array(8 + j.length + w.length); out.set([83, 72, 73, 49]); new DataView(out.buffer).setUint32(4, j.length, true);
+    out.set(j, 8); out.set(w, 8 + j.length); return out;
+  }
+  function unpackItem(ab) {
+    const u = new Uint8Array(ab); if (u[0] !== 83 || u[1] !== 72 || u[2] !== 73 || u[3] !== 49) throw new Error('elemento no válido');
+    const n = new DataView(ab).getUint32(4, true), meta = JSON.parse(new TextDecoder().decode(u.subarray(8, 8 + n)));
+    if (u.length > 8 + n) meta.wav = ab.slice(8 + n); return meta;
+  }
+  function b64(u) { let s = ''; for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(s); }
+  async function pullNative(me) {   // pasa lo recibido por el programa Android a la bandeja de la web
+    if (!AND) return 0;
+    let names = []; try { names = JSON.parse(AND.inboxList() || '[]'); } catch (e) {}
+    if (!names.length) return 0;
+    const got = [], done = [];
+    for (const n of names) {
+      try { const r = await fetch('/__bandeja__/' + encodeURIComponent(n), { cache: 'no-store' }); if (!r.ok) continue; got.push(unpackItem(await r.arrayBuffer())); done.push(n); }
+      catch (e) { console.warn('[sh-core] bandeja Android', n, e); done.push(n); }
+    }
+    if (got.length) { const k = 'v2:in:' + me; let cur = []; try { cur = (await IDB.get(k)) || []; } catch (e) {} await IDB.set(k, cur.concat(got).slice(-64)); }
+    if (done.length) AND.inboxDone(done.join(','));
+    return got.length;
+  }
+
   const bridge = {
     /* items: [{name, kind, audio:AudioBuffer | wav:ArrayBuffer, bpm, key, notes, meta}] */
     async send(to, items, from) {
       const list = (Array.isArray(items) ? items : [items]).map(it => normItem(it, from || bridge.me));
       if (D && D.bridge) { await D.bridge.put(to, list); }
+      else if (AND) {
+        const a = appById(to);
+        if (!AND.hasApp(to)) throw new Error((a ? a.name : to) + ' no está instalada en este móvil. Instálala desde el portal (Descargar apps → Android) o usa la versión web.');
+        const names = [];
+        for (const it of list) {
+          const u = packItem(it), id = AND.outBegin(); if (id < 0) throw new Error('No se pudo preparar el envío');
+          for (let i = 0; i < u.length; i += 393216) AND.chunk(id, b64(u.subarray(i, i + 393216)));
+          const nm = AND.outEnd(id); if (!nm) throw new Error('No se pudo preparar el envío'); names.push(nm);
+        }
+        if (!AND.sendTo(to, names.join(','))) throw new Error('No se pudo abrir ' + (a ? a.name : to));
+        bridge._sentAndroid = true;
+      }
       else {
         const k = 'v2:in:' + to; let cur = []; try { cur = (await IDB.get(k)) || []; } catch (e) {}
         cur = cur.concat(list).slice(-64);
@@ -114,6 +156,7 @@
     async inbox(me) {
       me = me || bridge.me;
       if (D && D.bridge) return (await D.bridge.list(me)) || [];
+      try { await pullNative(me); } catch (e) { console.warn('[sh-core] bandeja Android:', e); }
       try { return (await IDB.get('v2:in:' + me)) || []; } catch (e) { return []; }
     },
     async remove(me, ids) {
@@ -140,6 +183,7 @@
       setTimeout(check, 1200);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
       G.addEventListener('focus', check);
+      G.addEventListener('sh-bandeja', check);   // Android: acaba de llegar algo de otra app
       if (chan) chan.onmessage = e => { if (e.data && e.data.to === me) check(); };
       if (D && D.bridge && D.bridge.onArrive) D.bridge.onArrive(me, check);
       return check;
@@ -151,6 +195,9 @@
   async function open(id) {
     const a = appById(id); if (!a) return false;
     if (D && D.openApp) { try { if (await D.openApp(id)) return true; } catch (e) {} }
+    if (AND) { if (bridge._sentAndroid) { bridge._sentAndroid = false; return true; }   // el envío ya la ha abierto
+      if (AND.openApp(id)) return true;
+      alert(a.name + ' no está instalada en este móvil. Instálala desde el portal (Descargar apps → Android) o usa la versión web.'); return false; }
     const w = G.open(a.url, '_blank'); return !!w;
   }
 
@@ -446,14 +493,15 @@
     sendSheet(opts) {
       const from = opts.from || bridge.me, kinds = opts.kinds || ['pad'];
       const { sh, close } = sheet(opts.title || 'Enviar a…', (opts.count ? opts.count + ' elemento' + (opts.count === 1 ? '' : 's') + ' · ' : '') +
-        (D ? 'Se guarda en Documentos/SampledHead/Bandeja.' : 'Se guarda en este navegador para las demás apps de Sampled Head.'));
+        (D ? 'Se guarda en Documentos/SampledHead/Bandeja.' : AND ? 'Se pasa a la app instalada en este móvil y se abre.' : 'Se guarda en este navegador para las demás apps de Sampled Head.'));
       const openChk = el('label', 'shc-chk'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = opts.openAfter !== false;
+      if (AND) { cb.checked = true; openChk.hidden = true; }   // en Android la otra app se abre siempre al recibir
       openChk.appendChild(cb); openChk.appendChild(document.createTextNode('Abrir la app al enviar'));
       APPS.filter(a => a.id !== from).forEach(a => {
-        const ok = kinds.some(k => a.takes.includes(k));
+        const inst = !AND || AND.hasApp(a.id), ok = inst && kinds.some(k => a.takes.includes(k));
         const row = el('div', 'shc-row'), info = el('div');
         info.appendChild(el('b', null, a.name)); info.appendChild(el('small', null, a.desc));
-        const b = el('button', 'shc-b pri', 'Enviar'); b.disabled = !ok; if (!ok) b.title = 'Esta app no recibe ' + kinds.map(k => KIND[k] || k).join(' ni ');
+        const b = el('button', 'shc-b pri', inst ? 'Enviar' : 'No instalada'); b.disabled = !ok; if (!inst) b.title = 'Instálala desde el portal (Descargar apps → Android)'; else if (!ok) b.title = 'Esta app no recibe ' + kinds.map(k => KIND[k] || k).join(' ni ');
         b.onclick = async () => {
           b.disabled = true; b.textContent = 'Enviando…';
           try {
@@ -464,7 +512,7 @@
             if (cb.checked) await open(a.id);
             opts.onDone && opts.onDone(a.id, n);
             setTimeout(close, 600);
-          } catch (e) { console.error(e); b.textContent = 'Error'; b.disabled = false; if (opts.onError) opts.onError(e); }
+          } catch (e) { console.error(e); b.textContent = 'Error'; b.disabled = false; if (opts.onError) opts.onError(e); else if (AND) alert(e.message || e); }
         };
         row.appendChild(info); row.appendChild(b); sh.appendChild(row);
       });
@@ -549,7 +597,7 @@
   };
 
   G.SH = Object.assign(G.SH || {}, {
-    core: VERSION, APPS, app: appById, isDesktop: !!D, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
+    core: VERSION, _pack: packItem, _unpack: unpackItem, APPS, app: appById, isDesktop: !!D, isAndroid: !!AND, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
     bridge, open, models, engine, ui, backup, wav: { encode, decode },
     toFile: it => ui.toFile(it), feedInput: (i, f) => ui.feedInput(i, f)
   });
