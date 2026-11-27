@@ -23,7 +23,7 @@
 (function (G) {
   'use strict';
   if (G.SH && G.SH.core) return;
-  const VERSION = '1.5.0';
+  const VERSION = '1.6.0';
   const BASE = 'https://sampledhead-dot.github.io/';
   const D = G.shDesktop || null;                 // API del envoltorio de escritorio (preload), si existe
 
@@ -808,9 +808,83 @@
     return M;
   };
 
+  /* ---------- 1.6.0: Melodee (firmware alternativo de la MPC Sample) conectada por USB-C ----------
+     Mientras Melodee está en marcha la MPC es una página web en http://192.168.155.1 (o http://melodee.local):
+     GET /status · GET /list?path= · POST /mkdir?path=&name= · POST /upload?path=&name= (cuerpo = el archivo).
+     La web de github.io no puede llamarla (http sin cifrar y sin CORS): lo hacen el programa de escritorio (shDesktop.net)
+     y las apps Android (SHNet). Subir nunca sustituye nada: si el nombre ya existe, Melodee pone otro. */
+  const netWait = new Map();
+  G.__shNetEv = function (id, status, b) {
+    const r = netWait.get(id); if (!r) return; netWait.delete(id);
+    let text = ''; try { const bin = atob(b || ''), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); text = new TextDecoder().decode(u); } catch (e) { }
+    r({ status, text });
+  };
+  const melodee = {
+    HOSTS: ['192.168.155.1', 'melodee.local'], host: null,
+    can() { return !!(D && D.net && D.net.req) || !!(G.SHNet && G.SHNet.begin); },
+    howTo: 'Desde el navegador no se puede enviar directo a Melodee. Usa el programa SampledHead (Mac/Windows) o la app de Android, '
+      + 'o descarga el zip, abre http://melodee.local con la MPC conectada por USB-C (pestaña Files) y súbelo, o cópialo en la tarjeta SD.',
+    _raw(method, url, bytes) {
+      if (D && D.net && D.net.req) return D.net.req(method, url, bytes || null);
+      if (G.SHNet && G.SHNet.begin) return new Promise(res => {
+        const id = G.SHNet.begin(method, url); if (id < 0) return res({ status: -1, text: 'dirección no permitida' });
+        if (bytes) { const u = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes); for (let i = 0; i < u.length; i += 393216) G.SHNet.chunk(id, b64(u.subarray(i, i + 393216))); }
+        netWait.set(id, res); G.SHNet.end(id);
+      });
+      return Promise.resolve({ status: -1, text: 'sin conexión directa (navegador)' });
+    },
+    async req(method, path, q, bytes) {
+      const qs = q ? '?' + Object.keys(q).map(k => k + '=' + encodeURIComponent(q[k])).join('&') : '';
+      const hosts = this.host ? [this.host].concat(this.HOSTS.filter(h => h !== this.host)) : this.HOSTS;
+      let last = null;
+      for (const h of hosts) {
+        const r = await this._raw(method, 'http://' + h + path + qs, bytes);
+        if (r && r.status > 0) { this.host = h; try { r.json = JSON.parse(r.text); } catch (e) { } return r; }
+        last = r;
+      }
+      throw new Error('No se encuentra Melodee: conecta la MPC Sample por USB-C con Melodee en marcha (' + (last && last.text || 'sin respuesta') + ')');
+    },
+    async status() { const r = await this.req('GET', '/status'); if (r.status !== 200) throw new Error('Melodee contesta ' + r.status); return r.json || {}; },
+    async list(path) { const r = await this.req('GET', '/list', { path: path || '' }); return r.status === 200 && r.json ? r.json.entries || [] : null; },
+    async mkdirs(path) {
+      let cur = '';
+      for (const part of String(path).split('/').filter(Boolean)) {
+        const r = await this.req('POST', '/mkdir', { path: cur, name: part });
+        if (r.status !== 200 && r.status !== 409) throw new Error('No se pudo crear la carpeta ' + (cur ? cur + '/' : '') + part + ' (' + r.status + ' ' + (r.json && r.json.error || r.text || '').slice(0, 80) + ')');
+        cur = cur ? cur + '/' + part : part;
+      }
+      return cur;
+    },
+    async upload(folder, name, data) {
+      const r = await this.req('POST', '/upload', { path: folder, name }, data);
+      if (r.status !== 200) throw new Error('No se pudo subir ' + name + ' (' + r.status + ' ' + (r.json && r.json.error || r.text || '').slice(0, 80) + ')');
+      return (r.json && r.json.name) || name;
+    },
+    /* nombre libre en una carpeta (para no mezclar con lo que ya hay): «base», «base 2»… mirando también «base_[ProjectData]» */
+    async freeName(folder, base, exts) {
+      const e = await this.list(folder).catch(() => null), have = new Set((e || []).map(x => String(x.name || x).toLowerCase()));
+      exts = exts || [''];
+      for (let k = 1; k < 500; k++) { const n = k === 1 ? base : base + ' ' + k; if (!exts.some(x => have.has((n + x).toLowerCase()))) return n; }
+      return base + ' ' + Date.now();
+    },
+    /* files: [{name:'sub/carpeta/archivo.wav', data:Uint8Array}] dentro de «folder» (se crean las carpetas) */
+    async send(folder, files, onProg) {
+      await this.status();
+      const made = new Set(), out = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i], parts = f.name.split('/'), nm = parts.pop(), dir = [folder].concat(parts).filter(Boolean).join('/');
+        if (!made.has(dir)) { await this.mkdirs(dir); made.add(dir); }
+        if (onProg) onProg(i, files.length, nm);
+        out.push(dir + '/' + await this.upload(dir, nm, f.data));
+      }
+      if (onProg) onProg(files.length, files.length, '');
+      return out;
+    }
+  };
+
   G.SH = Object.assign(G.SH || {}, {
     core: VERSION, _pack: packItem, _unpack: unpackItem, APPS, app: appById, isDesktop: !!D, isAndroid: !!AND || !!SUITE, isSuite: !!SUITE, desktop: D, platform: D ? (D.platform || 'desktop') : (/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'web'),
-    bridge, open, models, engine, ui, backup, report, wav: { encode, decode },
+    bridge, open, models, engine, ui, backup, report, melodee, wav: { encode, decode },
     toFile: it => ui.toFile(it), feedInput: (i, f) => ui.feedInput(i, f)
   });
 })(typeof window !== 'undefined' ? window : self);
